@@ -28,7 +28,7 @@ How to read this file:
   - Copy the spec into `.kiro/specs/universal-bms/` and the steering files into `.kiro/steering/`
   - _Requirements: 25.1, 25.2, 25.3, 25.4_
 
-- [ ] 2. Development infrastructure and continuous integration
+- [x] 2. Development infrastructure and continuous integration
   - `docker-compose.yml` with PostgreSQL, Redis and MinIO; `.env.example` for both apps with every variable from `design.md`
   - `apps/api/src/config/env.ts`: validate all environment variables at startup; exit with a clear message when one is missing or invalid
   - CI workflow: install, lint, typecheck, unit and integration tests against a PostgreSQL service; secret scanning with `gitleaks`
