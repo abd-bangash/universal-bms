@@ -512,7 +512,7 @@ How to read this file:
 
 ### Phase 11 — Messaging `[R1 · Days 11–12]`
 
-- [ ] 68. Queue infrastructure
+- [x] 68. Queue infrastructure
   - Redis connection and BullMQ; queues `channel.inbound`, `channel.outbound`, `ai.process`, `commission.calculate`, `report.generate`, `email.send`, and a dead-letter queue
   - `WORKERS_IN_PROCESS` switch; processors set the workspace context from the job payload; readiness check includes Redis
   - Move commission calculation to the queue; add the key-value store to `deploy/render.yaml`

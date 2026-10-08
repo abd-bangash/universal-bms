@@ -35,6 +35,10 @@ export const envSchema = z
     WEB_ORIGIN: url('origin'),
     API_BASE_URL: url('URL'),
     WORKERS_IN_PROCESS: bool,
+    /** `inline` runs jobs at once in the calling process, for tests and tools that have no Redis. */
+    QUEUE_MODE: z.enum(['redis', 'inline']).default('redis'),
+    /** Keeps the queues of one environment apart on a shared Redis. */
+    QUEUE_PREFIX: z.string().min(1).default('bms'),
     META_APP_SECRET: z.string().min(1),
     META_WEBHOOK_VERIFY_TOKEN: z.string().min(1),
     SMTP_URL: z.string().min(1).optional(),

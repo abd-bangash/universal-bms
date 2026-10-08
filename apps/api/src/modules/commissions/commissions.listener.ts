@@ -2,12 +2,13 @@ import { Injectable } from '@nestjs/common';
 import type { DomainEventPayload } from '@bms/types';
 import { OnDomainEvent } from '../../common/events/on-domain-event.decorator';
 import { PrismaService } from '../../common/prisma/prisma.service';
+import { QueueService } from '../queue/queue.service';
 import { SettingsService } from '../settings/settings.service';
 import { CommissionsService } from './commissions.service';
 
 /**
  * Commissions are worked out when an order reaches the configured System_Role (Requirement 14.2),
- * and straight away for a counter sale, which is born completed. Task 68 moves this onto a queue.
+ * and straight away for a counter sale, which is born completed. The work itself is done by the queue's processor.
  */
 @Injectable()
 export class CommissionsListener {
@@ -15,6 +16,7 @@ export class CommissionsListener {
     private readonly commissions: CommissionsService,
     private readonly prisma: PrismaService,
     private readonly settings: SettingsService,
+    private readonly queues: QueueService,
   ) {}
 
   @OnDomainEvent('order.created')
@@ -23,7 +25,7 @@ export class CommissionsListener {
       where: { id: event.orderId },
       select: { source: true },
     });
-    if (order?.source === 'POS') await this.commissions.calculateForOrder(event.orderId);
+    if (order?.source === 'POS') await this.enqueue(event);
   }
 
   @OnDomainEvent('order.status_changed')
@@ -38,6 +40,15 @@ export class CommissionsListener {
       where: { key: order.status, workflow: { entityType: 'ORDER' } },
       select: { systemRole: true },
     });
-    if (state?.systemRole === trigger) await this.commissions.calculateForOrder(event.orderId);
+    if (state?.systemRole === trigger) await this.enqueue(event);
+  }
+
+  /** The calculation runs on the `commission.calculate` queue, with retries; the listener only asks for it. */
+  private enqueue(event: { workspaceId: string; orderId: string; actorUserId: string | null }) {
+    return this.queues.add('commission.calculate', 'calculate', {
+      workspaceId: event.workspaceId,
+      orderId: event.orderId,
+      actorUserId: event.actorUserId,
+    });
   }
 }

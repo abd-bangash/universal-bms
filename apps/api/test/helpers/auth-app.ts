@@ -32,6 +32,8 @@ export const testEnv = (): Env =>
     WEB_ORIGIN: 'http://localhost:3000',
     API_BASE_URL: 'http://localhost:4000',
     WORKERS_IN_PROCESS: true,
+    QUEUE_MODE: 'inline',
+    QUEUE_PREFIX: 'bms-test',
     META_APP_SECRET: 'x',
     META_WEBHOOK_VERIFY_TOKEN: 'x',
     ALLOW_PUBLIC_SIGNUP: false,

@@ -16,6 +16,13 @@ databases:
     ipAllowList: [] # only Render services in this account can connect
 
 services:
+  # ── Key-value store (Redis-compatible) for the job queues ────────────────
+  - type: keyvalue
+    name: bms-redis
+    plan: starter
+    maxmemoryPolicy: noeviction # queued jobs must never be evicted
+    ipAllowList: [] # only Render services in this account can connect
+
   # ── API (NestJS) ──────────────────────────────────────────────────────────
   - type: web
     name: bms-api
@@ -43,10 +50,17 @@ services:
         fromDatabase:
           name: bms-db
           property: connectionString
-      # Redis arrives with the messaging phase (task 68). Until then this is only a placeholder that
-      # satisfies startup validation; nothing connects to it.
+      # Background jobs and the readiness check use this key-value store.
       - key: REDIS_URL
-        value: redis://localhost:6379
+        fromService:
+          type: keyvalue
+          name: bms-redis
+          property: connectionString
+      # Run the workers in the API process for now; a separate worker service sets this to false on the API.
+      - key: QUEUE_MODE
+        value: redis
+      - key: QUEUE_PREFIX
+        value: bms-testing
       - key: JWT_PRIVATE_KEY
         sync: false
       - key: JWT_PUBLIC_KEY
