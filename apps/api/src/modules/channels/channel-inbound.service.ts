@@ -14,6 +14,7 @@ import { AuditService } from '../audit/audit.service';
 import { FilesService } from '../files/files.service';
 import { LeadsService } from '../crm/leads.service';
 import { normalizePhone, PhoneService } from '../crm/phone.service';
+import { SettingsService } from '../settings/settings.service';
 import { IntegrationsService } from '../integrations/integrations.service';
 import type { JobInfo } from '../queue/queue.types';
 import { ChannelRegistry } from './channel.registry';
@@ -35,7 +36,6 @@ const STATUS_RANK: Record<string, number> = {
   READ: 4,
 };
 
-const OPT_OUT = new Set(['STOP', 'STOP ALL', 'UNSUBSCRIBE', 'CANCEL', 'OPT OUT', 'OPTOUT']);
 const OPT_IN = new Set(['START', 'SUBSCRIBE', 'UNSTOP', 'OPT IN', 'OPTIN']);
 
 type MessageEvent = Extract<NormalizedEvent, { kind: 'message' }>;
@@ -69,6 +69,7 @@ export class ChannelInboundService {
     private readonly files: FilesService,
     private readonly leads: LeadsService,
     private readonly phones: PhoneService,
+    private readonly settings: SettingsService,
     private readonly events: DomainEventBus,
     private readonly audit: AuditService,
     @Inject(LOGGER) private readonly logger: Logger,
@@ -356,7 +357,11 @@ export class ChannelInboundService {
       .trim()
       .replace(/[.!]+$/, '')
       .toUpperCase();
-    const status = OPT_OUT.has(word) ? 'OPTED_OUT' : OPT_IN.has(word) ? 'OPTED_IN' : null;
+    const keywords = (await this.settings.get<string[] | undefined>(
+      'messaging.optOutKeywords',
+    )) ?? ['STOP', 'UNSUBSCRIBE'];
+    const optOut = new Set(keywords.map((k) => k.trim().toUpperCase()));
+    const status = optOut.has(word) ? 'OPTED_OUT' : OPT_IN.has(word) ? 'OPTED_IN' : null;
     if (!status) return;
     await this.prisma.scoped.contactConsent.upsert({
       where: {
@@ -391,7 +396,7 @@ export class ChannelInboundService {
       try {
         const secrets = this.integrations.secretsOf(connection);
         const file = await adapter.downloadMedia(secrets, media.ref);
-        const stored = await this.files.storeInbound(connection.workspaceId, {
+        const stored = await this.files.storeSystemFile(connection.workspaceId, {
           buffer: file.body,
           ...(media.name ? { name: media.name } : {}),
         });

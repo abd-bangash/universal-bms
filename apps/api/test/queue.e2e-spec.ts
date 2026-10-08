@@ -118,16 +118,16 @@ describe('Queues (real Redis)', () => {
   it('moves a job that keeps failing to the dead-letter queue with what it was and why', async () => {
     const t = await boot();
     let tries = 0;
-    processor(t, 'channel.outbound', async () => {
+    processor(t, 'report.generate', async () => {
       tries += 1;
       throw new Error('provider said no');
     });
     const queues = t.app.get(QueueService);
-    await queues.add('channel.outbound', 'send', { workspaceId: 'ws-9', messageId: 'm1' });
+    await queues.add('report.generate', 'send', { workspaceId: 'ws-9', messageId: 'm1' });
     await until(async () => (await queues.deadLetters()).length === 1);
     expect(tries).toBe(3);
     expect((await queues.deadLetters())[0]).toMatchObject({
-      queue: 'channel.outbound',
+      queue: 'report.generate',
       jobName: 'send',
       payload: { workspaceId: 'ws-9', messageId: 'm1' },
       error: 'provider said no',

@@ -548,13 +548,13 @@ How to read this file:
   - [x] 72.2 Integration tests: invalid signature returns 401 and is audited; unknown account is acknowledged and ignored; an inbound message from an unknown number creates a lead and a linked conversation
     - _Requirements: 15.3, 15.7, 15.8_
 
-- [ ] 73. Conversations and outbound messaging
+- [x] 73. Conversations and outbound messaging
   - `GET /conversations` (filters: status, assigned, unread, needs human; "only mine" unless `conversation:view_all`), messages list, mark read, `PATCH` for assignment, status, link to customer, automation and AI toggles
   - `POST /conversations/:id/messages`: text, attachments (product images, quotation, invoice and receipt PDFs), quick reply or template; free-form window rule; queue to `channel.outbound`; staff send sets `automationActive = false`
   - Templates CRUD (quick replies, message templates, bank-details template) with variable resolution and the unresolved-variable guard
   - Workspace-level automation toggle respected
   - _Requirements: 16.1, 16.2, 16.3, 16.4, 16.5, 16.6, 16.7, 40.11, 42.4, 42.10, 42.11, 42.13_
-  - [ ] 73.1 Integration tests: sending outside the free-form window without an approved template returns 422; a staff reply turns automation off for that conversation
+  - [x] 73.1 Integration tests: sending outside the free-form window without an approved template returns 422; a staff reply turns automation off for that conversation
     - _Requirements: 16.5, 42.4_
 
 - [ ] 74. Inbox screens

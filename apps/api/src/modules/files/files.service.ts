@@ -165,11 +165,11 @@ export class FilesService {
   }
 
   /**
-   * Keeps a file that arrived from a provider (a customer's photo or PDF) in the workspace. The
+   * Keeps a file the system itself made or received (a customer's photo from a provider, a PDF to send) in the workspace. The
    * same allow-list and size limit apply as to uploads; anything else returns null and the caller
    * keeps the message without the file.
    */
-  async storeInbound(
+  async storeSystemFile(
     workspaceId: string,
     file: { buffer: Buffer; name?: string },
   ): Promise<FileDto | null> {
@@ -198,6 +198,12 @@ export class FilesService {
       await this.discard([storageKey]);
       throw err;
     }
+  }
+
+  /** A short-lived public link to a file of this workspace, for handing to a provider that will fetch it. */
+  async linkFor(id: string, seconds = 900): Promise<string> {
+    const file = await this.find(id);
+    return this.storage.getSignedUrl(file.storageKey, seconds);
   }
 
   /** The bytes of a file of this workspace, for documents the server renders itself (no user check). */
