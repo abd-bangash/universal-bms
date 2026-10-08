@@ -482,14 +482,14 @@ How to read this file:
 
 ### Phase 10 — Dashboard and Reports `[R1 · Day 10]`
 
-- [ ] 63. Reporting framework and R1 reports
+- [x] 63. Reporting framework and R1 reports
   - `ReportDefinition` structure, generic controller (`GET /reports`, `/reports/:key`, `/reports/:key/drilldown`) and the financial-column stripping rule
   - R1 report definitions: `sales-by-date`, `sales-by-product`, `sales-by-category`, `sales-by-salesperson`, `sales-history`, `orders-by-status`, `lead-pipeline`, `lead-conversion`, `customer-balances` (with ageing), `payment-methods`, `stock-on-hand`, `low-stock`, `stock-movements`, `commission-statement`, `expenses`, `purchases`
   - All date boundaries in the workspace timezone; date-range filter on every report
   - _Requirements: 19.2, 19.4, 19.5, 19.8, 44.1, 44.2, 44.4_
-  - [ ] 63.1 Property test — Property 12 (financial visibility gate)
+  - [x] 63.1 Property test — Property 12 (financial visibility gate)
     - _Requirements: 13.8, 19.8_
-  - [ ] 63.2 Reconciliation test on the seeded dataset: every R1 report total equals the sum of its drill-down rows
+  - [x] 63.2 Reconciliation test on the seeded dataset: every R1 report total equals the sum of its drill-down rows
     - _Requirements: 19.4, 53.5_
 
 - [ ] 64. Dashboard API

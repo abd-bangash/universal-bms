@@ -12,6 +12,7 @@ import { DocumentsModule } from './modules/documents/documents.module';
 import { FinanceModule } from './modules/finance/finance.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
 import { CommissionsModule } from './modules/commissions/commissions.module';
+import { ReportingModule } from './modules/reporting/reporting.module';
 import { PosModule } from './modules/pos/pos.module';
 import { PurchasingModule } from './modules/purchasing/purchasing.module';
 import { SalesModule } from './modules/sales/sales.module';
@@ -56,6 +57,7 @@ import { HealthModule } from './modules/health/health.module';
     PosModule,
     PurchasingModule,
     CommissionsModule,
+    ReportingModule,
     SalesModule,
     DocumentsModule,
   ],
