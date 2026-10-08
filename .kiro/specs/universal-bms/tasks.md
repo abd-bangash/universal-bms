@@ -191,7 +191,7 @@ How to read this file:
   - Extend `seed:demo`: at least 6 categories, 30 furniture products with variants, attributes, aliases and placeholder images
   - _Requirements: 50.2, 50.5_
 
-- [ ] 22. Checkpoint — products
+- [x] 22. Checkpoint — products
   - Create a product with custom size and material attributes, generate variants, upload an image, archive another product; verify from a second workspace that none is visible
   - Stop and ask the user to review.
 
