@@ -293,6 +293,106 @@ export class AuthService {
     await this.auditForUserWorkspaces(record.userId, 'auth.password_reset');
   }
 
+  // ── Invitations ──────────────────────────────────────────────────────────
+
+  /**
+   * Accepts an invitation: creates the account (or, for someone who already has one, confirms their
+   * password) and the membership with the invited roles. Public route, so it runs before any
+   * workspace is known.
+   */
+  async acceptInvitation(dto: {
+    token: string;
+    password: string;
+    firstName: string;
+    lastName: string;
+  }): Promise<{ workspaceId: string }> {
+    const now = this.clock.now();
+    const bad = () => new ValidationFailedException({ token: ['is invalid or has expired'] });
+    const invitation = await this.prisma.unscoped.invitation.findUnique({
+      where: { tokenHash: TokenService.hash(dto.token) },
+      include: { workspace: { select: { status: true } } },
+    });
+    if (
+      !invitation ||
+      invitation.acceptedAt ||
+      invitation.expiresAt <= now ||
+      invitation.workspace.status !== 'ACTIVE'
+    )
+      throw bad();
+
+    const existing = await this.prisma.unscoped.user.findUnique({
+      where: { email: invitation.email.toLowerCase() },
+    });
+    if (existing) {
+      if (
+        existing.status !== 'ACTIVE' ||
+        !existing.passwordHash ||
+        !(await this.passwords.verify(existing.passwordHash, dto.password))
+      ) {
+        throw new ValidationFailedException({ password: ['does not match the existing account'] });
+      }
+    } else {
+      this.passwords.assertPolicy(dto.password, invitation.email);
+    }
+    const passwordHash = existing ? undefined : await this.passwords.hash(dto.password);
+
+    return this.prisma.unscoped.$transaction(async (tx) => {
+      const claimed = await tx.invitation.updateMany({
+        where: { id: invitation.id, acceptedAt: null },
+        data: { acceptedAt: now },
+      });
+      if (claimed.count === 0) throw bad();
+
+      const user =
+        existing ??
+        (await tx.user.create({
+          data: {
+            email: invitation.email.toLowerCase(),
+            firstName: dto.firstName,
+            lastName: dto.lastName,
+            status: 'ACTIVE',
+            passwordHash,
+          },
+        }));
+      const already = await tx.userWorkspace.findUnique({
+        where: { workspaceId_userId: { workspaceId: invitation.workspaceId, userId: user.id } },
+      });
+      if (already?.status === 'ACTIVE')
+        throw new ValidationFailedException({ token: ['this account is already a member'] });
+
+      const roles = await tx.role.findMany({
+        where: { workspaceId: invitation.workspaceId, id: { in: invitation.roleIds } },
+        select: { id: true },
+      });
+      if (roles.length === 0) throw bad();
+      const membership = already
+        ? await tx.userWorkspace.update({
+            where: { id: already.id },
+            data: { status: 'ACTIVE', permVersion: { increment: 1 } },
+          })
+        : await tx.userWorkspace.create({
+            data: { workspaceId: invitation.workspaceId, userId: user.id },
+          });
+      await tx.userWorkspaceRole.deleteMany({ where: { userWorkspaceId: membership.id } });
+      await tx.userWorkspaceRole.createMany({
+        data: roles.map((r) => ({
+          workspaceId: invitation.workspaceId,
+          userWorkspaceId: membership.id,
+          roleId: r.id,
+        })),
+      });
+      await this.audit.record(tx, {
+        workspaceId: invitation.workspaceId,
+        action: 'user.invitation_accepted',
+        entityType: 'User',
+        entityId: user.id,
+        actor: { userId: user.id },
+        after: { email: invitation.email, roleIds: roles.map((r) => r.id) },
+      });
+      return { workspaceId: invitation.workspaceId };
+    });
+  }
+
   // ── Profile ──────────────────────────────────────────────────────────────
 
   async me(user: AuthUser) {

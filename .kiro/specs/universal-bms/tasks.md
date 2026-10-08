@@ -99,13 +99,13 @@ How to read this file:
   - [x] 9.1 Integration test: creating a workspace produces every default listed in Requirement 50.1; applying the profile twice changes nothing the second time
     - _Requirements: 1.6, 50.1_
 
-- [ ] 10. Users, staff profiles, invitations and roles
+- [x] 10. Users, staff profiles, invitations and roles
   - `POST /users/invite` (72-hour token), `POST /auth/invite/accept`, `GET /users`, `GET|PATCH /users/:id` (staff profile fields, role assignment, salesperson flag, default location), deactivate and reactivate, `POST /users/:id/reset-link`
   - Deactivation revokes all sessions and bumps `permVersion`; historical records untouched
   - `GET /roles`, `POST /roles`, `PATCH /roles/:id` (name, permissions, `maxDiscountPercent`), `DELETE /roles/:id?fallbackRoleId=`; Owner role immutable; last Owner cannot be demoted, deactivated or removed
   - Any change to a member's roles or a role's permissions bumps `permVersion` of affected members; `GET /permissions` returns the catalogue
   - _Requirements: 2.7, 2.8, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 41.1, 45.3, 45.7_
-  - [ ] 10.1 Integration tests: role deletion reassigns to fallback; last Owner protected; deactivation invalidates sessions; permission change takes effect on the next request
+  - [x] 10.1 Integration tests: role deletion reassigns to fallback; last Owner protected; deactivation invalidates sessions; permission change takes effect on the next request
     - _Requirements: 3.4, 3.6, 3.7, 45.7_
 
 - [ ] 11. Settings module

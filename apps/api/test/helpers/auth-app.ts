@@ -90,6 +90,7 @@ export function api(app: INestApplication) {
     get: (path: string, token?: string) => call('get', path, token),
     post: (path: string, body?: object, token?: string, ip?: string) =>
       call('post', path, token, body ?? {}, ip),
+    patch: (path: string, body: object, token?: string) => call('patch', path, token, body),
     del: (path: string, token?: string) => call('delete', path, token),
   };
 }

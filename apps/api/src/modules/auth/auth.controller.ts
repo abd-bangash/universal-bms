@@ -6,6 +6,7 @@ import { CurrentUser, type AuthUser } from '../../common/decorators/current-user
 import { Public } from '../../common/decorators/public.decorator';
 import { AuthThrottle } from '../../common/throttle/throttle';
 import { AuthService } from './auth.service';
+import { AcceptInvitationDto } from '../users/dto/users.dto';
 import {
   ChangePasswordDto,
   ForgotPasswordDto,
@@ -60,6 +61,14 @@ export class AuthController {
   @HttpCode(204)
   async reset(@Body() dto: ResetPasswordDto): Promise<void> {
     await this.auth.resetPassword(dto.token, dto.newPassword);
+  }
+
+  @Post('invite/accept')
+  @Public()
+  @AuthThrottle()
+  @HttpCode(200)
+  acceptInvite(@Body() dto: AcceptInvitationDto): Promise<{ workspaceId: string }> {
+    return this.auth.acceptInvitation(dto);
   }
 
   @Post('switch-workspace')

@@ -18,6 +18,7 @@ const PUBLIC_ROUTES = [
   'POST /api/v1/auth/password/forgot',
   'POST /api/v1/auth/password/reset',
   'POST /api/v1/tenants',
+  'POST /api/v1/auth/invite/accept',
 ];
 
 /** Routes that need a session but no specific permission (self-service). Also listed deliberately. */
