@@ -65,6 +65,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         code: exception.code,
         message: exception.message,
         ...(exception.details ? { details: exception.details } : {}),
+        ...(exception.data !== undefined ? { data: exception.data } : {}),
         requestId,
       };
     }

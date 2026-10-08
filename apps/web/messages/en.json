@@ -267,6 +267,8 @@
       "timezone": "Timezone",
       "language": "Language",
       "dateFormat": "Date format",
+      "defaultCountry": "Country (2-letter code)",
+      "defaultCountryHint": "Used to read phone numbers written without a country code, for example PK.",
       "tax": "Tax",
       "taxEnabled": "Charge tax on sales",
       "pricesIncludeTax": "Prices already include tax",

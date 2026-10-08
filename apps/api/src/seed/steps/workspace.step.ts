@@ -27,6 +27,7 @@ export const workspaceStep: DemoStep = {
       },
       currency: 'PKR',
       timezone: 'Asia/Karachi',
+      country: 'PK',
     });
     await ctx.prisma.unscoped.workspace.update({
       where: { id: created.workspaceId },

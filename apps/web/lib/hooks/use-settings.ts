@@ -25,6 +25,7 @@ export interface WorkspaceSettings {
     timezone: string;
     language: string;
     dateFormat: string;
+    defaultCountry?: string;
   };
   modules: Record<string, boolean>;
   tax: { enabled: boolean; pricesIncludeTax: boolean };

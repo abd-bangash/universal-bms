@@ -39,6 +39,8 @@ export interface ErrorEnvelope {
   code: ErrorCode;
   message: string;
   details?: Record<string, string[]>;
+  /** Extra structured information for the client, such as the possible duplicates of a 409. */
+  data?: unknown;
   requestId: string;
 }
 

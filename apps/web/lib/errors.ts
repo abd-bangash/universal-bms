@@ -8,6 +8,8 @@ export class ApiError extends Error {
     message: string,
     readonly details?: Record<string, string[]>,
     readonly requestId?: string,
+    /** Structured extras from the API, such as the candidates of a possible duplicate. */
+    readonly data?: unknown,
   ) {
     super(message);
     this.name = 'ApiError';
@@ -20,6 +22,7 @@ export class ApiError extends Error {
       envelope.message,
       envelope.details,
       envelope.requestId,
+      envelope.data,
     );
   }
 

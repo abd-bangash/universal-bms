@@ -6,6 +6,7 @@ export interface DefaultConfigInput {
   currency?: string;
   timezone?: string;
   language?: string;
+  country?: string;
 }
 
 /**
@@ -19,6 +20,7 @@ export function createDefaultConfig(input: DefaultConfigInput): WorkspaceConfig 
       ...(input.currency ? { currency: input.currency } : {}),
       ...(input.timezone ? { timezone: input.timezone } : {}),
       ...(input.language ? { language: input.language } : {}),
+      ...(input.country ? { defaultCountry: input.country } : {}),
     },
   }) as unknown as WorkspaceConfig;
 }

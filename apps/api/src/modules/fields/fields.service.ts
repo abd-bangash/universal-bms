@@ -244,7 +244,7 @@ export class FieldsService {
    * (Requirements 26.7, 28.7); null when the query has no custom-field filter.
    */
   async matchingIds(
-    table: 'products' | 'product_variants',
+    table: 'products' | 'product_variants' | 'customers' | 'leads',
     entityType: FieldEntityName,
     query: Record<string, unknown>,
   ): Promise<string[] | null> {

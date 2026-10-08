@@ -108,6 +108,13 @@ const locale = z
     dateFormat: z
       .enum(['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD', 'D MMM YYYY'])
       .default('DD/MM/YYYY'),
+    defaultCountry: z.preprocess(
+      (v) => (v === '' ? undefined : v),
+      z
+        .string()
+        .regex(/^[A-Z]{2}$/, 'must be a 2-letter country code such as PK')
+        .optional(),
+    ),
   })
   .strict();
 

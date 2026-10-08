@@ -96,6 +96,8 @@ export interface WorkspaceConfig {
     timezone: string;
     language: string;
     dateFormat: string;
+    /** ISO 3166 alpha-2 country used to read phone numbers written without a country code. */
+    defaultCountry?: string;
   };
   modules: ModuleToggles;
   tax: { enabled: boolean; pricesIncludeTax: boolean; defaultTaxClassId?: string };

@@ -202,14 +202,14 @@ How to read this file:
   - Workspace creation now creates the walk-in Customer
   - _Requirements: 8.1, 9.2, 12.10, 22.1, 22.2_
 
-- [ ] 24. Customers API
+- [x] 24. Customers API
   - CRUD with E.164 normalization, tags, addresses, assigned staff, `customFields`, archive, `version`
   - Duplicate detection by `duplicates.matchOn` returning 409 `POSSIBLE_DUPLICATE` with candidates unless `confirmDuplicate` is set
   - List filters: name, phone, email, tag, assigned staff, source, custom fields
   - `GET /customers/:id/timeline` from `TimelineEntry`; timeline listener subscribed to Domain_Events
   - `GET /customers/:id/finance` returning lifetime value, total paid, outstanding balance and credit (zeros until orders and payments exist)
   - _Requirements: 8.1, 8.2, 8.4, 8.5, 8.6, 26.7, 54.2_
-  - [ ] 24.1 Integration tests: same phone in different formats is detected as a duplicate; walk-in Customer cannot be edited or listed
+  - [x] 24.1 Integration tests: same phone in different formats is detected as a duplicate; walk-in Customer cannot be edited or listed
     - _Requirements: 8.2, 12.10_
 
 - [ ] 25. Workflow engine

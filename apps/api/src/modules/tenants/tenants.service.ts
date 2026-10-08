@@ -19,6 +19,8 @@ export interface CreateWorkspaceInput {
   owner: { email: string; firstName: string; lastName: string; password: string };
   currency?: string;
   timezone?: string;
+  /** ISO 3166 alpha-2 country, for reading local phone numbers. */
+  country?: string;
 }
 
 export interface CreatedWorkspace {
@@ -80,6 +82,7 @@ export class TenantsService {
             legalName: input.name,
             currency: input.currency,
             timezone: input.timezone,
+            country: input.country,
           }),
           profile.configDefaults,
         );

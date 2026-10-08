@@ -219,6 +219,21 @@ export function BusinessForm({ snapshot }: { snapshot: SettingsSnapshot }) {
               </datalist>
             </>
           ))}
+          {field(
+            'locale.defaultCountry',
+            t('defaultCountry'),
+            (id, aria) => (
+              <Input
+                {...aria}
+                maxLength={2}
+                autoComplete="off"
+                {...register('locale.defaultCountry', {
+                  setValueAs: (v: string) => v.toUpperCase(),
+                })}
+              />
+            ),
+            t('defaultCountryHint'),
+          )}
           {field('locale.dateFormat', t('dateFormat'), (id, aria) => (
             <Select {...aria} {...register('locale.dateFormat')}>
               {DATE_FORMATS.map((f) => (

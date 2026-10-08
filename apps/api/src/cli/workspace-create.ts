@@ -13,7 +13,7 @@ function arg(name: string): string | undefined {
 /**
  * Release 1 way to create a business:
  *   node dist/cli/workspace-create.js --name "Acme Furniture" --owner-email owner@acme.test \
- *     --owner-first Ada --owner-last Owner [--profile furniture] [--password ...] [--currency PKR] [--timezone Asia/Karachi]
+ *     --owner-first Ada --owner-last Owner [--profile furniture] [--password ...] [--currency PKR] [--timezone Asia/Karachi] [--country PK]
  * Without --password a random one is generated and printed once.
  */
 async function main(): Promise<void> {
@@ -40,6 +40,7 @@ async function main(): Promise<void> {
       },
       currency: arg('currency'),
       timezone: arg('timezone'),
+      country: arg('country'),
     });
     console.log(
       JSON.stringify(
