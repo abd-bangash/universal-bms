@@ -55,9 +55,9 @@ describe('deploy/render.yaml (Requirement 52.1, 52.3)', () => {
 
   it('is a testing environment: not production, no public signup, no production seeding', () => {
     expect(blueprint).toMatch(/- key: APP_ENV\n\s+value: testing/);
-    expect(blueprint).toMatch(/- key: ALLOW_PUBLIC_SIGNUP\n\s+value: "false"/);
-    expect(blueprint).toMatch(/- key: SEED_ALLOW_PRODUCTION\n\s+value: "false"/);
-    expect(blueprint).toMatch(/- key: WORKERS_IN_PROCESS\n\s+value: "true"/);
+    expect(blueprint).toMatch(/- key: ALLOW_PUBLIC_SIGNUP\n\s+value: ["']false["']/);
+    expect(blueprint).toMatch(/- key: SEED_ALLOW_PRODUCTION\n\s+value: ["']false["']/);
+    expect(blueprint).toMatch(/- key: WORKERS_IN_PROCESS\n\s+value: ["']true["']/);
   });
 
   it('provides a PostgreSQL database wired into the API', () => {

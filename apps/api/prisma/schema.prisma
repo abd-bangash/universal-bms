@@ -44,6 +44,14 @@ model Workspace {
   notes               Note[]
   notifications       Notification[]
   userSessions        UserSession[]
+  categories          Category[]
+  brands              Brand[]
+  products            Product[]
+  productVariants     ProductVariant[]
+  productImages       ProductImage[]
+  bundleComponents    BundleComponent[]
+  priceLists          PriceList[]
+  priceListItems      PriceListItem[]
 
   @@map("workspaces")
 }
@@ -291,20 +299,21 @@ enum DocumentType {
 }
 
 model FileAsset {
-  id           String    @id @default(cuid())
-  workspaceId  String    @map("workspace_id")
-  workspace    Workspace @relation(fields: [workspaceId], references: [id])
-  storageKey   String    @map("storage_key")
-  thumbnailKey String?   @map("thumbnail_key")
-  originalName String    @map("original_name")
-  mimeType     String    @map("mime_type")
-  sizeBytes    Int       @map("size_bytes")
-  entityType   String?   @map("entity_type")
-  entityId     String?   @map("entity_id")
-  purpose      String?
-  uploadedById String?   @map("uploaded_by_id")
-  uploadedBy   User?     @relation(fields: [uploadedById], references: [id])
-  createdAt    DateTime  @default(now()) @map("created_at")
+  id            String         @id @default(cuid())
+  workspaceId   String         @map("workspace_id")
+  workspace     Workspace      @relation(fields: [workspaceId], references: [id])
+  storageKey    String         @map("storage_key")
+  thumbnailKey  String?        @map("thumbnail_key")
+  originalName  String         @map("original_name")
+  mimeType      String         @map("mime_type")
+  sizeBytes     Int            @map("size_bytes")
+  entityType    String?        @map("entity_type")
+  entityId      String?        @map("entity_id")
+  purpose       String?
+  uploadedById  String?        @map("uploaded_by_id")
+  uploadedBy    User?          @relation(fields: [uploadedById], references: [id])
+  productImages ProductImage[]
+  createdAt     DateTime       @default(now()) @map("created_at")
 
   @@index([workspaceId, entityType, entityId])
   @@map("file_assets")
@@ -494,6 +503,9 @@ model Unit {
   symbol      String
   dimension   String
   toBase      Decimal   @map("to_base") @db.Decimal(18, 8)
+  baseOf      Product[] @relation("ProductBaseUnit")
+  saleOf      Product[] @relation("ProductSaleUnit")
+  purchaseOf  Product[] @relation("ProductPurchaseUnit")
 
   @@unique([workspaceId, symbol])
   @@map("units")
@@ -506,6 +518,7 @@ model TaxClass {
   name        String
   rate        Decimal   @db.Decimal(9, 4)
   active      Boolean   @default(true)
+  products    Product[]
 
   @@unique([workspaceId, name])
   @@map("tax_classes")
@@ -604,4 +617,196 @@ model Notification {
 
   @@index([workspaceId, userId, readAt, createdAt])
   @@map("notifications")
+}
+
+// ═══ Catalog (task 17) ═══════════════════════════════════════════════════
+
+model Category {
+  id          String     @id @default(cuid())
+  workspaceId String     @map("workspace_id")
+  workspace   Workspace  @relation(fields: [workspaceId], references: [id])
+  name        String
+  parentId    String?    @map("parent_id")
+  parent      Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryTree")
+  sortOrder   Int        @default(0) @map("sort_order")
+  active      Boolean    @default(true)
+  products    Product[]
+
+  @@unique([workspaceId, parentId, name])
+  @@index([workspaceId, parentId])
+  @@map("categories")
+}
+
+model Brand {
+  id          String    @id @default(cuid())
+  workspaceId String    @map("workspace_id")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  name        String
+  active      Boolean   @default(true)
+  products    Product[]
+
+  @@unique([workspaceId, name])
+  @@map("brands")
+}
+
+model Product {
+  id                 String            @id @default(cuid())
+  workspaceId        String            @map("workspace_id")
+  workspace          Workspace         @relation(fields: [workspaceId], references: [id])
+  code               String
+  name               String
+  description        String?
+  categoryId         String?           @map("category_id")
+  category           Category?         @relation(fields: [categoryId], references: [id])
+  brandId            String?           @map("brand_id")
+  brand              Brand?            @relation(fields: [brandId], references: [id])
+  type               ProductType       @default(STOCKABLE)
+  status             ProductStatus     @default(ACTIVE)
+  madeToOrder        Boolean           @default(false) @map("made_to_order")
+  tracking           TrackingMode      @default(NONE)
+  baseUnitId         String?           @map("base_unit_id")
+  baseUnit           Unit?             @relation("ProductBaseUnit", fields: [baseUnitId], references: [id])
+  saleUnitId         String?           @map("sale_unit_id")
+  saleUnit           Unit?             @relation("ProductSaleUnit", fields: [saleUnitId], references: [id])
+  purchaseUnitId     String?           @map("purchase_unit_id")
+  purchaseUnit       Unit?             @relation("ProductPurchaseUnit", fields: [purchaseUnitId], references: [id])
+  saleUnitFactor     Decimal           @default(1) @map("sale_unit_factor") @db.Decimal(18, 8)
+  purchaseUnitFactor Decimal           @default(1) @map("purchase_unit_factor") @db.Decimal(18, 8)
+  basePrice          Decimal           @map("base_price") @db.Decimal(18, 4)
+  costPrice          Decimal?          @map("cost_price") @db.Decimal(18, 4)
+  taxClassId         String?           @map("tax_class_id")
+  taxClass           TaxClass?         @relation(fields: [taxClassId], references: [id])
+  tags               String[]
+  aliases            String[]
+  visibleInPos       Boolean           @default(true) @map("visible_in_pos")
+  visibleToAi        Boolean           @default(true) @map("visible_to_ai")
+  customFields       Json              @default("{}") @map("custom_fields")
+  version            Int               @default(1)
+  createdAt          DateTime          @default(now()) @map("created_at")
+  updatedAt          DateTime          @updatedAt @map("updated_at")
+  variants           ProductVariant[]
+  images             ProductImage[]
+  bundleComponents   BundleComponent[] @relation("BundleOf")
+
+  @@unique([workspaceId, code])
+  @@index([workspaceId, status, categoryId])
+  @@map("products")
+}
+
+enum ProductType {
+  STOCKABLE
+  NON_STOCKABLE
+  SERVICE
+  BUNDLE
+
+  @@map("product_type")
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+
+  @@map("product_status")
+}
+
+enum TrackingMode {
+  NONE
+  BATCH
+  SERIAL
+
+  @@map("tracking_mode")
+}
+
+model ProductVariant {
+  id               String            @id @default(cuid())
+  workspaceId      String            @map("workspace_id")
+  workspace        Workspace         @relation(fields: [workspaceId], references: [id])
+  productId        String            @map("product_id")
+  product          Product           @relation(fields: [productId], references: [id])
+  sku              String
+  barcode          String?
+  name             String?
+  isDefault        Boolean           @default(false) @map("is_default")
+  priceOverride    Decimal?          @map("price_override") @db.Decimal(18, 4)
+  costOverride     Decimal?          @map("cost_override") @db.Decimal(18, 4)
+  weight           Decimal?          @db.Decimal(18, 4)
+  minStockLevel    Decimal?          @map("min_stock_level") @db.Decimal(18, 4)
+  maxStockLevel    Decimal?          @map("max_stock_level") @db.Decimal(18, 4)
+  status           ProductStatus     @default(ACTIVE)
+  customFields     Json              @default("{}") @map("custom_fields")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+  images           ProductImage[]
+  bundleComponents BundleComponent[] @relation("BundleComponentVariant")
+  priceListItems   PriceListItem[]
+
+  @@unique([workspaceId, sku])
+  @@unique([workspaceId, barcode])
+  @@index([productId])
+  @@map("product_variants")
+}
+
+model ProductImage {
+  id          String          @id @default(cuid())
+  workspaceId String          @map("workspace_id")
+  workspace   Workspace       @relation(fields: [workspaceId], references: [id])
+  productId   String          @map("product_id")
+  product     Product         @relation(fields: [productId], references: [id])
+  variantId   String?         @map("variant_id")
+  variant     ProductVariant? @relation(fields: [variantId], references: [id])
+  fileId      String          @map("file_id")
+  file        FileAsset       @relation(fields: [fileId], references: [id])
+  sortOrder   Int             @default(0) @map("sort_order")
+  isPrimary   Boolean         @default(false) @map("is_primary")
+
+  @@index([workspaceId, productId, sortOrder])
+  @@index([fileId])
+  @@map("product_images")
+}
+
+model BundleComponent {
+  id                 String         @id @default(cuid())
+  workspaceId        String         @map("workspace_id")
+  workspace          Workspace      @relation(fields: [workspaceId], references: [id])
+  bundleProductId    String         @map("bundle_product_id")
+  bundleProduct      Product        @relation("BundleOf", fields: [bundleProductId], references: [id])
+  componentVariantId String         @map("component_variant_id")
+  componentVariant   ProductVariant @relation("BundleComponentVariant", fields: [componentVariantId], references: [id])
+  quantity           Decimal        @db.Decimal(18, 4)
+
+  @@unique([workspaceId, bundleProductId, componentVariantId])
+  @@index([workspaceId, componentVariantId])
+  @@map("bundle_components")
+}
+
+model PriceList {
+  id          String          @id @default(cuid())
+  workspaceId String          @map("workspace_id")
+  workspace   Workspace       @relation(fields: [workspaceId], references: [id])
+  name        String
+  isDefault   Boolean         @default(false) @map("is_default")
+  validFrom   DateTime?       @map("valid_from")
+  validTo     DateTime?       @map("valid_to")
+  active      Boolean         @default(true)
+  items       PriceListItem[]
+
+  @@unique([workspaceId, name])
+  @@map("price_lists")
+}
+
+model PriceListItem {
+  id          String         @id @default(cuid())
+  workspaceId String         @map("workspace_id")
+  workspace   Workspace      @relation(fields: [workspaceId], references: [id])
+  priceListId String         @map("price_list_id")
+  priceList   PriceList      @relation(fields: [priceListId], references: [id])
+  variantId   String         @map("variant_id")
+  variant     ProductVariant @relation(fields: [variantId], references: [id])
+  price       Decimal        @db.Decimal(18, 4)
+
+  @@unique([workspaceId, priceListId, variantId])
+  @@index([workspaceId, variantId])
+  @@map("price_list_items")
 }

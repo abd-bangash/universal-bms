@@ -43,6 +43,19 @@ async function makeState(prisma: PrismaClient, workspaceId: string, workflowId: 
   });
 }
 
+async function makeProduct(prisma: PrismaClient, workspaceId: string) {
+  return prisma.product.create({
+    data: { workspaceId, code: `p_${rand()}`, name: 'Product', basePrice: '10' },
+  });
+}
+
+async function makeVariant(prisma: PrismaClient, workspaceId: string) {
+  const product = await makeProduct(prisma, workspaceId);
+  return prisma.productVariant.create({
+    data: { workspaceId, productId: product.id, sku: `s_${rand()}` },
+  });
+}
+
 const byId = (row: { id: string }) => ({ where: { id: row.id } });
 
 const factories: Record<string, TenantFactory> = {
@@ -176,6 +189,54 @@ const factories: Record<string, TenantFactory> = {
     return byId(
       await p.notification.create({
         data: { workspaceId: ws, userId: user.id, type: 'test', title: 'T' },
+      }),
+    );
+  },
+  Category: async (p, ws) =>
+    byId(await p.category.create({ data: { workspaceId: ws, name: `c_${rand()}` } })),
+  Brand: async (p, ws) =>
+    byId(await p.brand.create({ data: { workspaceId: ws, name: `b_${rand()}` } })),
+  Product: async (p, ws) => byId(await makeProduct(p, ws)),
+  ProductVariant: async (p, ws) => byId(await makeVariant(p, ws)),
+  ProductImage: async (p, ws) => {
+    const product = await makeProduct(p, ws);
+    const file = await p.fileAsset.create({
+      data: {
+        workspaceId: ws,
+        storageKey: `k_${rand()}`,
+        originalName: 'a.png',
+        mimeType: 'image/png',
+        sizeBytes: 1,
+      },
+    });
+    return byId(
+      await p.productImage.create({
+        data: { workspaceId: ws, productId: product.id, fileId: file.id },
+      }),
+    );
+  },
+  BundleComponent: async (p, ws) => {
+    const bundle = await makeProduct(p, ws);
+    const variant = await makeVariant(p, ws);
+    return byId(
+      await p.bundleComponent.create({
+        data: {
+          workspaceId: ws,
+          bundleProductId: bundle.id,
+          componentVariantId: variant.id,
+          quantity: '1',
+        },
+      }),
+    );
+  },
+  PriceList: async (p, ws) =>
+    byId(await p.priceList.create({ data: { workspaceId: ws, name: `pl_${rand()}` } })),
+  PriceListItem: async (p, ws) => {
+    const list = await p.priceList.create({ data: { workspaceId: ws, name: `pl_${rand()}` } });
+    const variant = await makeVariant(p, ws);
+    return byId(
+      await p.priceListItem.create({
+        data: { workspaceId: ws, priceListId: list.id, variantId: variant.id, price: '5' },
       }),
     );
   },

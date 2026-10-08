@@ -159,7 +159,7 @@ How to read this file:
 
 ### Phase 2 — Products `[R1 · Day 2]`
 
-- [ ] 17. Schema: catalog
+- [x] 17. Schema: catalog
   - Add `Category`, `Brand`, `Product`, `ProductVariant`, `ProductImage`, `BundleComponent`, `PriceList`, `PriceListItem`; migration `catalog` with `rollback.sql`; GIN index on `Product.customFields`; trigram indexes on product name, code, SKU and barcode
   - _Requirements: 6.1, 6.2, 36.1, 22.1, 22.2_
 

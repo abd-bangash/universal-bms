@@ -22,11 +22,20 @@ describe('Migrations (real PostgreSQL)', () => {
         SELECT extname FROM pg_extension WHERE extname IN ('pg_trgm', 'citext') ORDER BY extname`
     ).map((r) => r.extname);
 
-  it('0001 creates the extensions and 0002 creates the 27 core tables', async () => {
+  it('0001 creates the extensions, 0002 the 27 core tables and 0003 the 8 catalog tables', async () => {
     expect(await extensions()).toEqual(['citext', 'pg_trgm']);
     const names = await tables();
-    expect(names).toHaveLength(27);
-    expect(names).toEqual(expect.arrayContaining(['workspaces', 'audit_events', 'users', 'tasks']));
+    expect(names).toHaveLength(35);
+    expect(names).toEqual(
+      expect.arrayContaining([
+        'workspaces',
+        'audit_events',
+        'users',
+        'tasks',
+        'products',
+        'price_lists',
+      ]),
+    );
   });
 
   it('names every table and column in snake_case', async () => {
@@ -71,8 +80,42 @@ describe('Migrations (real PostgreSQL)', () => {
     ).rejects.toThrow();
   });
 
+  it('catalog: SKU and barcode are unique per workspace, root category names and defaults are enforced', async () => {
+    const mk = (workspaceId: string, code: string) =>
+      db.prisma.product.create({ data: { workspaceId, code, name: code, basePrice: '10' } });
+    const p1 = await mk('w1', 'P1');
+    const p2 = await mk('w1', 'P2');
+    const p3 = await mk('w2', 'P3');
+    const variant = (workspaceId: string, productId: string, sku: string, extra = {}) =>
+      db.prisma.productVariant.create({ data: { workspaceId, productId, sku, ...extra } });
+
+    await variant('w1', p1.id, 'SKU-1', { barcode: '111', isDefault: true });
+    await expect(variant('w1', p2.id, 'SKU-1')).rejects.toThrow();
+    await expect(variant('w1', p2.id, 'SKU-2', { barcode: '111' })).rejects.toThrow();
+    await variant('w2', p3.id, 'SKU-1', { barcode: '111' }); // another workspace may reuse both
+    await variant('w1', p2.id, 'SKU-3'); // NULL barcodes never collide
+    await variant('w1', p2.id, 'SKU-4');
+    await expect(variant('w1', p1.id, 'SKU-5', { isDefault: true })).rejects.toThrow();
+
+    await db.prisma.category.create({ data: { workspaceId: 'w1', name: 'Sofas' } });
+    await expect(
+      db.prisma.category.create({ data: { workspaceId: 'w1', name: 'Sofas' } }),
+    ).rejects.toThrow();
+    await db.prisma.category.create({ data: { workspaceId: 'w2', name: 'Sofas' } });
+  });
+
+  it('catalog: JSONB and trigram indexes exist', async () => {
+    const rows = await db.prisma.$queryRaw<Array<{ indexname: string }>>`
+      SELECT indexname FROM pg_indexes WHERE schemaname = 'public'
+        AND indexname IN ('products_custom_fields_gin', 'products_name_trgm', 'products_code_trgm',
+                          'product_variants_sku_trgm', 'product_variants_barcode_trgm')`;
+    expect(rows).toHaveLength(5);
+  });
+
   it('rollback.sql files undo their migrations in reverse order, and the migrations re-apply', async () => {
     // The audit trigger forbids deleting audit rows, so none exist here; other tables are dropped whole.
+    await runScript(db.prisma, migrationFile('0003_catalog', 'rollback.sql'));
+    expect(await tables()).toHaveLength(27);
     await runScript(db.prisma, migrationFile('0002_core', 'rollback.sql'));
     expect(await tables()).toEqual([]);
     const functions = await db.prisma.$queryRaw<Array<{ proname: string }>>`
@@ -84,7 +127,8 @@ describe('Migrations (real PostgreSQL)', () => {
 
     await runScript(db.prisma, migrationFile('0001_extensions', 'migration.sql'));
     await runScript(db.prisma, migrationFile('0002_core', 'migration.sql'));
-    expect(await tables()).toHaveLength(27);
+    await runScript(db.prisma, migrationFile('0003_catalog', 'migration.sql'));
+    expect(await tables()).toHaveLength(35);
     expect(await extensions()).toEqual(['citext', 'pg_trgm']);
   });
 });
