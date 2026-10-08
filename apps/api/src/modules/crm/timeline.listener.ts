@@ -25,6 +25,32 @@ export class TimelineListener {
     });
   }
 
+  /** Every stage change, whoever caused it, becomes a line on the lead's timeline (Requirement 9.3). */
+  @OnDomainEvent('lead.status_changed')
+  async onLeadStatusChanged(event: DomainEventPayload<'lead.status_changed'>): Promise<void> {
+    const change = await this.prisma.scoped.statusHistory.findFirst({
+      where: { entityType: 'LEAD', entityId: event.leadId },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+    });
+    if (!change) return;
+    const states = await this.prisma.scoped.workflowState.findMany({
+      where: {
+        workflow: { entityType: 'LEAD' },
+        key: { in: [change.fromKey ?? '', change.toKey] },
+      },
+    });
+    const label = (key: string | null) => states.find((s) => s.key === key)?.label ?? key ?? '—';
+    await this.timeline.record({
+      leadId: event.leadId,
+      type: 'STATUS',
+      refType: 'StatusHistory',
+      refId: change.id,
+      summary: `Stage changed from ${label(change.fromKey)} to ${label(change.toKey)}${change.note ? `: ${change.note}` : ''}`,
+      actorUserId: event.actorUserId,
+      occurredAt: new Date(event.occurredAt),
+    });
+  }
+
   @OnDomainEvent('customer.merged')
   async onCustomerMerged(event: DomainEventPayload<'customer.merged'>): Promise<void> {
     await this.timeline.record({

@@ -219,7 +219,7 @@ How to read this file:
   - [x] 25.1 Property test — Property 18 (workflow integrity)
     - _Requirements: 27.6, 27.10_
 
-- [ ] 26. Leads API
+- [x] 26. Leads API
   - CRUD with all Lead fields of Requirement 9.2, `customFields` (furniture requirement fields), attachments (reference images)
   - `POST /leads/:id/stage` through `WorkflowService`; `LOST` requires a lost reason; `POST /leads/:id/assign`
   - Dedup window returning the existing open Lead
@@ -227,7 +227,7 @@ How to read this file:
   - `GET /leads/pipeline` (columns per state with count and estimated value); "only mine" unless `lead:view_all`
   - Pipeline analytics query: count and value by stage, average time in stage from `StatusHistory`, conversion rate, top lost reasons
   - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 41.2_
-  - [ ] 26.1 Integration tests: every stage change writes history; LOST without a reason is rejected; a second lead for the same phone inside the window returns the first
+  - [x] 26.1 Integration tests: every stage change writes history; LOST without a reason is rejected; a second lead for the same phone inside the window returns the first
     - _Requirements: 9.3, 9.5, 9.7_
 
 - [ ] 27. Tasks and notes API

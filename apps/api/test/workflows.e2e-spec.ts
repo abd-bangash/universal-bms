@@ -37,7 +37,6 @@ class FakeStore {
   }
 }
 
-
 describe('Workflow engine (real PostgreSQL)', () => {
   let t: TestApp;
   let app: INestApplication;
@@ -47,6 +46,7 @@ describe('Workflow engine (real PostgreSQL)', () => {
   let n = 0;
   const leads = new FakeStore();
   const orders = new FakeStore();
+  const jobs = new FakeStore();
 
   beforeAll(async () => {
     t = await createTestApp();
@@ -56,6 +56,8 @@ describe('Workflow engine (real PostgreSQL)', () => {
     registry = app.get(WorkflowRegistry);
     registry.registerAdapter(leads.adapter('LEAD', 'lead.status_changed'));
     registry.registerAdapter(orders.adapter('ORDER', 'order.status_changed'));
+    // Production jobs have no module yet and no business rules, so the stub's event is only a probe
+    registry.registerAdapter(jobs.adapter('PRODUCTION_JOB', 'order.status_changed'));
   }, 90_000);
   afterAll(() => t.close());
 
@@ -86,6 +88,11 @@ describe('Workflow engine (real PostgreSQL)', () => {
   const newLead = (state = 'new') => {
     const id = `lead_${Math.random().toString(36).slice(2)}`;
     leads.states.set(id, state);
+    return id;
+  };
+  const newJob = (state = 'queued') => {
+    const id = `job_${Math.random().toString(36).slice(2)}`;
+    jobs.states.set(id, state);
     return id;
   };
   const newOrder = (state = 'draft') => {
@@ -273,24 +280,24 @@ describe('Workflow engine (real PostgreSQL)', () => {
       leads.values.set(id, { budget: '50000' });
       await run(b, () => workflows.transition('LEAD', id, 'qualified', { actor: actorOf(b) }));
       expect(leads.states.get(id)).toBe('qualified');
-      // facts supplied with the request count too (for example a lost reason)
+      // facts supplied with the request count too (for example the size of a deal)
       const other = newLead();
       await t.db.prisma.workflowTransition.updateMany({
         where: {
           workspaceId: b.workspaceId,
           workflow: { entityType: 'LEAD' },
           fromState: { key: 'new' },
-          toState: { key: 'lost' },
+          toState: { key: 'negotiation' },
         },
-        data: { requiredFields: ['lostReasonId'] },
+        data: { requiredFields: ['dealSize'] },
       });
       await expect(
-        run(b, () => workflows.transition('LEAD', other, 'lost', { actor: actorOf(b) })),
+        run(b, () => workflows.transition('LEAD', other, 'negotiation', { actor: actorOf(b) })),
       ).rejects.toMatchObject({ code: 'VALIDATION_FAILED' });
       await run(b, () =>
-        workflows.transition('LEAD', other, 'lost', {
+        workflows.transition('LEAD', other, 'negotiation', {
           actor: actorOf(b),
-          data: { lostReasonId: 'r1' },
+          data: { dealSize: 'large' },
         }),
       );
     });
@@ -343,37 +350,37 @@ describe('Workflow engine (real PostgreSQL)', () => {
     it('runs the pre-conditions and side effects of the target System_Role, atomically', async () => {
       const b = await business();
       const log: string[] = [];
-      registry.registerPrecondition('LEAD', 'WON', async (ctx) => {
+      registry.registerPrecondition('PRODUCTION_JOB', 'DONE', async (ctx) => {
         log.push(`pre:${ctx.from.key}->${ctx.to.key}`);
-        if (ctx.data.blockWon) throw new AppException('DEPOSIT_REQUIRED', 422, 'Not yet');
+        if (ctx.data.blockDone) throw new AppException('DEPOSIT_REQUIRED', 422, 'Not yet');
       });
-      registry.registerSideEffect('LEAD', 'WON', async (ctx) => {
-        log.push(`effect:${ctx.record.id === ctx.record.id}`);
+      registry.registerSideEffect('PRODUCTION_JOB', 'DONE', async (ctx) => {
+        log.push('effect');
         if (ctx.data.breakEffect) throw new Error('side effect exploded');
       });
 
-      const blocked = newLead('negotiation');
       const emitter = app.get(EventEmitter2);
       const seen: Json[] = [];
       const listener = (p: Json) => seen.push(p);
-      emitter.on('lead.status_changed', listener);
+      emitter.on('order.status_changed', listener);
       try {
+        const blocked = newJob('quality_check');
         const err = await failure(
           run(b, () =>
-            workflows.transition('LEAD', blocked, 'won', {
+            workflows.transition('PRODUCTION_JOB', blocked, 'done', {
               actor: actorOf(b),
-              data: { blockWon: true },
+              data: { blockDone: true },
             }),
           ),
         );
         expect(err.code).toBe('DEPOSIT_REQUIRED');
-        expect(log).toEqual(['pre:negotiation->won']);
+        expect(log).toEqual(['pre:quality_check->done']);
 
-        // a failing side effect rolls the history and audit back too; the in-memory state is the adapter's business
-        const exploding = newLead('negotiation');
+        // a failing side effect rolls the history and audit back too
+        const exploding = newJob('quality_check');
         await expect(
           run(b, () =>
-            workflows.transition('LEAD', exploding, 'won', {
+            workflows.transition('PRODUCTION_JOB', exploding, 'done', {
               actor: actorOf(b),
               data: { breakEffect: true },
             }),
@@ -388,24 +395,26 @@ describe('Workflow engine (real PostgreSQL)', () => {
         expect(seen).toHaveLength(0); // no event for a change that did not commit
 
         log.length = 0;
-        const fine = newLead('negotiation');
-        await run(b, () => workflows.transition('LEAD', fine, 'won', { actor: actorOf(b) }));
-        expect(log).toEqual(['pre:negotiation->won', 'effect:true']);
+        const fine = newJob('quality_check');
+        await run(b, () =>
+          workflows.transition('PRODUCTION_JOB', fine, 'done', { actor: actorOf(b) }),
+        );
+        expect(log).toEqual(['pre:quality_check->done', 'effect']);
         expect(seen).toHaveLength(1);
       } finally {
-        emitter.off('lead.status_changed', listener);
+        emitter.off('order.status_changed', listener);
       }
       // hooks are keyed by System_Role, not by key or label: renaming the state keeps the behaviour
       await t.db.prisma.workflowState.updateMany({
-        where: { workspaceId: b.workspaceId, systemRole: 'WON' },
-        data: { key: 'closed_won', label: 'Closed won' },
+        where: { workspaceId: b.workspaceId, systemRole: 'DONE' },
+        data: { key: 'finished', label: 'Finished' },
       });
       log.length = 0;
-      const renamed = newLead('negotiation');
+      const renamed = newJob('quality_check');
       await run(b, () =>
-        workflows.transition('LEAD', renamed, 'closed_won', { actor: actorOf(b) }),
+        workflows.transition('PRODUCTION_JOB', renamed, 'finished', { actor: actorOf(b) }),
       );
-      expect(log).toEqual(['pre:negotiation->closed_won', 'effect:true']);
+      expect(log).toEqual(['pre:quality_check->finished', 'effect']);
     });
 
     it('only uses the workflow of its own workspace', async () => {
@@ -427,7 +436,7 @@ describe('Workflow engine (real PostgreSQL)', () => {
   describe('Property 18 — workflow integrity (27.6, 27.10, 11.3)', () => {
     it("for any sequence of requests the state is always one of the workflow's, every change has a history row, and a refused request changes nothing", async () => {
       const b = await business();
-      const workflow = await run(b, () => workflows.get('LEAD'));
+      const workflow = await run(b, () => workflows.get('PRODUCTION_JOB'));
       const keys = workflow.states.map((s) => s.key);
       const requestKeys = fc.constantFrom(...keys, 'ghost', '');
 
@@ -435,23 +444,25 @@ describe('Workflow engine (real PostgreSQL)', () => {
         fc.asyncProperty(
           fc.array(requestKeys, { minLength: 1, maxLength: 8 }),
           async (requests) => {
-            const id = newLead();
+            const id = newJob();
             let expectedChanges = 0;
             for (const target of requests) {
-              const before = leads.states.get(id) as string;
+              const before = jobs.states.get(id) as string;
               const historyBefore = (await history(b, id)).length;
               const allowed = workflow.transitions.some(
                 (tr) => tr.from === before && tr.to === target,
               );
               let outcome: 'ok' | 'refused' = 'ok';
               try {
-                await run(b, () => workflows.transition('LEAD', id, target, { actor: actorOf(b) }));
+                await run(b, () =>
+                  workflows.transition('PRODUCTION_JOB', id, target, { actor: actorOf(b) }),
+                );
               } catch (err) {
                 expect((err as AppException).code).toBe('TRANSITION_NOT_ALLOWED');
                 outcome = 'refused';
               }
               expect(outcome).toBe(allowed ? 'ok' : 'refused');
-              const after = leads.states.get(id) as string;
+              const after = jobs.states.get(id) as string;
               expect(keys).toContain(after);
               const rows = await history(b, id);
               if (outcome === 'ok') {
