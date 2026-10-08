@@ -117,6 +117,58 @@ export class InventoryService {
     };
   }
 
+  /**
+   * Sells stocked order lines straight from the shelf (a POS sale): locks the levels, writes the
+   * average cost onto each line, and posts the SALE movements. Fails the whole sale with 409
+   * INSUFFICIENT_STOCK when the stock is not there (Requirement 37.5).
+   */
+  async sell(
+    tx: ScopedTransaction,
+    workspaceId: string,
+    orderId: string,
+    locationId: string,
+    lines: ReadonlyArray<{
+      orderItemId: string;
+      variantId: string;
+      baseQuantity: Dec;
+      lineQuantity: Dec;
+    }>,
+    performedById: string | null,
+  ): Promise<PostedMovements> {
+    if (lines.length === 0) return { movementIds: [], lowStock: [] };
+    const levels = await this.lockLevels(
+      tx,
+      workspaceId,
+      lines.map((l) => ({ variantId: l.variantId, locationId })),
+    );
+    for (const line of lines) {
+      const level = levels.get(keyOf(line.variantId, locationId));
+      const perLineUnit = line.lineQuantity.gt(0) ? line.baseQuantity.div(line.lineQuantity) : D(1);
+      await tx.orderItem.update({
+        where: { id: line.orderItemId },
+        data: {
+          costPrice: roundHalfUp(
+            (level?.avgCost ?? D(0)).mul(perLineUnit),
+            COST_DECIMALS,
+          ).toFixed(),
+        },
+      });
+    }
+    return this.post(
+      tx,
+      workspaceId,
+      lines.map((l) => ({
+        variantId: l.variantId,
+        locationId,
+        type: 'SALE' as const,
+        quantity: l.baseQuantity.toFixed(),
+        referenceType: 'ORDER',
+        referenceId: orderId,
+        performedById,
+      })),
+    );
+  }
+
   /** Publishes the events for movements that have committed. */
   async announce(
     workspaceId: string,

@@ -399,14 +399,14 @@ How to read this file:
   - Add `PosSession`, `CashMovement`; partial unique index for one open session per cashier; migration `pos` with `rollback.sql`
   - _Requirements: 12.1, 22.1, 22.2_
 
-- [ ] 51. POS API
+- [x] 51. POS API
   - `GET /pos/sessions/current` opening the cashier's session automatically for the day and location in R1 (explicit open with float, close and reconciliation are task 100)
   - `POST /pos/checkout` (idempotency key required) implementing the eight steps in `design.md`: R1 one payment method per sale, change for cash, walk-in or selected customer, salesperson defaulting to the cashier, line and order discounts with limit check, optional cash rounding
   - `GET /pos/receipts` (search by number, date, customer); reprint increments `reprintCount` and audits
   - _Requirements: 12.1, 12.2, 12.4, 12.5, 12.10, 12.11, 12.12, 12.13, 12.14, 35.7, 54.1, 54.8, 56.2, 56.3_
-  - [ ] 51.1 Integration test: a failure injected at any step leaves no order, payment, movement or receipt; payment less than the total is rejected
+  - [x] 51.1 Integration test: a failure injected at any step leaves no order, payment, movement or receipt; payment less than the total is rejected
     - _Requirements: 12.2, 54.8_
-  - [ ] 51.2 Property test — Property 16 on `POST /pos/checkout` (repeated and concurrent identical keys create one sale)
+  - [x] 51.2 Property test — Property 16 on `POST /pos/checkout` (repeated and concurrent identical keys create one sale)
     - _Requirements: 54.1, 56.2_
 
 - [ ] 52. Receipt PDFs
