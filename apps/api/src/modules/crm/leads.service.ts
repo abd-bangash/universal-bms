@@ -52,6 +52,8 @@ export interface PipelineColumn {
   color: string;
   category: string;
   systemRole: string | null;
+  /** Stages a lead may be moved here from (the workflow's transitions), for drag and drop. */
+  acceptsFrom: string[];
   count: number;
   value: string;
   cards: PipelineCard[];
@@ -471,6 +473,7 @@ export class LeadsService {
         color: state.color,
         category: state.category,
         systemRole: state.systemRole,
+        acceptsFrom: workflow.transitions.filter((t) => t.to === state.key).map((t) => t.from),
         count: group?._count._all ?? 0,
         value: group?._sum.estimatedValue?.toFixed() ?? '0',
         cards: cards.map((c) => ({

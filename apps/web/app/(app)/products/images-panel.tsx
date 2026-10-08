@@ -1,33 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { FileUpload } from '@/components/forms/file-upload';
+import { SignedImage } from '@/components/forms/signed-image';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api-client';
 import { useErrorMessage } from '@/lib/error-message';
 import type { ImageView, ProductView } from '@/lib/hooks/use-catalog';
-
-/** A product picture, shown through a short-lived signed URL (files are never public). */
-function Picture({ fileId, alt }: { fileId: string; alt: string }) {
-  const url = useQuery({
-    queryKey: ['file-url', fileId],
-    queryFn: ({ signal }) =>
-      api.get<{ url: string; thumbnailUrl: string | null }>(
-        `/files/${fileId}/url`,
-        undefined,
-        signal,
-      ),
-    staleTime: 4 * 60_000,
-  });
-  const src = url.data?.thumbnailUrl ?? url.data?.url;
-  if (!src) return <div className="h-28 w-28 rounded-md bg-neutral-100" aria-hidden="true" />;
-  // Signed storage URLs cannot go through next/image's optimiser.
-  // eslint-disable-next-line @next/next/no-img-element
-  return <img src={src} alt={alt} className="h-28 w-28 rounded-md object-cover" />;
-}
 
 /** Attach, reorder, choose the primary and remove product images (Requirement 6.1). */
 export function ImagesPanel({
@@ -72,7 +53,10 @@ export function ImagesPanel({
       <ul className="flex flex-wrap gap-4">
         {images.map((image: ImageView, index) => (
           <li key={image.id} className="flex flex-col gap-1">
-            <Picture fileId={image.fileId} alt={t('alt', { name: product.name, n: index + 1 })} />
+            <SignedImage
+              fileId={image.fileId}
+              alt={t('alt', { name: product.name, n: index + 1 })}
+            />
             {image.isPrimary ? <span className="text-xs font-medium">{t('primary')}</span> : null}
             {readOnly ? null : (
               <div className="flex flex-wrap gap-1">

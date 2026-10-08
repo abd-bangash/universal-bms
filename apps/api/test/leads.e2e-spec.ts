@@ -445,6 +445,9 @@ describe('Leads API (real PostgreSQL)', () => {
       expect(col('qualified')).toMatchObject({ count: 1, value: '2000' });
       expect(col('won')).toMatchObject({ count: 1, value: '500' });
       expect(col('lost')).toMatchObject({ count: 0, value: '0', cards: [] });
+      expect(col('contacted').acceptsFrom).toEqual(expect.arrayContaining(['new', 'qualified']));
+      expect(col('new').acceptsFrom).not.toContain('new');
+      expect(col('won').acceptsFrom).not.toContain('won');
     });
   });
 

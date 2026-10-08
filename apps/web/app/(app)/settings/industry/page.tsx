@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { PageGuard } from '@/components/layout/page-guard';
+import { LostReasonsPanel } from './lost-reasons-panel';
 import { ModulesPanel } from './modules-panel';
 import { ProfilePanel } from './profile-panel';
 import { TaxPanel } from './tax-panel';
@@ -17,6 +18,7 @@ export default function IndustrySettingsPage() {
         <ModulesPanel />
         <UnitsPanel />
         <TaxPanel />
+        <LostReasonsPanel />
       </div>
     </PageGuard>
   );

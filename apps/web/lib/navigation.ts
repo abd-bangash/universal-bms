@@ -46,7 +46,7 @@ export const NAVIGATION: readonly NavigationEntry[] = [
     label: { term: 'customer' },
     area: 'crm',
     permissions: ['customer:view'],
-    available: false,
+    available: true,
   },
   {
     key: 'leads',
@@ -54,7 +54,7 @@ export const NAVIGATION: readonly NavigationEntry[] = [
     label: { term: 'lead' },
     area: 'crm',
     permissions: ['lead:view'],
-    available: false,
+    available: true,
   },
   {
     key: 'conversations',
@@ -71,7 +71,7 @@ export const NAVIGATION: readonly NavigationEntry[] = [
     label: { message: 'tasks' },
     area: 'crm',
     permissions: ['task:view'],
-    available: false,
+    available: true,
   },
   {
     key: 'quotations',

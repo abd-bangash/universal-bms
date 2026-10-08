@@ -236,7 +236,7 @@ How to read this file:
   - Scheduler: due scan every 5 minutes publishing `task.due`
   - _Requirements: 30.1, 30.2, 30.3, 30.5, 30.6, 30.7_
 
-- [ ] 28. CRM screens
+- [x] 28. CRM screens
   - `/customers` list and `/customers/[id]` (details, custom fields, timeline, notes, tasks, finance summary, linked leads, orders and conversations)
   - `/leads` pipeline board with drag between allowed stages and a list view; `/leads/[id]` (requirements, reference images, stage history, tasks, notes, convert actions)
   - `/tasks` my tasks
