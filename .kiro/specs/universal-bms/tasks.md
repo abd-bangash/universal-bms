@@ -458,7 +458,7 @@ How to read this file:
   - Add `CommissionRule`, `Commission`; migration `commissions` with `rollback.sql`
   - _Requirements: 14.3, 22.1, 22.2_
 
-- [ ] 60. Commission engine
+- [x] 60. Commission engine
   - `packages/calc/src/commission.ts`: rule selection by the precedence of Requirement 41.4, base calculation, amount by rule type, share percent, rounding
   - `CommissionService.calculateForOrder` on the configured trigger System_Role and immediately for POS sales; unique per order, salesperson and line
   - Reversal on Order `CANCELLED`
@@ -466,9 +466,9 @@ How to read this file:
   - Commission statement query (by salesperson, date range, status); "only mine" unless `commission:view_all`
   - `GET /staff/:userId/performance`
   - _Requirements: 12.9, 14.1, 14.2, 14.3, 14.4, 14.5, 14.6, 14.7, 41.4, 41.5, 41.6, 41.7_
-  - [ ] 60.1 Property test — Property 8 (commission arithmetic) and unit tests for rule precedence
+  - [x] 60.1 Property test — Property 8 (commission arithmetic) and unit tests for rule precedence
     - _Requirements: 14.1, 14.2, 41.4, 41.5_
-  - [ ] 60.2 Integration tests: completing an order creates pending commissions; cancelling reverses them; a salesperson cannot see another's commissions
+  - [x] 60.2 Integration tests: completing an order creates pending commissions; cancelling reverses them; a salesperson cannot see another's commissions
     - _Requirements: 14.2, 14.6, 41.7_
 
 - [ ] 61. Commission, performance and activity screens
