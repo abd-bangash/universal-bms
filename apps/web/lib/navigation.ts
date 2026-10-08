@@ -104,7 +104,7 @@ export const NAVIGATION: readonly NavigationEntry[] = [
     label: { term: 'product' },
     area: 'products',
     permissions: ['product:view'],
-    available: false,
+    available: true,
   },
   {
     key: 'inventory',

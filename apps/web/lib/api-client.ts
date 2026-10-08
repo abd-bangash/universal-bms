@@ -123,6 +123,9 @@ export const api = {
   async patch<T>(path: string, body: unknown, options: RequestOptions = {}): Promise<T> {
     return (await json<T>('PATCH', path, { ...options, body })).data;
   },
+  async put<T>(path: string, body: unknown, options: RequestOptions = {}): Promise<T> {
+    return (await json<T>('PUT', path, { ...options, body })).data;
+  },
   async delete(path: string, params?: QueryParams): Promise<void> {
     await json<void>('DELETE', path, { params });
   },

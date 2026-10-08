@@ -182,7 +182,7 @@ How to read this file:
   - [x] 19.1 Integration tests: duplicate SKU and barcode rejected; archived product cannot be added to a new document; cost hidden without `product:view_cost`; default variant created
     - _Requirements: 6.6, 6.7, 36.3, 36.8_
 
-- [ ] 20. Products screens
+- [x] 20. Products screens
   - `/products` list (search, category, brand, status filters, custom-field filters), `/products/[id]` form with images, variants table, furniture attributes through `DynamicFields`, aliases, visibility flags, minimum and maximum stock levels
   - `/products/categories` and `/products/brands`
   - _Requirements: 6.1, 6.2, 6.3, 36.1, 36.4, 36.5, 49.11_

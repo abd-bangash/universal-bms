@@ -50,7 +50,13 @@ export interface DynamicFieldsProps {
   /** Messages by field key, for example the API's field-level errors. */
   errors?: Record<string, string | undefined>;
   /** Facts about the record that visibility conditions may refer to. */
-  context?: { productType?: string | null; categoryId?: string | null; status?: string | null };
+  context?: {
+    productType?: string | null;
+    categoryId?: string | null;
+    /** Ancestors of the category, so a field scoped to a parent applies to its sub-categories. */
+    categoryPath?: readonly string[];
+    status?: string | null;
+  };
   units?: UnitOption[];
   currencyDecimals?: number;
   disabled?: boolean;
