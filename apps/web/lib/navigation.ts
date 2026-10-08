@@ -154,7 +154,7 @@ export const NAVIGATION: readonly NavigationEntry[] = [
     label: { message: 'staff' },
     area: 'staff',
     permissions: ['user:view'],
-    available: false,
+    available: true,
   },
   {
     key: 'roles',
@@ -162,7 +162,7 @@ export const NAVIGATION: readonly NavigationEntry[] = [
     label: { message: 'roles' },
     area: 'staff',
     permissions: ['role:view'],
-    available: false,
+    available: true,
   },
   {
     key: 'commissions',
@@ -204,7 +204,15 @@ export const NAVIGATION: readonly NavigationEntry[] = [
     label: { message: 'settings' },
     area: 'settings',
     permissions: ['workspace:view'],
-    available: false,
+    available: true,
+  },
+  {
+    key: 'industry',
+    href: '/settings/industry',
+    label: { message: 'industry' },
+    area: 'settings',
+    permissions: ['workspace:view'],
+    available: true,
   },
   {
     key: 'audit',
@@ -212,7 +220,7 @@ export const NAVIGATION: readonly NavigationEntry[] = [
     label: { message: 'audit' },
     area: 'settings',
     permissions: ['audit:view'],
-    available: false,
+    available: true,
   },
 ];
 

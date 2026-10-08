@@ -139,7 +139,7 @@ How to read this file:
   - [ ] 13.1* Playwright smoke test: login, navigation hidden without permission, session expiry returns to the same page
     - _Requirements: 49.2, 49.10_
 
-- [ ] 14. Settings and staff screens
+- [x] 14. Settings and staff screens
   - `/settings/business` (profile, branding with logo upload, currency, timezone, numbering formats, tax on or off, document texts, receipt paper size)
   - `/settings/industry` (current profile and module toggles), reference lists (units, tax classes, lost reasons, adjustment reasons, expense categories)
   - `/staff` (list, invite, edit profile, assign roles, deactivate, generate reset link) and `/staff/roles` (create and edit roles with the permission catalogue grouped by resource, maximum discount percent)

@@ -55,3 +55,61 @@ export const jsonResponse = (
     status,
     headers: { 'content-type': 'application/json', ...headers },
   });
+
+type RouteHandler = (request: { url: URL; body: unknown; method: string }) => unknown | Response;
+
+export interface ApiCall {
+  method: string;
+  path: string;
+  query: URLSearchParams;
+  body: unknown;
+}
+
+/**
+ * Fakes the BFF with a table of `"METHOD /path"` handlers. A handler returns the `data` of the
+ * success envelope, or a Response for errors/lists with `meta`. Unknown routes answer 404.
+ */
+export function mockApi(routes: Record<string, RouteHandler>): {
+  calls: ApiCall[];
+  fetchMock: jest.Mock;
+} {
+  const calls: ApiCall[] = [];
+  const fetchMock = mockFetch((rawUrl, init) => {
+    const url = new URL(rawUrl, 'http://localhost');
+    const method = (init?.method ?? 'GET').toUpperCase();
+    const path = url.pathname.replace(/^\/api\/bff/, '');
+    const body = typeof init?.body === 'string' ? (JSON.parse(init.body) as unknown) : init?.body;
+    calls.push({ method, path, query: url.searchParams, body });
+    const handler = routes[`${method} ${path}`];
+    if (!handler)
+      return jsonResponse(
+        { statusCode: 404, code: 'NOT_FOUND', message: 'x', requestId: 'r' },
+        404,
+      );
+    const result = handler({ url, body, method });
+    if (result instanceof Response) return result;
+    return jsonResponse({ data: result });
+  });
+  return { calls, fetchMock };
+}
+
+export const failure = (
+  status: number,
+  code: string,
+  details?: Record<string, string[]>,
+): Response =>
+  jsonResponse(
+    {
+      statusCode: status,
+      code,
+      message: 'server text',
+      ...(details ? { details } : {}),
+      requestId: 'r',
+    },
+    status,
+  );
+
+export const page = (
+  items: unknown[],
+  meta: { nextCursor?: string; total?: number } = {},
+): Response => jsonResponse({ data: items, meta });

@@ -49,6 +49,7 @@ export function FormShell<T extends FieldValues>({
   actions,
   className,
   successMessage,
+  hideSubmit = false,
 }: {
   form: UseFormReturn<T>;
   onSubmit: (values: T) => Promise<void>;
@@ -58,6 +59,8 @@ export function FormShell<T extends FieldValues>({
   actions?: ReactNode;
   className?: string;
   successMessage?: string;
+  /** For read-only views of a form. */
+  hideSubmit?: boolean;
 }) {
   const t = useTranslations();
   const message = useErrorMessage();
@@ -95,9 +98,11 @@ export function FormShell<T extends FieldValues>({
       ) : null}
       {children}
       <div className="flex flex-wrap items-center gap-2">
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? t('form.saving') : (submitLabel ?? t('form.submit'))}
-        </Button>
+        {hideSubmit ? null : (
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? t('form.saving') : (submitLabel ?? t('form.submit'))}
+          </Button>
+        )}
         {actions}
       </div>
     </form>

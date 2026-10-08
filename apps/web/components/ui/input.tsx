@@ -32,3 +32,20 @@ export const Select = React.forwardRef<
     />
   );
 });
+
+export const Textarea = React.forwardRef<
+  HTMLTextAreaElement,
+  React.TextareaHTMLAttributes<HTMLTextAreaElement>
+>(function Textarea({ className, ...props }, ref) {
+  return (
+    <textarea
+      ref={ref}
+      rows={3}
+      className={cn(
+        'w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 aria-[invalid=true]:border-red-600 disabled:opacity-50',
+        className,
+      )}
+      {...props}
+    />
+  );
+});

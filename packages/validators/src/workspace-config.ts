@@ -64,26 +64,32 @@ const isTimezone = (value: string): boolean => {
 };
 
 const text = (max: number) => z.string().max(max);
+/** Optional text where an empty string from a form means "not set". */
+const optionalText = (max: number) =>
+  z.preprocess((v) => (v === '' ? undefined : v), z.string().max(max).optional());
 const hhmm = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'must be HH:MM');
 const hours = z.object({ open: hhmm, close: hhmm }).strict().nullable();
 
 const business = z
   .object({
     legalName: z.string().trim().min(1).max(200).default('My Business'),
-    phone: text(40).optional(),
-    email: z.string().email().max(254).optional(),
-    address: text(500).optional(),
-    taxNumber: text(60).optional(),
+    phone: optionalText(40),
+    email: z.preprocess((v) => (v === '' ? undefined : v), z.string().email().max(254).optional()),
+    address: optionalText(500),
+    taxNumber: optionalText(60),
   })
   .strict();
 
 const branding = z
   .object({
-    logoFileId: text(100).optional(),
-    primaryColor: z
-      .string()
-      .regex(/^#[0-9a-fA-F]{6}$/, 'must be a #RRGGBB colour')
-      .optional(),
+    logoFileId: optionalText(100),
+    primaryColor: z.preprocess(
+      (v) => (v === '' ? undefined : v),
+      z
+        .string()
+        .regex(/^#[0-9a-fA-F]{6}$/, 'must be a #RRGGBB colour')
+        .optional(),
+    ),
   })
   .strict();
 
@@ -138,9 +144,9 @@ const numbering = z
 const documents = z
   .object({
     receiptPaper: z.enum(['58mm', '80mm', 'A4']).default('80mm'),
-    receiptFooter: text(500).optional(),
-    quotationTerms: text(5000).optional(),
-    invoiceTerms: text(5000).optional(),
+    receiptFooter: optionalText(500),
+    quotationTerms: optionalText(5000),
+    invoiceTerms: optionalText(5000),
     showBankDetails: z.boolean().default(true),
     quotationValidityDays: z.number().int().min(1).max(365).default(14),
     autoInvoiceOnSystemRole: z

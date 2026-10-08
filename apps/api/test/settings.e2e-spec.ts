@@ -167,6 +167,24 @@ describe('Settings (real PostgreSQL)', () => {
       await http.patch('/settings', [] as unknown as object, b.token).expect(400);
     });
 
+    it('clears an optional setting when it is sent empty', async () => {
+      const b = await business();
+      await http
+        .patch(
+          '/settings',
+          { business: { phone: '+92 300 1111111', email: 'info@settings.test' } },
+          b.token,
+        )
+        .expect(200);
+      const res = await http
+        .patch('/settings', { business: { phone: '', email: '' } }, b.token)
+        .expect(200);
+      expect(res.body.data.config.business.phone).toBeUndefined();
+      expect(res.body.data.config.business.email).toBeUndefined();
+      const stored = await prisma().workspace.findUniqueOrThrow({ where: { id: b.workspaceId } });
+      expect(Object.keys((stored.config as Json).business)).not.toContain('phone');
+    });
+
     it('a change that alters nothing is not a new version and writes no audit event', async () => {
       const b = await business();
       const v = (await http.get('/settings', b.token)).body.data.configVersion;

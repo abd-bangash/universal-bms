@@ -122,6 +122,28 @@ describe('WorkspaceConfigSchema', () => {
   });
 });
 
+describe('optional text left empty in a form means "not set"', () => {
+  it('drops empty optional values instead of rejecting them or storing blanks', () => {
+    const parsed = workspaceConfigSchema.parse({
+      business: { legalName: 'Acme', phone: '', email: '', address: '', taxNumber: '' },
+      branding: { logoFileId: '', primaryColor: '' },
+      documents: { receiptFooter: '', quotationTerms: '', invoiceTerms: '' },
+    });
+    expect(JSON.parse(JSON.stringify(parsed.business))).toEqual({ legalName: 'Acme' });
+    expect(JSON.parse(JSON.stringify(parsed.branding))).toEqual({});
+    expect(parsed.documents.receiptFooter).toBeUndefined();
+    expect(Object.keys(JSON.parse(JSON.stringify(parsed.documents)))).not.toContain('invoiceTerms'); // as stored
+  });
+
+  it('still validates values that are given', () => {
+    const result = workspaceConfigSchema.safeParse({
+      business: { email: 'nope' },
+      branding: { primaryColor: 'red' },
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
 describe('flatten', () => {
   it('produces dotted paths and keeps arrays and empty objects as leaves', () => {
     expect(flatten({ a: { b: 1, c: { d: [1, 2] } }, e: {}, f: null })).toEqual({
