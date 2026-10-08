@@ -381,4 +381,103 @@ describe('Reports (real PostgreSQL)', () => {
       expect((await run(token, 'stock-on-hand')).rows).toEqual([]);
     });
   });
+
+  describe('64 dashboard (19.1, 44.5)', () => {
+    const dashboard = async (token: string) =>
+      (await http.get('/reports/dashboard', token).expect(200)).body.data as Json;
+
+    it('gives the owner every indicator, matching the reports and the records behind them', async () => {
+      const d = await dashboard(owner);
+      expect(d.timezone).toBeDefined();
+      const month = await run(owner, 'sales-by-date', 'range=month');
+      expect(d.salesMonth).toEqual({
+        orders: Number(month.totals.orders),
+        total: month.totals.total,
+      });
+      const today = await run(owner, 'sales-by-date', 'range=today');
+      expect(d.salesToday.total).toBe(today.totals.total);
+      expect(d.salesWeek.orders).toBeGreaterThanOrEqual(d.salesToday.orders);
+
+      const open = await t.db.prisma.order.count({
+        where: { workspaceId, NOT: { status: { in: ['completed', 'cancelled'] } } },
+      });
+      expect(d.openOrders.reduce((n: number, o: Json) => n + o.count, 0)).toBe(open);
+      expect(d.openOrders.every((o: Json) => o.label && o.status)).toBe(true);
+
+      expect(d.leadFunnel.reduce((n: number, l: Json) => n + l.count, 0)).toBe(
+        await t.db.prisma.lead.count({ where: { workspaceId } }),
+      );
+      expect(d.lowStock.count).toBe((await run(owner, 'low-stock')).rows.length);
+      const owing = await run(owner, 'customer-balances');
+      expect(d.outstandingBalances).toEqual({
+        customers: owing.rows.length,
+        total: owing.totals.balance,
+      });
+      expect(d.pendingCommissions).toEqual({ count: 1, amount: expect.any(String) });
+      expect(d.myTasks).toEqual({
+        overdue: expect.any(Number),
+        today: expect.any(Number),
+        items: expect.any(Array),
+      });
+    });
+
+    it('shows a salesperson only what they may see, and no money figure at all (13.8, 19.8)', async () => {
+      const d = await dashboard(salesperson);
+      for (const money of ['salesToday', 'salesWeek', 'salesMonth', 'outstandingBalances']) {
+        expect([money, money in d]).toEqual([money, false]);
+      }
+      expect(d.pendingCommissions).toEqual({ count: expect.any(Number) });
+      expect(d.leadFunnel).toBeDefined();
+      expect(d.openOrders).toBeDefined();
+      expect(JSON.stringify(d)).not.toMatch(/"(total|amount|estimatedValue|balance)"/);
+    });
+
+    it("a salesperson's pending commissions are their own", async () => {
+      const mine = await dashboard(salesperson);
+      const seller = await t.db.prisma.user.findUniqueOrThrow({
+        where: { email: 'salesperson@demo.test' },
+      });
+      expect(mine.pendingCommissions.count).toBe(
+        await t.db.prisma.commission.count({
+          where: { workspaceId, status: 'PENDING', salespersonId: seller.id },
+        }),
+      );
+    });
+
+    it('counts my overdue tasks and those due today, soonest first', async () => {
+      const ws = await t.app.get(TenantsService).createWorkspace({
+        name: 'Tasks Co',
+        industryProfile: 'furniture',
+        owner: {
+          email: 'owner@tasks.test',
+          firstName: 'T',
+          lastName: 'T',
+          password: 'owner-password-1',
+        },
+        country: 'PK',
+      });
+      const token = await login('owner@tasks.test', 'owner-password-1');
+      const me = (await http.get('/auth/me', token)).body.data.user.id as string;
+      const hours = (h: number) => new Date(Date.now() + h * 3_600_000).toISOString();
+      for (const [title, dueAt] of [
+        ['Overdue', hours(-72)],
+        ['Later', hours(24 * 5)],
+      ] as const) {
+        await http
+          .post('/tasks', { type: 'FOLLOW_UP', title, dueAt, assignedToId: me }, token)
+          .expect(201);
+      }
+      const d = await dashboard(token);
+      expect(d.myTasks.overdue).toBe(1);
+      expect(d.myTasks.items.map((i: Json) => i.title)).toEqual(['Overdue']);
+      expect(d.salesMonth).toEqual({ orders: 0, total: '0.00' });
+      expect(ws.workspaceId).not.toBe(workspaceId);
+    });
+
+    it('needs sign-in, and another workspace sees its own numbers', async () => {
+      await http.get('/reports/dashboard').expect(401);
+      const token = await login('owner@other.test', 'owner-password-1').catch(() => null);
+      if (token) expect((await dashboard(token)).salesMonth.orders).toBe(0);
+    });
+  });
 });

@@ -492,7 +492,7 @@ How to read this file:
   - [x] 63.2 Reconciliation test on the seeded dataset: every R1 report total equals the sum of its drill-down rows
     - _Requirements: 19.4, 53.5_
 
-- [ ] 64. Dashboard API
+- [x] 64. Dashboard API
   - `GET /reports/dashboard` returning indicators filtered by permission: sales today, this week and this month; open orders by status; lead funnel; low-stock count; outstanding balances; pending commissions; my tasks due
   - _Requirements: 19.1, 44.5_
 

@@ -37,6 +37,8 @@ const AUTHENTICATED_ONLY_ROUTES = [
   'GET /api/v1/settings/lost-reasons',
   // each result group is limited to the entity types the user may view, checked in the service
   'GET /api/v1/search',
+  // each Home indicator is present only if the person holds the permissions behind it, checked in the service
+  'GET /api/v1/reports/dashboard',
   // pricing previews need any of quotation:create, order:create or pos:sell, checked in the controller
   'POST /api/v1/pricing/preview',
   // notes take the permission of the record they sit on, checked in the service
