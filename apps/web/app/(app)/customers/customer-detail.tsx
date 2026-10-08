@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
+import { ConversationsPanel } from '@/components/crm/conversations-panel';
 import { NotesPanel } from '@/components/crm/notes-panel';
 import { TasksPanel } from '@/components/crm/tasks-panel';
 import { TimelinePanel } from '@/components/crm/timeline-panel';
@@ -149,6 +150,8 @@ export function CustomerDetail({ customerId }: { customerId: string }) {
           </ul>
         </section>
       ) : null}
+
+      <ConversationsPanel customerId={customerId} />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <TasksPanel entityType="CUSTOMER" entityId={customerId} />

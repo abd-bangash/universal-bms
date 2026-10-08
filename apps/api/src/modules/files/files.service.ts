@@ -190,6 +190,7 @@ export class FilesService {
           originalName: sanitizeName(file.name ?? `received.${type.ext}`),
           mimeType: type.mime,
           sizeBytes: file.buffer.length,
+          entityType: 'MESSAGE',
           purpose: 'MESSAGE_ATTACHMENT',
         },
       });

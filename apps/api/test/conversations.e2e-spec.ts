@@ -315,6 +315,39 @@ describe('Conversations and outbound messaging', () => {
       );
     });
 
+    it('is found by contact name or number in global search, within what the person may see', async () => {
+      const ours = (await call('get', ws.token, '/search?q=sana').expect(200)).body.data
+        .groups as Json[];
+      expect(ours.find((g) => g.type === 'CONVERSATION')?.hits).toHaveLength(2);
+      const byPhone = (await call('get', ws.token, '/search?q=3001110001').expect(200)).body.data
+        .groups as Json[];
+      expect(byPhone.find((g) => g.type === 'CONVERSATION')?.hits[0].href).toMatch(
+        /^\/conversations\?open=/,
+      );
+      // the salesperson sees only the conversation assigned to them
+      const mine = (await call('get', sales.token, '/search?q=sana').expect(200)).body.data
+        .groups as Json[];
+      expect(mine.find((g) => g.type === 'CONVERSATION')?.hits).toHaveLength(1);
+    });
+
+    it('links a conversation to a lead', async () => {
+      const second = await conversationOf(ws.workspaceId, '923001110002');
+      const lead = (
+        await call('post', ws.token, '/leads', {
+          fullName: 'Another Lead',
+          phone: '+923007770001',
+        }).expect(201)
+      ).body.data as Json;
+      expect(
+        (
+          await call('patch', ws.token, `/conversations/${second.id}`, { leadId: lead.id }).expect(
+            200,
+          )
+        ).body.data,
+      ).toMatchObject({ leadId: lead.id, leadName: 'Another Lead' });
+      await call('patch', ws.token, `/conversations/${second.id}`, { leadId: 'nope' }).expect(400);
+    });
+
     it("another workspace's conversation is a 404", async () => {
       const other = await workspace('conv-other', '6660002');
       const first = await conversationOf(ws.workspaceId, '923001110001');

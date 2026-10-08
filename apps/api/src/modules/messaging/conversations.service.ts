@@ -226,6 +226,15 @@ export class ConversationsService {
       if (!customer) throw new ValidationFailedException({ customerId: ['does not exist'] });
       data.customerId = customer.id;
     }
+    if (dto.leadId !== undefined) {
+      this.need(user, 'conversation:assign');
+      const lead = await this.prisma.scoped.lead.findFirst({
+        where: { id: dto.leadId },
+        select: { id: true },
+      });
+      if (!lead) throw new ValidationFailedException({ leadId: ['does not exist'] });
+      data.leadId = lead.id;
+    }
     if (dto.status !== undefined) {
       this.need(user, 'conversation:reply');
       data.status = dto.status;
@@ -523,6 +532,13 @@ export class ConversationsService {
     if (ref.type === 'FILE') {
       const file = await this.prisma.scoped.fileAsset.findFirst({ where: { id: ref.id } });
       if (!file) throw new ValidationFailedException({ attachments: ['a file does not exist'] });
+      // once it is in a conversation, everyone who can read the conversation can open it
+      if (!file.entityType) {
+        await this.prisma.scoped.fileAsset.update({
+          where: { id: file.id },
+          data: { entityType: 'MESSAGE' },
+        });
+      }
       return { fileId: file.id, name: file.originalName, mime: file.mimeType };
     }
     const pdf =

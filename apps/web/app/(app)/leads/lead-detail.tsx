@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
+import { ConversationsPanel } from '@/components/crm/conversations-panel';
 import { NotesPanel } from '@/components/crm/notes-panel';
 import { TasksPanel } from '@/components/crm/tasks-panel';
 import { TimelinePanel } from '@/components/crm/timeline-panel';
@@ -268,6 +269,8 @@ export function LeadDetail({ leadId }: { leadId: string }) {
           />
         ) : null}
       </section>
+
+      <ConversationsPanel leadId={leadId} />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <TasksPanel entityType="LEAD" entityId={leadId} />

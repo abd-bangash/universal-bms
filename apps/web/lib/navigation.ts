@@ -63,7 +63,7 @@ export const NAVIGATION: readonly NavigationEntry[] = [
     area: 'crm',
     permissions: ['conversation:view'],
     module: 'messaging',
-    available: false,
+    available: true,
   },
   {
     key: 'tasks',

@@ -40,6 +40,7 @@ export class UpdateConversationDto {
   @IsOptional() @IsString() @MaxLength(60) assignedToId?: string | null;
   @IsOptional() @IsIn(CONVERSATION_STATUSES) status?: (typeof CONVERSATION_STATUSES)[number];
   @IsOptional() @IsString() @IsNotEmpty() @MaxLength(60) customerId?: string;
+  @IsOptional() @IsString() @IsNotEmpty() @MaxLength(60) leadId?: string;
   @IsOptional() @IsBoolean() automationActive?: boolean;
   @IsOptional() @IsBoolean() aiEnabled?: boolean;
 }

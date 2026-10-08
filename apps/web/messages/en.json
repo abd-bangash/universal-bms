@@ -146,7 +146,10 @@
     "BALANCE_DUE": "This order still has a balance to pay.",
     "IDEMPOTENCY_KEY_REUSED": "This request was already sent. Reload to see the result.",
     "DISCOUNT_OVER_LIMIT": "That discount is more than your role allows.",
-    "PRODUCT_ARCHIVED": "A product on this document has been archived."
+    "PRODUCT_ARCHIVED": "A product on this document has been archived.",
+    "FREEFORM_WINDOW_CLOSED": "The customer last wrote more than 24 hours ago. Only an approved template can be sent now.",
+    "CONTACT_OPTED_OUT": "This contact has opted out of template messages.",
+    "UNRESOLVED_TEMPLATE_VARIABLE": "The message needs information that is missing, such as an order. Choose the order or change the message."
   },
   "table": {
     "searchLabel": "Search the list",
@@ -1689,6 +1692,125 @@
       "displayName": "Name (optional)",
       "cancel": "Cancel",
       "save": "Save"
+    }
+  },
+  "conversations": {
+    "title": "Conversations",
+    "loading": "Loading…",
+    "empty": "No conversations match.",
+    "list": {
+      "label": "Conversations",
+      "loadMore": "Show older conversations",
+      "unread": "{count} unread",
+      "needsHuman": "Needs a person",
+      "unassigned": "Unassigned",
+      "noMessages": "No messages yet",
+      "you": "You: "
+    },
+    "filters": {
+      "label": "Filter conversations",
+      "search": "Search conversations",
+      "status": "Status",
+      "allStatuses": "All",
+      "assigned": "Assigned to",
+      "anyone": "Anyone",
+      "me": "Me",
+      "none": "Nobody",
+      "unread": "Unread only",
+      "needsHuman": "Needs a person"
+    },
+    "status": {
+      "OPEN": "Open",
+      "PENDING": "Pending",
+      "CLOSED": "Closed"
+    },
+    "select": "Choose a conversation to read it.",
+    "back": "All conversations",
+    "thread": {
+      "label": "Messages",
+      "olderLoad": "Show earlier messages",
+      "empty": "No messages yet.",
+      "unsupported": "This kind of message cannot be shown.",
+      "openFile": "Open {name}",
+      "location": "Location",
+      "viewMap": "View on map",
+      "sentBy": "Sent by {name}",
+      "automatic": "Automatic"
+    },
+    "delivery": {
+      "QUEUED": "Sending",
+      "SENT": "Sent",
+      "DELIVERED": "Delivered",
+      "READ": "Read",
+      "FAILED": "Not sent",
+      "RECEIVED": "Received"
+    },
+    "header": {
+      "status": "Conversation status",
+      "assignee": "Assigned staff member",
+      "unassigned": "Nobody",
+      "optedOut": "Opted out of template messages",
+      "automationOff": "A person is handling this conversation",
+      "automationOn": "Automation is on",
+      "handBack": "Hand back to automation",
+      "aiOn": "AI assistant on",
+      "aiOff": "AI assistant off",
+      "aiToggle": "AI assistant for this conversation"
+    },
+    "composer": {
+      "label": "Reply",
+      "placeholder": "Write a reply",
+      "send": "Send",
+      "sending": "Sending…",
+      "quickReplies": "Quick replies",
+      "templates": "Templates",
+      "chooseTemplate": "Choose a template",
+      "sendTemplate": "Send template",
+      "parameter": "Value for {name}",
+      "attach": "Attach",
+      "bankDetails": "Send bank details",
+      "windowClosed": "More than 24 hours have passed since the customer wrote. Only approved templates can be sent now.",
+      "noTemplates": "No approved templates yet.",
+      "order": "About order",
+      "noOrder": "No order",
+      "sent": "Sent."
+    },
+    "attach": {
+      "title": "Attach a document",
+      "quotation": "Quotation",
+      "invoice": "Invoice",
+      "file": "Upload a file",
+      "quotations": "Quotations of this customer",
+      "none": "Nothing to attach here.",
+      "needsCustomer": "Link the conversation to a customer or lead first.",
+      "send": "Send {name}",
+      "orders": "Orders",
+      "invoices": "Invoices of {number}",
+      "uploaded": "File ready: {name}",
+      "caption": "Message to go with it (optional)",
+      "sendFile": "Send file"
+    },
+    "contact": {
+      "title": "Contact",
+      "customer": "Customer",
+      "lead": "Lead",
+      "phone": "Phone",
+      "channel": "Channel",
+      "notLinked": "Not linked to a customer yet.",
+      "linkCustomer": "Link to an existing customer",
+      "createLead": "Create a lead",
+      "leadCreated": "Lead created.",
+      "openCustomer": "Open customer",
+      "openLead": "Open lead",
+      "newOrder": "Start an order",
+      "linked": "Linked.",
+      "unreadSince": "Last message"
+    },
+    "tab": {
+      "title": "Conversations",
+      "none": "No conversations yet.",
+      "open": "Open",
+      "viewInbox": "Open in inbox"
     }
   }
 }

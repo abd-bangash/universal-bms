@@ -557,7 +557,7 @@ How to read this file:
   - [x] 73.1 Integration tests: sending outside the free-form window without an approved template returns 422; a staff reply turns automation off for that conversation
     - _Requirements: 16.5, 42.4_
 
-- [ ] 74. Inbox screens
+- [x] 74. Inbox screens
   - `/conversations` two-pane inbox with unread indicators and filters; thread view with delivery status ticks, media preview, composer with quick replies, templates and attachment picker (including "send quotation" and "send bank details")
   - Customer or lead side panel with link, create-lead and open-order actions; conversation tab on customer and lead pages; conversations in global search
   - Usable at 360 pixels wide
