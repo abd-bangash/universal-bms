@@ -230,7 +230,7 @@ How to read this file:
   - [x] 26.1 Integration tests: every stage change writes history; LOST without a reason is rejected; a second lead for the same phone inside the window returns the first
     - _Requirements: 9.3, 9.5, 9.7_
 
-- [ ] 27. Tasks and notes API
+- [x] 27. Tasks and notes API
   - Tasks CRUD, complete, "my tasks" filters (overdue, today, upcoming); Notes with call-log type
   - Setting a Lead's next action and date upserts its open follow-up Task
   - Scheduler: due scan every 5 minutes publishing `task.due`

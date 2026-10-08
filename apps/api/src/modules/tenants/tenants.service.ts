@@ -63,6 +63,16 @@ export class TenantsService {
     throw new AppException('PERMISSION_DENIED', 403, 'Workspace creation is not available');
   }
 
+  /** Workspaces that scheduled jobs should act on (not suspended, not deleted). */
+  async activeWorkspaceIds(): Promise<string[]> {
+    const rows = await this.prisma.unscoped.workspace.findMany({
+      where: { status: 'ACTIVE', deletedAt: null },
+      select: { id: true },
+      orderBy: { createdAt: 'asc' },
+    });
+    return rows.map((r) => r.id);
+  }
+
   /**
    * Creates a workspace with everything it needs to run, in one transaction (Requirement 50.1):
    * validated default config, Owner user and membership, the nine system roles, the Industry Profile,

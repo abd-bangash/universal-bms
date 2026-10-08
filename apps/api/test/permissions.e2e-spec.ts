@@ -35,6 +35,9 @@ const AUTHENTICATED_ONLY_ROUTES = [
   'GET /api/v1/settings/units',
   'GET /api/v1/settings/tax-classes',
   'GET /api/v1/settings/lost-reasons',
+  // notes take the permission of the record they sit on, checked in the service
+  'GET /api/v1/notes',
+  'POST /api/v1/notes',
   'GET /api/v1/fields',
   'DELETE /api/v1/auth/sessions/:id',
 ];

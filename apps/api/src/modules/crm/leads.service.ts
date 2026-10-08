@@ -27,6 +27,7 @@ import type {
 import { staleLead } from './lead-workflow';
 import { KEY_FIELDS, toLeadDto, type LeadDto } from './lead.support';
 import { PhoneService } from './phone.service';
+import { TasksService } from './tasks.service';
 import { TimelineService } from './timeline.service';
 
 const SORTS = ['createdAt', 'updatedAt', 'fullName'] as const;
@@ -67,6 +68,7 @@ export class LeadsService {
     private readonly workflows: WorkflowService,
     private readonly timeline: TimelineService,
     private readonly events: DomainEventBus,
+    private readonly tasks: TasksService,
   ) {}
 
   // ── visibility ──────────────────────────────────────────────────────────────────────────
@@ -201,6 +203,7 @@ export class LeadsService {
       summary: 'Lead created',
       actorUserId: user.userId,
     });
+    await this.tasks.syncLeadFollowUp({ ...created, workspaceId: user.workspaceId }, user.userId);
     await this.events.publish('lead.created', {
       workspaceId: user.workspaceId,
       leadId: created.id,
@@ -283,6 +286,9 @@ export class LeadsService {
 
     // a history line for each key field that changed (Requirement 9.3)
     const after = toLeadDto(updated);
+    if (dto.nextAction !== undefined || dto.nextActionDate !== undefined) {
+      await this.tasks.syncLeadFollowUp({ ...updated, workspaceId: user.workspaceId }, user.userId);
+    }
     for (const { field, label } of KEY_FIELDS) {
       if (JSON.stringify(before[field]) !== JSON.stringify(after[field])) {
         await this.timeline.record({
@@ -329,6 +335,9 @@ export class LeadsService {
       });
       return lead;
     });
+    if (updated.nextAction && updated.nextActionDate) {
+      await this.tasks.syncLeadFollowUp({ ...updated, workspaceId: user.workspaceId }, user.userId);
+    }
     const names = await this.names([existing.assignedToId, assignedToId]);
     await this.timeline.record({
       leadId: id,
