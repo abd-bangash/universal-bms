@@ -8,6 +8,8 @@ import { tenantExtension } from './tenant.extension';
 export const createScopedClient = (client: PrismaClient, cls: ClsService<RequestContext>) =>
   client.$extends(tenantExtension(cls));
 export type ScopedPrismaClient = ReturnType<typeof createScopedClient>;
+/** The transaction client handed to `prisma.scoped.$transaction(async (tx) => ...)`. */
+export type ScopedTransaction = Parameters<Parameters<ScopedPrismaClient['$transaction']>[0]>[0];
 
 /**
  * `scoped` is the only client business modules use (every tenant model is filtered by the

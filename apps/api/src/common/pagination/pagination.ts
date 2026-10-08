@@ -95,3 +95,39 @@ export function toPage<T>(
   const items = rows.slice(0, limit);
   return new Page(items, encodeCursor(cursorOf(items[items.length - 1] as T)), total);
 }
+
+/**
+ * Keyset condition for "the rows after this cursor" when sorting by `field` then `id`.
+ * `value` is the cursor's value for the field (date fields arrive as ISO strings).
+ */
+export function keysetWhere(
+  field: string,
+  direction: 'asc' | 'desc',
+  cursor: string | undefined,
+  isDate = false,
+): Record<string, unknown> | undefined {
+  if (!cursor) return undefined;
+  const payload = decodeCursor(cursor);
+  const raw = payload.v;
+  const id = payload.id;
+  if (typeof id !== 'string' || (typeof raw !== 'string' && typeof raw !== 'number')) {
+    throw new ValidationFailedException({ cursor: ['is not a valid cursor'] });
+  }
+  let value: string | number | Date = raw;
+  if (isDate) {
+    value = new Date(String(raw));
+    if (Number.isNaN(value.getTime())) {
+      throw new ValidationFailedException({ cursor: ['is not a valid cursor'] });
+    }
+  }
+  const op = direction === 'asc' ? 'gt' : 'lt';
+  return { OR: [{ [field]: { [op]: value } }, { [field]: value, id: { [op]: id } }] };
+}
+
+/** The cursor payload `keysetWhere` reads back. */
+export function keysetCursor(
+  value: string | number | Date,
+  id: string,
+): { v: string | number; id: string } {
+  return { v: value instanceof Date ? value.toISOString() : value, id };
+}

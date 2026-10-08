@@ -1,4 +1,9 @@
-import { ValidationPipe, type ValidationError } from '@nestjs/common';
+import {
+  ValidationPipe,
+  type ArgumentMetadata,
+  type ValidationError,
+  type ValidationPipeOptions,
+} from '@nestjs/common';
 import { ValidationFailedException } from '../errors/app.exception';
 
 function flatten(errors: ValidationError[], prefix = ''): Record<string, string[]> {
@@ -11,9 +16,29 @@ function flatten(errors: ValidationError[], prefix = ''): Record<string, string[
   return out;
 }
 
+/**
+ * `?cf.<key>=` list filters are validated by the custom-field engine against the workspace's
+ * definitions (Requirement 26.7), so the DTO whitelist must not reject them as unknown properties.
+ */
+class AppValidationPipe extends ValidationPipe {
+  constructor(options: ValidationPipeOptions) {
+    super(options);
+  }
+
+  override transform(value: unknown, metadata: ArgumentMetadata): Promise<unknown> {
+    if (metadata.type === 'query' && value && typeof value === 'object' && !Array.isArray(value)) {
+      const rest = Object.fromEntries(
+        Object.entries(value as Record<string, unknown>).filter(([key]) => !key.startsWith('cf.')),
+      );
+      return super.transform(rest, metadata);
+    }
+    return super.transform(value, metadata);
+  }
+}
+
 /** Whitelists, rejects unknown properties, transforms, and reports field-level errors. */
 export function createValidationPipe(): ValidationPipe {
-  return new ValidationPipe({
+  return new AppValidationPipe({
     whitelist: true,
     forbidNonWhitelisted: true,
     transform: true,

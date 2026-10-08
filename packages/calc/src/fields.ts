@@ -21,6 +21,8 @@ export interface VisibilityContext {
   values: Record<string, unknown>;
   productType?: string | null;
   categoryId?: string | null;
+  /** Ancestors of `categoryId`, so a field scoped to a parent Category applies to its sub-categories. */
+  categoryPath?: readonly string[];
   status?: string | null;
 }
 
@@ -106,7 +108,13 @@ export function evaluateCondition(condition: Condition, ctx: VisibilityContext):
  * and its visibility condition, if any, holds (Requirements 26.4, 26.5).
  */
 export function isVisible(definition: VisibilityDefinition, ctx: VisibilityContext): boolean {
-  if (definition.categoryId && ctx.categoryId !== definition.categoryId) return false;
+  if (
+    definition.categoryId &&
+    ctx.categoryId !== definition.categoryId &&
+    !ctx.categoryPath?.includes(definition.categoryId)
+  ) {
+    return false;
+  }
   if (!definition.visibleWhen) return true;
   return evaluateCondition(definition.visibleWhen, ctx);
 }

@@ -81,7 +81,7 @@ const uniqueIp = (): string =>
 /** supertest helper: JSON request from a fresh client address, optionally authenticated. */
 export function api(app: INestApplication) {
   const call = (
-    method: 'get' | 'post' | 'delete' | 'patch',
+    method: 'get' | 'post' | 'delete' | 'patch' | 'put',
     path: string,
     token?: string,
     body?: object,
@@ -97,6 +97,7 @@ export function api(app: INestApplication) {
     post: (path: string, body?: object, token?: string, ip?: string) =>
       call('post', path, token, body ?? {}, ip),
     patch: (path: string, body: object, token?: string) => call('patch', path, token, body),
+    put: (path: string, body: object, token?: string) => call('put', path, token, body),
     del: (path: string, token?: string) => call('delete', path, token),
   };
 }

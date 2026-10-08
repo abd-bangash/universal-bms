@@ -218,6 +218,14 @@ describe('validateCustomFields rules', () => {
       values: {},
     });
     expect(validateCustomFields([scoped], {}, { values: {}, categoryId: 'sofas' }).ok).toBe(false);
+    // a sub-category inherits the field of its parent Category (Requirement 6.5)
+    expect(
+      validateCustomFields(
+        [scoped],
+        {},
+        { values: {}, categoryId: 'corner', categoryPath: ['sofas'] },
+      ).ok,
+    ).toBe(false);
   });
 });
 

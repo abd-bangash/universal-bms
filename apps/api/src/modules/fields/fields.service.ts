@@ -7,11 +7,14 @@ import {
   type FieldSnapshotEntry,
 } from '@bms/calc';
 import { conditionSchema } from '@bms/validators';
+import { ClsService } from 'nestjs-cls';
+import type { RequestContext } from '../../common/context/request-context';
 import type { AuthUser } from '../../common/decorators/current-user.decorator';
 import { NotFoundAppException, ValidationFailedException } from '../../common/errors/app.exception';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import type { CreateFieldDto, FieldEntityName, UpdateFieldDto } from './dto/fields.dto';
+import { customFieldConditions, parseCustomFieldFilters } from './custom-field-filters';
 import { FieldUsageRegistry } from './field-usage.registry';
 
 export interface FieldDto {
@@ -36,6 +39,7 @@ export interface FieldDto {
 /** What a record tells the validator about itself (category scope, visibility conditions). */
 export interface RecordContext {
   categoryId?: string | null;
+  categoryPath?: readonly string[];
   productType?: string | null;
   status?: string | null;
   /** Values already stored: deactivated fields keep theirs (Requirement 26.6). */
@@ -82,6 +86,7 @@ export class FieldsService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly usage: FieldUsageRegistry,
+    private readonly cls: ClsService<RequestContext>,
   ) {}
 
   async list(entityType: FieldEntityName, includeInactive = false): Promise<FieldDto[]> {
@@ -210,6 +215,7 @@ export class FieldsService {
     const result = validateCustomFields(definitions.map(asLike), values, {
       values: {},
       categoryId: record.categoryId,
+      categoryPath: record.categoryPath,
       productType: record.productType,
       status: record.status,
       existing: record.existing,
@@ -231,6 +237,27 @@ export class FieldsService {
     values: Record<string, unknown> | null | undefined,
   ): Promise<FieldSnapshotEntry[]> {
     return buildFieldSnapshot((await this.rows(entityType, true)).map(asLike), values);
+  }
+
+  /**
+   * Ids of the records of this workspace whose custom fields match the `cf.<key>` filters in `query`
+   * (Requirements 26.7, 28.7); null when the query has no custom-field filter.
+   */
+  async matchingIds(
+    table: 'products' | 'product_variants',
+    entityType: FieldEntityName,
+    query: Record<string, unknown>,
+  ): Promise<string[] | null> {
+    if (!Object.keys(query).some((k) => k.startsWith('cf.'))) return null;
+    const filters = parseCustomFieldFilters(query, (await this.rows(entityType, true)).map(asLike));
+    const workspaceId = this.cls.get('workspaceId');
+    if (!workspaceId) throw new Error('No workspace in context');
+    const conditions = customFieldConditions(filters, '"custom_fields"');
+    if (conditions.length === 0) return null;
+    const rows = await this.prisma.scoped.$queryRaw<Array<{ id: string }>>`
+      SELECT id FROM ${Prisma.raw(`"${table}"`)}
+      WHERE workspace_id = ${workspaceId} AND ${Prisma.join(conditions, ' AND ')} LIMIT 10000`;
+    return rows.map((r) => r.id);
   }
 
   // ── helpers ───────────────────────────────────────────────────────────────────────────────

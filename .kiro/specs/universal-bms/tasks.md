@@ -171,7 +171,7 @@ How to read this file:
   - [x] 18.1 Property test — Property 11 (custom field round-trip and rejection of invalid values), plus unit tests for visibility conditions
     - _Requirements: 6.3, 26.3, 26.4_
 
-- [ ] 19. Catalog API
+- [x] 19. Catalog API
   - Categories (tree) and Brands CRUD; Products CRUD with nested variants and `customFields` validated against Product and Variant Field_Definitions for the category
   - Default variant created when none is given; `generate-variants`; SKU and barcode uniqueness per workspace returning 409
   - Archive with the rules in `design.md`; optimistic concurrency with `version`
@@ -179,7 +179,7 @@ How to read this file:
   - Images: attach, reorder, set primary, remove
   - `product:view_cost` gate omitting cost fields
   - _Requirements: 6.1, 6.2, 6.4, 6.5, 6.6, 6.7, 36.1, 36.2, 36.3, 36.4, 36.5, 36.6, 36.7, 36.8, 54.2, 54.7_
-  - [ ] 19.1 Integration tests: duplicate SKU and barcode rejected; archived product cannot be added to a new document; cost hidden without `product:view_cost`; default variant created
+  - [x] 19.1 Integration tests: duplicate SKU and barcode rejected; archived product cannot be added to a new document; cost hidden without `product:view_cost`; default variant created
     - _Requirements: 6.6, 6.7, 36.3, 36.8_
 
 - [ ] 20. Products screens
