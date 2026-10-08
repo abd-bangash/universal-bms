@@ -250,7 +250,7 @@ How to read this file:
   - [x] 29.1 Integration test: results never include another workspace's records or entity types the user cannot view
     - _Requirements: 31.3_
 
-- [ ] 30. Checkpoint — CRM
+- [x] 30. Checkpoint — CRM
   - Extend `seed:demo` with 20 customers and 15 leads across stages
   - Create a lead with custom sofa requirements, move it through the pipeline, add a follow-up, convert to a customer; the timeline shows every step
   - Stop and ask the user to review.

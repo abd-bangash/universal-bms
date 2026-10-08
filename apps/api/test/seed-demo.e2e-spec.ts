@@ -9,7 +9,12 @@ import {
   runDemoSeed,
 } from '../src/seed/demo-seed';
 import { DEMO_STEPS } from '../src/seed/steps';
+import { DEMO_LEADS } from '../src/seed/steps/crm.data';
 import { DEMO_STAFF } from '../src/seed/steps/staff.step';
+
+const DEMO_LEADS_WITH_FOLLOW_UP = DEMO_LEADS.filter(
+  (l) => l.nextAction && l.followUpInDays !== undefined && l.stage !== 'won' && l.stage !== 'lost',
+).length;
 import { api, bearerPayload, createTestApp, type TestApp } from './helpers/auth-app';
 
 describe('seed:demo (Requirements 50.2, 50.3)', () => {
@@ -36,8 +41,9 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
       { name: 'workspace', created: 1, existing: 0 },
       { name: 'staff', created: 8, existing: 0 },
       { name: 'catalog', created: 30, existing: 0 },
+      { name: 'crm', created: 35, existing: 0 },
     ]);
-    expect(logs).toHaveLength(3);
+    expect(logs).toHaveLength(4);
 
     const workspace = await t.db.prisma.workspace.findUniqueOrThrow({
       where: { id: report.workspaceId },
@@ -121,6 +127,74 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
     expect(JSON.stringify(asSales.body.data)).not.toMatch(/costPrice|costOverride/);
   });
 
+  it('seeds 20 customers and 15 leads across the pipeline, with history, follow-ups and conversions (30)', async () => {
+    const workspaceId = (
+      await t.db.prisma.workspace.findUniqueOrThrow({ where: { slug: DEMO_WORKSPACE.slug } })
+    ).id;
+    const customers = await t.db.prisma.customer.findMany({
+      where: { workspaceId, isWalkIn: false },
+    });
+    expect(customers).toHaveLength(22); // 20 seeded + 2 created by converting won leads
+    expect(customers.filter((c) => c.phonesNormalized.length > 0)).toHaveLength(22);
+    expect(new Set(customers.flatMap((c) => c.phonesNormalized)).size).toBe(
+      customers.flatMap((c) => c.phonesNormalized).length,
+    );
+    expect(customers.filter((c) => c.assignedToId).length).toBeGreaterThan(5);
+    expect(await t.db.prisma.customer.count({ where: { workspaceId, isWalkIn: true } })).toBe(1);
+
+    const leads = await t.db.prisma.lead.findMany({ where: { workspaceId } });
+    const byStage = Object.fromEntries(
+      ['new', 'contacted', 'qualified', 'quoted', 'negotiation', 'won', 'lost'].map((s) => [
+        s,
+        leads.filter((l) => l.stage === s).length,
+      ]),
+    );
+    expect(byStage).toEqual({
+      new: 2,
+      contacted: 2,
+      qualified: 2,
+      quoted: 2,
+      negotiation: 2,
+      won: 2,
+      lost: 3,
+    });
+    expect(leads.filter((l) => l.stage === 'lost').every((l) => l.lostReasonId && l.closedAt)).toBe(
+      true,
+    );
+    expect(leads.filter((l) => l.stage === 'won').every((l) => l.customerId && l.closedAt)).toBe(
+      true,
+    );
+    expect(leads.filter((l) => l.productId).length).toBeGreaterThan(10);
+    expect(
+      leads.some((l) => (l.customFields as Record<string, unknown>).size_type === 'custom'),
+    ).toBe(true);
+    expect(leads.filter((l) => l.assignedToId).length).toBeGreaterThan(8);
+
+    // every stage change has a history row, in order
+    const lost = leads.find((l) => l.fullName === 'Palwasha Khan');
+    const history = await t.db.prisma.statusHistory.findMany({
+      where: { workspaceId, entityId: lost?.id },
+      orderBy: { createdAt: 'asc' },
+    });
+    expect(history.map((h) => h.toKey)).toEqual(['new', 'contacted', 'lost']);
+    const timeline = await t.db.prisma.timelineEntry.findMany({
+      where: { workspaceId, leadId: lost?.id },
+    });
+    expect(timeline.map((e) => e.summary)).toEqual(
+      expect.arrayContaining([
+        'Lead created',
+        'Stage changed from New to Contacted',
+        'Stage changed from Contacted to Lost',
+      ]),
+    );
+
+    // leads with a next action have one open follow-up task, except those that were closed
+    const open = await t.db.prisma.task.count({
+      where: { workspaceId, type: 'FOLLOW_UP', status: 'OPEN' },
+    });
+    expect(open).toBe(DEMO_LEADS_WITH_FOLLOW_UP);
+  });
+
   it('is safe to run again: nothing is duplicated and passwords are untouched', async () => {
     const before = await t.db.prisma.user.findMany({
       where: { email: { endsWith: '@demo.test' } },
@@ -131,7 +205,10 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
       { name: 'workspace', created: 0, existing: 1 },
       { name: 'staff', created: 0, existing: 8 },
       { name: 'catalog', created: 0, existing: 30 },
+      { name: 'crm', created: 0, existing: 35 },
     ]);
+    expect(await t.db.prisma.customer.count({ where: { isWalkIn: false } })).toBe(22); // 20 + 2 from won leads
+    expect(await t.db.prisma.lead.count()).toBe(15);
     expect(await t.db.prisma.product.count()).toBe(30);
     expect(await t.db.prisma.productImage.count()).toBe(30);
     const after = await t.db.prisma.user.findMany({
@@ -207,7 +284,13 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
       { password: 'x-password-123' },
     );
     expect(seen).toEqual([report.workspaceId]);
-    expect(report.steps.map((s) => s.name)).toEqual(['workspace', 'staff', 'catalog', 'probe']);
+    expect(report.steps.map((s) => s.name)).toEqual([
+      'workspace',
+      'staff',
+      'catalog',
+      'crm',
+      'probe',
+    ]);
   });
 });
 
