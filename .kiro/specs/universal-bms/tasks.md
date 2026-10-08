@@ -261,12 +261,12 @@ How to read this file:
   - Add `Quotation`, `QuotationItem`, `Order`, `OrderItem`, `OrderSalesperson`, `Invoice`, `ProductionJob`, `Return`, `ReturnLine`; migration `sales` with `rollback.sql`; indexes from `design.md`
   - _Requirements: 10.1, 11.4, 22.1, 22.2_
 
-- [ ] 32. Pricing, discount and tax engine
+- [x] 32. Pricing, discount and tax engine
   - `packages/calc/src/pricing.ts` implementing `calculateDocument` with the six rules in `design.md`
   - `PricingService.resolveUnitPrice` (R1: variant override, then product base price); discount-limit check against the user's Roles (R1: reject over limit); price override requires `order:price_override` and is audited
   - `POST /pricing/preview`
   - _Requirements: 35.1, 35.3, 35.4, 35.5, 35.6, 35.8, 35.9, 35.10_
-  - [ ] 32.1 Property test — Property 14 (pricing arithmetic), plus worked-example unit tests for inclusive and exclusive tax
+  - [x] 32.1 Property test — Property 14 (pricing arithmetic), plus worked-example unit tests for inclusive and exclusive tax
     - _Requirements: 35.3, 35.5, 35.6_
 
 - [ ] 33. Document numbering
