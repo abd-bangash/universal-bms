@@ -1,0 +1,12 @@
+// Universal BMS data model. Models are added by the schema tasks (6, 17, 23, 31, 39, 45, 50, 55, 59, 69).
+// Rules (design.md "Schema Rules"): snake_case tables via @@map, cuid() string keys,
+// a required workspaceId on every tenant table, uniqueness per workspace.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}

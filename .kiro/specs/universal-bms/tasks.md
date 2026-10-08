@@ -44,14 +44,14 @@ How to read this file:
   - All timestamps stored and returned in UTC (ISO 8601); conversion to the workspace timezone happens only in the web app, documents and report date boundaries
   - _Requirements: 20.2, 20.3, 20.8, 20.9, 20.10, 48.12, 51.1, 51.2, 54.3, 54.4_
 
-- [ ] 4. Prisma base, workspace context and tenant-scoped client
+- [x] 4. Prisma base, workspace context and tenant-scoped client
   - `schema.prisma` generator and datasource; first migration creating the `pg_trgm` and `citext` extensions
   - `ClsModule` (nestjs-cls) carrying `workspaceId`, `userId`, `requestId`, IP and user agent
   - `PrismaService` exposing `scoped` (with `tenantExtension` exactly as in `design.md`) and `unscoped`; ESLint rule restricting `unscoped` to the allowed modules
   - Script generating `TENANT_MODELS` from `schema.prisma`; unit test failing when a model has no `workspaceId` and is not in `GLOBAL_MODELS`
   - All primary keys are `cuid()` strings; no sequential identifier is ever exposed
   - _Requirements: 1.2, 1.3, 20.1, 21.4, 54.9_
-  - [ ] 4.1 Property test — Property 1 (tenant isolation): generated for every tenant-scoped model as models are added; runs in CI from this task onward
+  - [x] 4.1 Property test — Property 1 (tenant isolation): generated for every tenant-scoped model as models are added; runs in CI from this task onward
     - _Requirements: 1.3, 1.4, 20.1, 53.4_
 
 - [ ] 5. Domain event bus and scheduler

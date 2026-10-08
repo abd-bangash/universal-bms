@@ -14,12 +14,20 @@ declare global {
   }
 }
 
-@Injectable()
-export class RequestIdMiddleware implements NestMiddleware {
-  use(req: Request, res: Response, next: NextFunction): void {
+/** Idempotent: the first caller (context setup or this middleware) fixes the id for the request. */
+export function resolveRequestId(req: Request, res: Response): string {
+  if (!req.requestId) {
     const incoming = req.header(REQUEST_ID_HEADER);
     req.requestId = incoming && SAFE_ID.test(incoming) ? incoming : randomUUID();
     res.setHeader('X-Request-Id', req.requestId);
+  }
+  return req.requestId;
+}
+
+@Injectable()
+export class RequestIdMiddleware implements NestMiddleware {
+  use(req: Request, res: Response, next: NextFunction): void {
+    resolveRequestId(req, res);
     next();
   }
 }
