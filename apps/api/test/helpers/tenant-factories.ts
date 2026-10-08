@@ -240,6 +240,18 @@ const factories: Record<string, TenantFactory> = {
       }),
     );
   },
+  Customer: async (p, ws) =>
+    byId(await p.customer.create({ data: { workspaceId: ws, fullName: `Customer ${rand()}` } })),
+  Lead: async (p, ws) =>
+    byId(await p.lead.create({ data: { workspaceId: ws, fullName: `Lead ${rand()}` } })),
+  LostReason: async (p, ws) =>
+    byId(await p.lostReason.create({ data: { workspaceId: ws, name: `Reason ${rand()}` } })),
+  TimelineEntry: async (p, ws) =>
+    byId(
+      await p.timelineEntry.create({
+        data: { workspaceId: ws, type: 'SYSTEM', summary: `Event ${rand()}` },
+      }),
+    ),
 };
 
 export const tenantFactories: Record<string, TenantFactory> = Object.fromEntries(

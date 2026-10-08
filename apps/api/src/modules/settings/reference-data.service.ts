@@ -6,8 +6,10 @@ import { D, toDecimal, toJsonString } from '../../common/money';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import type {
+  CreateLostReasonDto,
   CreateTaxClassDto,
   CreateUnitDto,
+  UpdateLostReasonDto,
   UpdateTaxClassDto,
   UpdateUnitDto,
 } from './dto/settings.dto';
@@ -18,6 +20,11 @@ export interface UnitDto {
   symbol: string;
   dimension: string;
   toBase: string;
+}
+export interface LostReasonDto {
+  id: string;
+  name: string;
+  active: boolean;
 }
 export interface TaxClassDto {
   id: string;
@@ -38,6 +45,11 @@ const unitDto = (u: {
   symbol: u.symbol,
   dimension: u.dimension,
   toBase: u.toBase.toFixed(),
+});
+const lostReasonDto = (r: { id: string; name: string; active: boolean }): LostReasonDto => ({
+  id: r.id,
+  name: r.name,
+  active: r.active,
 });
 const taxDto = (t: {
   id: string;
@@ -164,6 +176,68 @@ export class ReferenceDataService {
       });
       return taxDto(tax);
     });
+  }
+
+  // ── Lost reasons (Requirement 9.5) ────────────────────────────────────────
+
+  /** Active reasons only, unless the settings screen asks for all. */
+  async listLostReasons(includeInactive = false): Promise<LostReasonDto[]> {
+    const rows = await this.prisma.scoped.lostReason.findMany({
+      where: includeInactive ? {} : { active: true },
+      orderBy: { name: 'asc' },
+    });
+    return rows.map(lostReasonDto);
+  }
+
+  async createLostReason(actor: AuthUser, dto: CreateLostReasonDto): Promise<LostReasonDto> {
+    await this.assertLostReasonFree(dto.name);
+    return this.write(async (tx) => {
+      const row = await tx.lostReason.create({
+        data: { workspaceId: actor.workspaceId, name: dto.name.trim(), active: dto.active ?? true },
+      });
+      await this.audit.record(tx, {
+        action: 'lost_reason.create',
+        entityType: 'LostReason',
+        entityId: row.id,
+        after: lostReasonDto(row) as unknown as Record<string, unknown>,
+      });
+      return lostReasonDto(row);
+    });
+  }
+
+  /** Reasons are deactivated, never deleted: lost leads keep pointing at them. */
+  async updateLostReason(id: string, dto: UpdateLostReasonDto): Promise<LostReasonDto> {
+    const existing = await this.prisma.scoped.lostReason.findFirst({ where: { id } });
+    if (!existing) throw new NotFoundAppException();
+    if (dto.name !== undefined && dto.name.trim() !== existing.name)
+      await this.assertLostReasonFree(dto.name, id);
+    return this.write(async (tx) => {
+      const row = await tx.lostReason.update({
+        where: { id },
+        data: { name: dto.name?.trim(), active: dto.active },
+      });
+      await this.audit.record(tx, {
+        action: 'lost_reason.update',
+        entityType: 'LostReason',
+        entityId: id,
+        before: lostReasonDto(existing) as unknown as Record<string, unknown>,
+        after: lostReasonDto(row) as unknown as Record<string, unknown>,
+      });
+      return lostReasonDto(row);
+    });
+  }
+
+  private async assertLostReasonFree(name: string, exceptId?: string): Promise<void> {
+    const clash = await this.prisma.scoped.lostReason.findFirst({
+      where: {
+        name: { equals: name.trim(), mode: 'insensitive' },
+        ...(exceptId ? { NOT: { id: exceptId } } : {}),
+      },
+    });
+    if (clash)
+      throw new ValidationFailedException({
+        name: ['a lost reason with this name already exists'],
+      });
   }
 
   // ── helpers ──────────────────────────────────────────────────────────────

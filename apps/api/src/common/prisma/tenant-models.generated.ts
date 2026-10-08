@@ -36,6 +36,10 @@ export const ALL_MODEL_NAMES: readonly string[] = [
   'BundleComponent',
   'PriceList',
   'PriceListItem',
+  'Customer',
+  'Lead',
+  'LostReason',
+  'TimelineEntry',
 ];
 
 export const TENANT_MODEL_NAMES: readonly string[] = [
@@ -67,4 +71,8 @@ export const TENANT_MODEL_NAMES: readonly string[] = [
   'BundleComponent',
   'PriceList',
   'PriceListItem',
+  'Customer',
+  'Lead',
+  'LostReason',
+  'TimelineEntry',
 ];

@@ -1,6 +1,8 @@
 // Universal BMS data model. Models are added by the schema tasks (6, 17, 23, 31, 39, 45, 50, 55, 59, 69).
 // Rules (design.md "Schema Rules"): snake_case tables via @@map, cuid() string keys,
 // a required workspaceId on every tenant table, uniqueness per workspace.
+// Raw indexes (GIN, trigram, partial unique) and seed INSERTs live only in the migration SQL. When creating a
+// migration with `prisma migrate diff`, delete the DROP INDEX statements it proposes for those indexes.
 
 generator client {
   provider = "prisma-client-js"
@@ -52,6 +54,10 @@ model Workspace {
   bundleComponents    BundleComponent[]
   priceLists          PriceList[]
   priceListItems      PriceListItem[]
+  customers           Customer[]
+  leads               Lead[]
+  lostReasons         LostReason[]
+  timelineEntries     TimelineEntry[]
 
   @@map("workspaces")
 }
@@ -88,6 +94,9 @@ model User {
   tasksCompleted      Task[]               @relation("TaskCompleter")
   notesCreated        Note[]
   notifications       Notification[]
+  customersAssigned   Customer[]           @relation("CustomerAssignee")
+  leadsAssigned       Lead[]               @relation("LeadAssignee")
+  leadsCreated        Lead[]               @relation("LeadCreator")
 
   @@map("users")
 }
@@ -688,6 +697,7 @@ model Product {
   variants           ProductVariant[]
   images             ProductImage[]
   bundleComponents   BundleComponent[] @relation("BundleOf")
+  leads              Lead[]
 
   @@unique([workspaceId, code])
   @@index([workspaceId, status, categoryId])
@@ -791,6 +801,7 @@ model PriceList {
   validTo     DateTime?       @map("valid_to")
   active      Boolean         @default(true)
   items       PriceListItem[]
+  customers   Customer[]
 
   @@unique([workspaceId, name])
   @@map("price_lists")
@@ -809,4 +820,124 @@ model PriceListItem {
   @@unique([workspaceId, priceListId, variantId])
   @@index([workspaceId, variantId])
   @@map("price_list_items")
+}
+
+// ═══ CRM (task 23) ═══════════════════════════════════════════════════════
+
+model Customer {
+  id               String          @id @default(cuid())
+  workspaceId      String          @map("workspace_id")
+  workspace        Workspace       @relation(fields: [workspaceId], references: [id])
+  fullName         String          @map("full_name")
+  phones           String[]
+  phonesNormalized String[]        @map("phones_normalized")
+  email            String?         @db.Citext
+  billingAddress   Json?           @map("billing_address")
+  shippingAddress  Json?           @map("shipping_address")
+  preferredChannel String?         @map("preferred_channel")
+  notes            String?
+  tags             String[]
+  source           String?
+  channel          String?
+  campaign         String?
+  assignedToId     String?         @map("assigned_to_id")
+  assignedTo       User?           @relation("CustomerAssignee", fields: [assignedToId], references: [id])
+  priceListId      String?         @map("price_list_id")
+  priceList        PriceList?      @relation(fields: [priceListId], references: [id])
+  status           String          @default("ACTIVE")
+  isWalkIn         Boolean         @default(false) @map("is_walk_in")
+  mergedIntoId     String?         @map("merged_into_id")
+  mergedInto       Customer?       @relation("CustomerMerge", fields: [mergedIntoId], references: [id])
+  mergedFrom       Customer[]      @relation("CustomerMerge")
+  customFields     Json            @default("{}") @map("custom_fields")
+  version          Int             @default(1)
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+  leads            Lead[]
+  timeline         TimelineEntry[]
+
+  @@index([workspaceId, status])
+  @@index([workspaceId, assignedToId])
+  @@map("customers")
+}
+
+model Lead {
+  id              String          @id @default(cuid())
+  workspaceId     String          @map("workspace_id")
+  workspace       Workspace       @relation(fields: [workspaceId], references: [id])
+  customerId      String?         @map("customer_id")
+  customer        Customer?       @relation(fields: [customerId], references: [id])
+  fullName        String          @map("full_name")
+  phone           String?
+  phoneNormalized String?         @map("phone_normalized")
+  email           String?         @db.Citext
+  source          String?
+  channel         String?
+  campaign        String?
+  adId            String?         @map("ad_id")
+  formId          String?         @map("form_id")
+  interest        String?
+  productId       String?         @map("product_id")
+  product         Product?        @relation(fields: [productId], references: [id])
+  requirements    String?
+  quantity        Decimal?        @db.Decimal(18, 4)
+  estimatedValue  Decimal?        @map("estimated_value") @db.Decimal(18, 4)
+  quotedAmount    Decimal?        @map("quoted_amount") @db.Decimal(18, 4)
+  priority        String          @default("MEDIUM")
+  stage           String          @default("new")
+  assignedToId    String?         @map("assigned_to_id")
+  assignedTo      User?           @relation("LeadAssignee", fields: [assignedToId], references: [id])
+  lostReasonId    String?         @map("lost_reason_id")
+  lostReason      LostReason?     @relation(fields: [lostReasonId], references: [id])
+  nextAction      String?         @map("next_action")
+  nextActionDate  DateTime?       @map("next_action_date")
+  customFields    Json            @default("{}") @map("custom_fields")
+  closedAt        DateTime?       @map("closed_at")
+  version         Int             @default(1)
+  createdById     String?         @map("created_by_id")
+  createdBy       User?           @relation("LeadCreator", fields: [createdById], references: [id])
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+  timeline        TimelineEntry[]
+
+  @@index([workspaceId, stage])
+  @@index([workspaceId, phoneNormalized])
+  @@index([workspaceId, assignedToId])
+  @@index([workspaceId, customerId])
+  @@map("leads")
+}
+
+model LostReason {
+  id          String    @id @default(cuid())
+  workspaceId String    @map("workspace_id")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  name        String
+  active      Boolean   @default(true)
+  leads       Lead[]
+
+  @@unique([workspaceId, name])
+  @@map("lost_reasons")
+}
+
+model TimelineEntry {
+  id          String    @id @default(cuid())
+  workspaceId String    @map("workspace_id")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  customerId  String?   @map("customer_id")
+  customer    Customer? @relation(fields: [customerId], references: [id])
+  leadId      String?   @map("lead_id")
+  lead        Lead?     @relation(fields: [leadId], references: [id])
+  /// Orders arrive in task 31; the column exists now so timelines need no later migration.
+  orderId     String?   @map("order_id")
+  type        String
+  refType     String?   @map("ref_type")
+  refId       String?   @map("ref_id")
+  summary     String
+  actorUserId String?   @map("actor_user_id")
+  occurredAt  DateTime  @default(now()) @map("occurred_at")
+
+  @@index([workspaceId, customerId, occurredAt])
+  @@index([workspaceId, leadId, occurredAt])
+  @@index([workspaceId, orderId, occurredAt])
+  @@map("timeline_entries")
 }

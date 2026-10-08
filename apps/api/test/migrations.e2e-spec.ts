@@ -22,10 +22,10 @@ describe('Migrations (real PostgreSQL)', () => {
         SELECT extname FROM pg_extension WHERE extname IN ('pg_trgm', 'citext') ORDER BY extname`
     ).map((r) => r.extname);
 
-  it('0001 creates the extensions, 0002 the 27 core tables and 0003 the 8 catalog tables', async () => {
+  it('0001 creates the extensions, 0002 the 27 core tables and 0003 the 8 catalog tables and 0004 the 4 CRM tables', async () => {
     expect(await extensions()).toEqual(['citext', 'pg_trgm']);
     const names = await tables();
-    expect(names).toHaveLength(35);
+    expect(names).toHaveLength(39);
     expect(names).toEqual(
       expect.arrayContaining([
         'workspaces',
@@ -112,8 +112,41 @@ describe('Migrations (real PostgreSQL)', () => {
     expect(rows).toHaveLength(5);
   });
 
+  it('crm: one walk-in customer per workspace, phone and name indexes exist', async () => {
+    const walkIn = (workspaceId: string) =>
+      db.prisma.customer.create({
+        data: { workspaceId, fullName: 'Walk-in customer', isWalkIn: true },
+      });
+    await walkIn('w1');
+    await expect(walkIn('w1')).rejects.toThrow();
+    await walkIn('w2'); // another workspace has its own
+    await db.prisma.customer.create({
+      data: { workspaceId: 'w1', fullName: 'Ada', phonesNormalized: ['+923001234567'] },
+    });
+    await db.prisma.customer.create({
+      data: { workspaceId: 'w1', fullName: 'Bob', phonesNormalized: ['+923009999999'] },
+    });
+    const hits = await db.prisma.$queryRaw<Array<{ full_name: string }>>`
+      SELECT full_name FROM customers WHERE workspace_id = 'w1' AND phones_normalized @> ARRAY['+923001234567']`;
+    expect(hits.map((h) => h.full_name)).toEqual(['Ada']);
+    const indexes = await db.prisma.$queryRaw<Array<{ indexname: string }>>`
+      SELECT indexname FROM pg_indexes WHERE schemaname = 'public' AND indexname IN
+        ('customers_phones_normalized_gin', 'customers_custom_fields_gin', 'customers_full_name_trgm',
+         'leads_custom_fields_gin', 'leads_full_name_trgm', 'leads_interest_trgm')`;
+    expect(indexes).toHaveLength(6);
+    // email is case-insensitive
+    await db.prisma.customer.create({
+      data: { workspaceId: 'w1', fullName: 'E', email: 'Case@Test.example' },
+    });
+    expect(
+      await db.prisma.customer.count({ where: { workspaceId: 'w1', email: 'case@test.example' } }),
+    ).toBe(1);
+  });
+
   it('rollback.sql files undo their migrations in reverse order, and the migrations re-apply', async () => {
     // The audit trigger forbids deleting audit rows, so none exist here; other tables are dropped whole.
+    await runScript(db.prisma, migrationFile('0004_crm', 'rollback.sql'));
+    expect(await tables()).toHaveLength(35);
     await runScript(db.prisma, migrationFile('0003_catalog', 'rollback.sql'));
     expect(await tables()).toHaveLength(27);
     await runScript(db.prisma, migrationFile('0002_core', 'rollback.sql'));
@@ -128,7 +161,8 @@ describe('Migrations (real PostgreSQL)', () => {
     await runScript(db.prisma, migrationFile('0001_extensions', 'migration.sql'));
     await runScript(db.prisma, migrationFile('0002_core', 'migration.sql'));
     await runScript(db.prisma, migrationFile('0003_catalog', 'migration.sql'));
-    expect(await tables()).toHaveLength(35);
+    await runScript(db.prisma, migrationFile('0004_crm', 'migration.sql'));
+    expect(await tables()).toHaveLength(39);
     expect(await extensions()).toEqual(['citext', 'pg_trgm']);
   });
 });

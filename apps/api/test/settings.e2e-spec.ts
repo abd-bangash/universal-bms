@@ -388,6 +388,65 @@ describe('Settings (real PostgreSQL)', () => {
     });
   });
 
+  describe('lost reasons and the walk-in customer', () => {
+    it('a new workspace has the profile lost reasons and exactly one walk-in customer', async () => {
+      const b = await business();
+      const reasons = (await http.get('/settings/lost-reasons', b.token).expect(200)).body
+        .data as Json[];
+      expect(reasons.map((r) => r.name)).toEqual(
+        expect.arrayContaining(['Price too high', 'Chose a competitor']),
+      );
+      const walkIns = await prisma().customer.findMany({
+        where: { workspaceId: b.workspaceId, isWalkIn: true },
+      });
+      expect(walkIns).toHaveLength(1);
+      expect(walkIns[0]?.fullName).toBe('Walk-in customer');
+
+      // applying the profile again changes nothing
+      await http.post('/settings/apply-profile/furniture', {}, b.token).expect(200);
+      expect((await http.get('/settings/lost-reasons', b.token)).body.data).toHaveLength(
+        reasons.length,
+      );
+      expect(
+        await prisma().customer.count({ where: { workspaceId: b.workspaceId, isWalkIn: true } }),
+      ).toBe(1);
+    });
+
+    it('adds, renames and deactivates reasons; reasons are never deleted and stay per workspace', async () => {
+      const a = await business();
+      const other = await business();
+      const created = await http
+        .post('/settings/lost-reasons', { name: 'Delivery too slow' }, a.token)
+        .expect(201);
+      expect(created.body.data).toMatchObject({ name: 'Delivery too slow', active: true });
+      await http.post('/settings/lost-reasons', { name: 'delivery TOO slow' }, a.token).expect(400);
+      await http
+        .patch(`/settings/lost-reasons/${created.body.data.id}`, { name: 'Delivery slow' }, a.token)
+        .expect(200);
+      await http
+        .patch(`/settings/lost-reasons/${created.body.data.id}`, { active: false }, a.token)
+        .expect(200);
+      const active = (await http.get('/settings/lost-reasons', a.token)).body.data as Json[];
+      expect(active.map((r) => r.name)).not.toContain('Delivery slow');
+      const all = (await http.get('/settings/lost-reasons?includeInactive=true', a.token)).body
+        .data as Json[];
+      expect(all.map((r) => r.name)).toContain('Delivery slow');
+      expect(
+        (
+          (await http.get('/settings/lost-reasons?includeInactive=true', other.token)).body
+            .data as Json[]
+        ).map((r) => r.name),
+      ).not.toContain('Delivery slow');
+      await http
+        .patch(`/settings/lost-reasons/${created.body.data.id}`, { name: 'x' }, other.token)
+        .expect(404);
+      const event = await prisma().auditEvent.findFirst({
+        where: { workspaceId: a.workspaceId, action: 'lost_reason.update' },
+      });
+      expect(event).not.toBeNull();
+    });
+  });
+
   describe('industry profiles', () => {
     it('lists the profiles and applies one again without harm', async () => {
       const b = await business();

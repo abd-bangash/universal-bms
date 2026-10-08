@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Authenticated } from '../../common/decorators/authenticated.decorator';
 import { CurrentUser, type AuthUser } from '../../common/decorators/current-user.decorator';
@@ -7,9 +7,12 @@ import { AuditService } from '../audit/audit.service';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { IndustryProfileService } from '../tenants/industry-profile.service';
 import {
+  CreateLostReasonDto,
   CreateTaxClassDto,
+  ListLostReasonsQuery,
   CreateUnitDto,
   ProfileKeyParam,
+  UpdateLostReasonDto,
   UpdateTaxClassDto,
   UpdateUnitDto,
 } from './dto/settings.dto';
@@ -102,5 +105,24 @@ export class SettingsController {
   @RequirePermission('workspace:configure')
   updateTaxClass(@Param('id') id: string, @Body() dto: UpdateTaxClassDto) {
     return this.reference.updateTaxClass(id, dto);
+  }
+
+  // Anyone who edits leads picks a reason when marking one lost, so the list is readable by any member.
+  @Get('lost-reasons')
+  @Authenticated()
+  lostReasons(@Query() query: ListLostReasonsQuery) {
+    return this.reference.listLostReasons(query.includeInactive);
+  }
+
+  @Post('lost-reasons')
+  @RequirePermission('workspace:configure')
+  createLostReason(@CurrentUser() user: AuthUser, @Body() dto: CreateLostReasonDto) {
+    return this.reference.createLostReason(user, dto);
+  }
+
+  @Patch('lost-reasons/:id')
+  @RequirePermission('workspace:configure')
+  updateLostReason(@Param('id') id: string, @Body() dto: UpdateLostReasonDto) {
+    return this.reference.updateLostReason(id, dto);
   }
 }

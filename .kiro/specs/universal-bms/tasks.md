@@ -197,7 +197,7 @@ How to read this file:
 
 ### Phase 3 — Customers and Leads `[R1 · Day 3]`
 
-- [ ] 23. Schema: CRM
+- [x] 23. Schema: CRM
   - Add `Customer`, `Lead`, `LostReason`, `TimelineEntry`; migration `crm` with `rollback.sql`; GIN on `phonesNormalized` and `customFields`; trigram indexes on names; partial unique index for one walk-in Customer per workspace
   - Workspace creation now creates the walk-in Customer
   - _Requirements: 8.1, 9.2, 12.10, 22.1, 22.2_

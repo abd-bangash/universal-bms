@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import {
   IsBoolean,
   IsEnum,
@@ -39,4 +40,21 @@ export class UpdateTaxClassDto {
 
 export class ProfileKeyParam {
   @IsString() @Matches(/^[a-z][a-z0-9_]*$/) key!: string;
+}
+
+export class CreateLostReasonDto {
+  @IsString() @IsNotEmpty() @MaxLength(80) name!: string;
+  @IsOptional() @IsBoolean() active?: boolean;
+}
+
+export class UpdateLostReasonDto {
+  @IsOptional() @IsString() @IsNotEmpty() @MaxLength(80) name?: string;
+  @IsOptional() @IsBoolean() active?: boolean;
+}
+
+export class ListLostReasonsQuery {
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) => value === 'true' || value === true)
+  @IsBoolean()
+  includeInactive?: boolean;
 }
