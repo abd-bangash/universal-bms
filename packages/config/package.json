@@ -1,0 +1,20 @@
+{
+  "name": "@bms/config",
+  "version": "0.0.0",
+  "private": true,
+  "files": [
+    "tsconfig.base.json",
+    "prettier.json",
+    "eslint.base.mjs"
+  ],
+  "exports": {
+    "./tsconfig.base.json": "./tsconfig.base.json",
+    "./prettier.json": "./prettier.json",
+    "./eslint": "./eslint.base.mjs"
+  },
+  "dependencies": {
+    "@eslint/js": "9.39.5",
+    "eslint": "9.39.5",
+    "typescript-eslint": "8.71.1"
+  }
+}

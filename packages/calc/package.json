@@ -1,0 +1,21 @@
+{
+  "name": "@bms/calc",
+  "version": "0.0.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "echo \"no tests yet in @bms/calc\""
+  },
+  "dependencies": {
+    "decimal.js": "10.6.0"
+  },
+  "devDependencies": {
+    "@bms/config": "workspace:*",
+    "@types/node": "22.20.5",
+    "typescript": "5.9.3"
+  }
+}
