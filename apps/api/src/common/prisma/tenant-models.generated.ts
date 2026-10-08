@@ -49,6 +49,13 @@ export const ALL_MODEL_NAMES: readonly string[] = [
   'Invoice',
   'Return',
   'ReturnLine',
+  'FinancialAccount',
+  'PaymentMethod',
+  'Payment',
+  'CustomerCredit',
+  'Receipt',
+  'ExpenseCategory',
+  'Expense',
 ];
 
 export const TENANT_MODEL_NAMES: readonly string[] = [
@@ -93,4 +100,11 @@ export const TENANT_MODEL_NAMES: readonly string[] = [
   'Invoice',
   'Return',
   'ReturnLine',
+  'FinancialAccount',
+  'PaymentMethod',
+  'Payment',
+  'CustomerCredit',
+  'Receipt',
+  'ExpenseCategory',
+  'Expense',
 ];

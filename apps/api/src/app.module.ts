@@ -9,6 +9,7 @@ import { RolesModule } from './modules/roles/roles.module';
 import { CatalogModule } from './modules/catalog/catalog.module';
 import { CrmModule } from './modules/crm/crm.module';
 import { DocumentsModule } from './modules/documents/documents.module';
+import { FinanceModule } from './modules/finance/finance.module';
 import { SalesModule } from './modules/sales/sales.module';
 import { FieldsModule } from './modules/fields/fields.module';
 import { NumberingModule } from './modules/numbering/numbering.module';
@@ -46,6 +47,7 @@ import { HealthModule } from './modules/health/health.module';
     NumberingModule,
     CatalogModule,
     CrmModule,
+    FinanceModule,
     SalesModule,
     DocumentsModule,
   ],

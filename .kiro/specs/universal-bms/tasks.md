@@ -316,7 +316,7 @@ How to read this file:
 
 ### Phase 5 — Payments and Finance `[R1 · Day 5]`
 
-- [ ] 39. Schema: finance
+- [x] 39. Schema: finance
   - Add `FinancialAccount`, `PaymentMethod`, `Payment`, `CustomerCredit`, `ExpenseCategory`, `Expense`, `Receipt`; migration `finance` with `rollback.sql`
   - Workspace creation now creates a cash account and default payment methods (cash, bank transfer, card, mobile money)
   - _Requirements: 13.1, 13.3, 40.1, 40.3, 22.1, 22.2_

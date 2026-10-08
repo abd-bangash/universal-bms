@@ -67,6 +67,13 @@ model Workspace {
   productionJobs      ProductionJob[]
   returns             Return[]
   returnLines         ReturnLine[]
+  financialAccounts   FinancialAccount[]
+  paymentMethods      PaymentMethod[]
+  payments            Payment[]
+  customerCredits     CustomerCredit[]
+  receipts            Receipt[]
+  expenseCategories   ExpenseCategory[]
+  expenses            Expense[]
 
   @@map("workspaces")
 }
@@ -844,40 +851,42 @@ model PriceListItem {
 // ═══ CRM (task 23) ═══════════════════════════════════════════════════════
 
 model Customer {
-  id               String          @id @default(cuid())
-  workspaceId      String          @map("workspace_id")
-  workspace        Workspace       @relation(fields: [workspaceId], references: [id])
-  fullName         String          @map("full_name")
+  id               String           @id @default(cuid())
+  workspaceId      String           @map("workspace_id")
+  workspace        Workspace        @relation(fields: [workspaceId], references: [id])
+  fullName         String           @map("full_name")
   phones           String[]
-  phonesNormalized String[]        @map("phones_normalized")
-  email            String?         @db.Citext
-  billingAddress   Json?           @map("billing_address")
-  shippingAddress  Json?           @map("shipping_address")
-  preferredChannel String?         @map("preferred_channel")
+  phonesNormalized String[]         @map("phones_normalized")
+  email            String?          @db.Citext
+  billingAddress   Json?            @map("billing_address")
+  shippingAddress  Json?            @map("shipping_address")
+  preferredChannel String?          @map("preferred_channel")
   notes            String?
   tags             String[]
   source           String?
   channel          String?
   campaign         String?
-  assignedToId     String?         @map("assigned_to_id")
-  assignedTo       User?           @relation("CustomerAssignee", fields: [assignedToId], references: [id])
-  priceListId      String?         @map("price_list_id")
-  priceList        PriceList?      @relation(fields: [priceListId], references: [id])
-  status           String          @default("ACTIVE")
-  isWalkIn         Boolean         @default(false) @map("is_walk_in")
-  mergedIntoId     String?         @map("merged_into_id")
-  mergedInto       Customer?       @relation("CustomerMerge", fields: [mergedIntoId], references: [id])
-  mergedFrom       Customer[]      @relation("CustomerMerge")
-  customFields     Json            @default("{}") @map("custom_fields")
-  version          Int             @default(1)
-  createdAt        DateTime        @default(now()) @map("created_at")
-  updatedAt        DateTime        @updatedAt @map("updated_at")
+  assignedToId     String?          @map("assigned_to_id")
+  assignedTo       User?            @relation("CustomerAssignee", fields: [assignedToId], references: [id])
+  priceListId      String?          @map("price_list_id")
+  priceList        PriceList?       @relation(fields: [priceListId], references: [id])
+  status           String           @default("ACTIVE")
+  isWalkIn         Boolean          @default(false) @map("is_walk_in")
+  mergedIntoId     String?          @map("merged_into_id")
+  mergedInto       Customer?        @relation("CustomerMerge", fields: [mergedIntoId], references: [id])
+  mergedFrom       Customer[]       @relation("CustomerMerge")
+  customFields     Json             @default("{}") @map("custom_fields")
+  version          Int              @default(1)
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
   leads            Lead[]
   timeline         TimelineEntry[]
   quotations       Quotation[]
   orders           Order[]
   invoices         Invoice[]
   returns          Return[]
+  payments         Payment[]
+  credits          CustomerCredit[]
 
   @@index([workspaceId, status])
   @@index([workspaceId, assignedToId])
@@ -1143,6 +1152,9 @@ model Order {
   invoices         Invoice[]
   productionJobs   ProductionJob[]
   returns          Return[]
+  payments         Payment[]
+  credits          CustomerCredit[]
+  receipts         Receipt[]
 
   @@unique([workspaceId, orderNumber])
   @@index([workspaceId, status, orderDate])
@@ -1268,6 +1280,7 @@ model Return {
   createdById  String?      @map("created_by_id")
   createdAt    DateTime     @default(now()) @map("created_at")
   lines        ReturnLine[]
+  payments     Payment[]
 
   @@unique([workspaceId, returnNumber])
   @@index([workspaceId, orderId])
@@ -1288,4 +1301,189 @@ model ReturnLine {
 
   @@index([workspaceId, returnId])
   @@map("return_lines")
+}
+
+// ═══ Finance (task 39) ═══════════════════════════════════════════════════
+
+enum PaymentType {
+  ORDER_PAYMENT
+  DEPOSIT
+  ADVANCE
+  CREDIT_APPLIED
+  REFUND
+
+  @@map("payment_type")
+}
+
+enum PaymentStatus {
+  PENDING_VERIFICATION
+  CONFIRMED
+  REJECTED
+  VOIDED
+
+  @@map("payment_status")
+}
+
+model FinancialAccount {
+  id              String          @id @default(cuid())
+  workspaceId     String          @map("workspace_id")
+  workspace       Workspace       @relation(fields: [workspaceId], references: [id])
+  /// CASH | BANK | MOBILE_WALLET | CARD_TERMINAL
+  type            String
+  name            String
+  bankName        String?         @map("bank_name")
+  accountTitle    String?         @map("account_title")
+  accountNumber   String?         @map("account_number")
+  branch          String?
+  showToCustomers Boolean         @default(false) @map("show_to_customers")
+  active          Boolean         @default(true)
+  createdAt       DateTime        @default(now()) @map("created_at")
+  methods         PaymentMethod[]
+  payments        Payment[]
+  expenses        Expense[]
+
+  @@unique([workspaceId, name])
+  @@map("financial_accounts")
+}
+
+model PaymentMethod {
+  id                String           @id @default(cuid())
+  workspaceId       String           @map("workspace_id")
+  workspace         Workspace        @relation(fields: [workspaceId], references: [id])
+  name              String
+  /// CASH | CARD | BANK_TRANSFER | MOBILE_MONEY | OTHER
+  type              String
+  accountId         String           @map("account_id")
+  account           FinancialAccount @relation(fields: [accountId], references: [id])
+  requiresReference Boolean          @default(false) @map("requires_reference")
+  active            Boolean          @default(true)
+  payments          Payment[]
+  expenses          Expense[]
+
+  @@unique([workspaceId, name])
+  @@map("payment_methods")
+}
+
+model Payment {
+  id              String            @id @default(cuid())
+  workspaceId     String            @map("workspace_id")
+  workspace       Workspace         @relation(fields: [workspaceId], references: [id])
+  paymentNumber   String            @map("payment_number")
+  type            PaymentType
+  status          PaymentStatus     @default(CONFIRMED)
+  orderId         String?           @map("order_id")
+  order           Order?            @relation(fields: [orderId], references: [id])
+  customerId      String?           @map("customer_id")
+  customer        Customer?         @relation(fields: [customerId], references: [id])
+  returnId        String?           @map("return_id")
+  return          Return?           @relation(fields: [returnId], references: [id])
+  /// Null for CREDIT_APPLIED, which moves no money.
+  paymentMethodId String?           @map("payment_method_id")
+  paymentMethod   PaymentMethod?    @relation(fields: [paymentMethodId], references: [id])
+  accountId       String?           @map("account_id")
+  account         FinancialAccount? @relation(fields: [accountId], references: [id])
+  /// Always positive; the direction is given by the type.
+  amount          Decimal           @db.Decimal(18, 4)
+  paidAt          DateTime          @default(now()) @map("paid_at")
+  referenceNumber String?           @map("reference_number")
+  proofFileId     String?           @map("proof_file_id")
+  note            String?
+  /// The POS session table arrives with task 50, which adds the foreign key.
+  posSessionId    String?           @map("pos_session_id")
+  recordedById    String?           @map("recorded_by_id")
+  confirmedById   String?           @map("confirmed_by_id")
+  confirmedAt     DateTime?         @map("confirmed_at")
+  rejectedReason  String?           @map("rejected_reason")
+  voidedById      String?           @map("voided_by_id")
+  voidedAt        DateTime?         @map("voided_at")
+  voidReason      String?           @map("void_reason")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  credits         CustomerCredit[]
+  receipts        Receipt[]
+
+  @@unique([workspaceId, paymentNumber])
+  @@index([workspaceId, orderId])
+  @@index([workspaceId, customerId])
+  @@index([workspaceId, status, paidAt])
+  @@map("payments")
+}
+
+/// A ledger: a customer's credit balance is the sum of `amount`.
+model CustomerCredit {
+  id          String    @id @default(cuid())
+  workspaceId String    @map("workspace_id")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  customerId  String    @map("customer_id")
+  customer    Customer  @relation(fields: [customerId], references: [id])
+  /// Signed.
+  amount      Decimal   @db.Decimal(18, 4)
+  /// ADVANCE | OVERPAYMENT | REFUND_TO_CREDIT | APPLIED | ADJUSTMENT
+  reason      String
+  paymentId   String?   @map("payment_id")
+  payment     Payment?  @relation(fields: [paymentId], references: [id])
+  orderId     String?   @map("order_id")
+  order       Order?    @relation(fields: [orderId], references: [id])
+  createdById String?   @map("created_by_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@index([workspaceId, customerId])
+  @@map("customer_credits")
+}
+
+model Receipt {
+  id            String    @id @default(cuid())
+  workspaceId   String    @map("workspace_id")
+  workspace     Workspace @relation(fields: [workspaceId], references: [id])
+  receiptNumber String    @map("receipt_number")
+  orderId       String    @map("order_id")
+  order         Order     @relation(fields: [orderId], references: [id])
+  paymentId     String?   @map("payment_id")
+  payment       Payment?  @relation(fields: [paymentId], references: [id])
+  /// SALE | PAYMENT | REFUND
+  type          String    @default("SALE")
+  issuedAt      DateTime  @default(now()) @map("issued_at")
+  /// The immutable snapshot the receipt is drawn from.
+  data          Json
+  reprintCount  Int       @default(0) @map("reprint_count")
+
+  @@unique([workspaceId, receiptNumber])
+  @@index([workspaceId, orderId])
+  @@map("receipts")
+}
+
+model ExpenseCategory {
+  id          String    @id @default(cuid())
+  workspaceId String    @map("workspace_id")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  name        String
+  active      Boolean   @default(true)
+  expenses    Expense[]
+
+  @@unique([workspaceId, name])
+  @@map("expense_categories")
+}
+
+model Expense {
+  id               String           @id @default(cuid())
+  workspaceId      String           @map("workspace_id")
+  workspace        Workspace        @relation(fields: [workspaceId], references: [id])
+  categoryId       String           @map("category_id")
+  category         ExpenseCategory  @relation(fields: [categoryId], references: [id])
+  amount           Decimal          @db.Decimal(18, 4)
+  expenseDate      DateTime         @map("expense_date")
+  paymentMethodId  String           @map("payment_method_id")
+  paymentMethod    PaymentMethod    @relation(fields: [paymentMethodId], references: [id])
+  accountId        String           @map("account_id")
+  account          FinancialAccount @relation(fields: [accountId], references: [id])
+  description      String?
+  attachmentFileId String?          @map("attachment_file_id")
+  /// POSTED | VOIDED
+  status           String           @default("POSTED")
+  voidReason       String?          @map("void_reason")
+  customFields     Json             @default("{}") @map("custom_fields")
+  recordedById     String?          @map("recorded_by_id")
+  createdAt        DateTime         @default(now()) @map("created_at")
+
+  @@index([workspaceId, expenseDate])
+  @@map("expenses")
 }

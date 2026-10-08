@@ -84,6 +84,36 @@ async function makeOrder(prisma: PrismaClient, workspaceId: string) {
   });
 }
 
+async function makeAccount(prisma: PrismaClient, workspaceId: string) {
+  return prisma.financialAccount.create({
+    data: { workspaceId, type: 'CASH', name: `Account ${rand()}` },
+  });
+}
+
+async function makeMethod(prisma: PrismaClient, workspaceId: string) {
+  const account = await makeAccount(prisma, workspaceId);
+  return prisma.paymentMethod.create({
+    data: { workspaceId, name: `Method ${rand()}`, type: 'CASH', accountId: account.id },
+  });
+}
+
+async function makePayment(prisma: PrismaClient, workspaceId: string) {
+  const order = await makeOrder(prisma, workspaceId);
+  const method = await makeMethod(prisma, workspaceId);
+  return prisma.payment.create({
+    data: {
+      workspaceId,
+      paymentNumber: `PAY-${rand()}`,
+      type: 'ORDER_PAYMENT',
+      orderId: order.id,
+      customerId: order.customerId,
+      paymentMethodId: method.id,
+      accountId: method.accountId,
+      amount: '10',
+    },
+  });
+}
+
 async function makeReturn(prisma: PrismaClient, workspaceId: string) {
   const order = await makeOrder(prisma, workspaceId);
   return prisma.return.create({
@@ -371,6 +401,52 @@ const factories: Record<string, TenantFactory> = {
           customerId: o.customerId,
           totalAmount: '10',
           data: {},
+        },
+      }),
+    );
+  },
+  FinancialAccount: async (p, ws) => byId(await makeAccount(p, ws)),
+  PaymentMethod: async (p, ws) => byId(await makeMethod(p, ws)),
+  Payment: async (p, ws) => byId(await makePayment(p, ws)),
+  CustomerCredit: async (p, ws) => {
+    const c = await makeCustomer(p, ws);
+    return byId(
+      await p.customerCredit.create({
+        data: { workspaceId: ws, customerId: c.id, amount: '10', reason: 'ADVANCE' },
+      }),
+    );
+  },
+  Receipt: async (p, ws) => {
+    const payment = await makePayment(p, ws);
+    return byId(
+      await p.receipt.create({
+        data: {
+          workspaceId: ws,
+          receiptNumber: `RCP-${rand()}`,
+          orderId: payment.orderId as string,
+          paymentId: payment.id,
+          type: 'PAYMENT',
+          data: {},
+        },
+      }),
+    );
+  },
+  ExpenseCategory: async (p, ws) =>
+    byId(await p.expenseCategory.create({ data: { workspaceId: ws, name: `Category ${rand()}` } })),
+  Expense: async (p, ws) => {
+    const method = await makeMethod(p, ws);
+    const category = await p.expenseCategory.create({
+      data: { workspaceId: ws, name: `Category ${rand()}` },
+    });
+    return byId(
+      await p.expense.create({
+        data: {
+          workspaceId: ws,
+          categoryId: category.id,
+          amount: '10',
+          expenseDate: new Date(),
+          paymentMethodId: method.id,
+          accountId: method.accountId,
         },
       }),
     );
