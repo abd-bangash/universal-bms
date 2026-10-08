@@ -54,7 +54,7 @@ How to read this file:
   - [x] 4.1 Property test — Property 1 (tenant isolation): generated for every tenant-scoped model as models are added; runs in CI from this task onward
     - _Requirements: 1.3, 1.4, 20.1, 53.4_
 
-- [ ] 5. Domain event bus and scheduler
+- [x] 5. Domain event bus and scheduler
   - `DomainEventBus` interface and the in-process implementation that dispatches after transaction commit (`design.md` D14); typed event names and payloads in `packages/types`
   - `@nestjs/schedule` set up; scheduler jobs set the workspace context per workspace they act on
   - _Requirements: 55.1, 21.5_

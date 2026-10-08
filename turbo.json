@@ -2,7 +2,10 @@
   "$schema": "https://turbo.build/schema.json",
   "agentGuidance": false,
   "tasks": {
-    "build": { "dependsOn": ["^build", "generate"], "outputs": ["dist/**", ".next/**", "!.next/cache/**"] },
+    "build": {
+      "dependsOn": ["^build", "generate"],
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+    },
     "dev": { "dependsOn": ["^build"], "cache": false, "persistent": true },
     "lint": { "dependsOn": ["^build", "generate"] },
     "generate": { "cache": false },
