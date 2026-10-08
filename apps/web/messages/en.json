@@ -118,7 +118,13 @@
     "FILE_TOO_LARGE": "That file is too large.",
     "STALE_VERSION": "Someone else changed this. Reload and try again.",
     "INTERNAL_ERROR": "Something went wrong on our side. Please try again.",
-    "unknown": "Something went wrong. Please try again."
+    "unknown": "Something went wrong. Please try again.",
+    "TRANSITION_NOT_ALLOWED": "That change is not allowed from the current status.",
+    "DEPOSIT_REQUIRED": "The required deposit has not been paid yet.",
+    "BALANCE_DUE": "This order still has a balance to pay.",
+    "IDEMPOTENCY_KEY_REUSED": "This request was already sent. Reload to see the result.",
+    "DISCOUNT_OVER_LIMIT": "That discount is more than your role allows.",
+    "PRODUCT_ARCHIVED": "A product on this document has been archived."
   },
   "table": {
     "searchLabel": "Search the list",
@@ -859,7 +865,9 @@
       "convertLinked": "Linked to an existing customer.",
       "createNewCustomer": "Create a new customer instead",
       "closed": "Closed {date}",
-      "history": "History"
+      "history": "History",
+      "createQuotation": "Create {quotation}",
+      "createOrder": "Create {order}"
     }
   },
   "tasks": {
@@ -897,5 +905,181 @@
     "failed": "Could not save the task.",
     "linkedCustomer": "Customer",
     "linkedLead": "Lead"
+  },
+  "sales": {
+    "lines": {
+      "heading": "Lines",
+      "empty": "No lines yet. Add a product or a custom line.",
+      "addProduct": "Add a product",
+      "searchPlaceholder": "Search by name, code, SKU or barcode",
+      "noResults": "No products found.",
+      "results": "Matching products",
+      "customLine": "Custom line",
+      "remove": "Remove line {n}",
+      "removeShort": "Remove",
+      "name": "Name",
+      "quantity": "Quantity",
+      "unitPrice": "Unit price",
+      "listPrice": "Catalog price {price}",
+      "discountType": "Discount",
+      "noDiscount": "No discount",
+      "percent": "Percent",
+      "amount": "Amount",
+      "discountValue": "Discount value",
+      "addCustom": "Add a custom line",
+      "orderDiscount": "Discount on the whole document",
+      "item": "Item",
+      "discount": "Discount",
+      "lineTotal": "Total"
+    },
+    "totals": {
+      "heading": "Totals",
+      "subtotal": "Subtotal",
+      "discount": "Discount",
+      "tax": "Tax",
+      "rounding": "Rounding",
+      "total": "Total"
+    },
+    "customer": {
+      "label": "Customer",
+      "change": "Change",
+      "placeholder": "Search by name, phone or email",
+      "results": "Matching customers"
+    },
+    "quotation": {
+      "number": "Number",
+      "statusLabel": "Status",
+      "total": "Total",
+      "validUntil": "Valid until",
+      "created": "Created",
+      "filterStatus": "Status",
+      "new": "New {quotation}",
+      "caption": "Quotations",
+      "empty": "No quotations yet",
+      "emptyDescription": "Create one for a customer from the catalog or with custom lines.",
+      "status": {
+        "DRAFT": "Draft",
+        "SENT": "Sent",
+        "ACCEPTED": "Accepted",
+        "REJECTED": "Rejected",
+        "EXPIRED": "Expired",
+        "CONVERTED": "Converted"
+      },
+      "form": {
+        "back": "Back to the list",
+        "title": "New {quotation}",
+        "needCustomer": "Choose a customer first.",
+        "details": "Details",
+        "validUntil": "Valid until",
+        "notes": "Notes",
+        "terms": "Terms",
+        "saving": "Saving…",
+        "save": "Save changes",
+        "create": "Create"
+      },
+      "detail": {
+        "back": "Back to the list",
+        "validUntil": "valid until {date}",
+        "rejectedBecause": "Rejected: {reason}",
+        "acceptedOn": "Accepted on {date} ({via})",
+        "via": {
+          "IN_PERSON": "in person",
+          "MESSAGE": "by message",
+          "PHONE": "by phone"
+        },
+        "openPdf": "Open PDF",
+        "cancelEdit": "Stop editing",
+        "edit": "Edit",
+        "resend": "Send again",
+        "send": "Mark as sent",
+        "accept": "Record acceptance",
+        "reject": "Reject",
+        "convert": "Convert to {order}",
+        "notes": "Notes",
+        "terms": "Terms",
+        "acceptTitle": "Record that the customer accepted",
+        "acceptVia": "How did they accept?",
+        "proof": "Attach proof (optional)",
+        "recordAcceptance": "Record acceptance",
+        "rejectTitle": "Reject this quotation",
+        "rejectReason": "Reason",
+        "confirmReject": "Reject"
+      }
+    },
+    "order": {
+      "number": "Number",
+      "statusLabel": "Status",
+      "paymentLabel": "Payment",
+      "total": "Total",
+      "balance": "Balance",
+      "date": "Date",
+      "filterStatus": "Status",
+      "filterPayment": "Payment",
+      "new": "New {order}",
+      "caption": "Orders",
+      "empty": "No orders yet",
+      "emptyDescription": "Create one, or convert an accepted quotation.",
+      "payment": {
+        "UNPAID": "Unpaid",
+        "DEPOSIT_PAID": "Deposit paid",
+        "PARTIALLY_PAID": "Partly paid",
+        "PAID": "Paid",
+        "OVERPAID": "Overpaid",
+        "REFUNDED": "Refunded"
+      },
+      "form": {
+        "back": "Back to the list",
+        "title": "New {order}",
+        "needCustomer": "Choose a customer first.",
+        "details": "Details",
+        "source": "Source",
+        "sources": {
+          "MESSAGING": "Messaging",
+          "SOCIAL": "Social media",
+          "STORE": "Store",
+          "WEBSITE": "Website",
+          "MANUAL": "Manual"
+        },
+        "notes": "Notes",
+        "saving": "Saving…",
+        "save": "Save lines",
+        "create": "Create"
+      },
+      "fulfilment": {
+        "heading": "Delivery or pickup",
+        "saved": "Saved.",
+        "method": "Method",
+        "scheduledAt": "Scheduled for",
+        "address": "Address",
+        "city": "City",
+        "receiver": "Received by",
+        "save": "Save",
+        "PICKUP": "Pickup",
+        "DELIVERY": "Delivery"
+      },
+      "detail": {
+        "back": "Back to the list",
+        "fromQuotation": "from quotation",
+        "cancelledBecause": "Cancelled: {reason}",
+        "awaitingApproval": "This change needs an approval and has been requested.",
+        "moveTo": "Move to",
+        "total": "Total",
+        "paid": "Paid",
+        "balance": "Balance due",
+        "depositRequired": "Deposit required",
+        "cancelEdit": "Stop editing",
+        "editLines": "Edit lines",
+        "documents": "Documents",
+        "confirmationPdf": "Order confirmation (PDF)",
+        "invoicePdf": "Invoice {number} (PDF)",
+        "issueInvoice": "Issue an invoice",
+        "payments": "Payments",
+        "paymentsSoon": "Payments are recorded here once the finance screens are available.",
+        "statusHistory": "Status history",
+        "cancelTitle": "Cancel this order",
+        "cancelReason": "Reason",
+        "confirmCancel": "Cancel the order"
+      }
+    }
   }
 }

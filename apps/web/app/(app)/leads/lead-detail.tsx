@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { NotesPanel } from '@/components/crm/notes-panel';
@@ -24,6 +25,7 @@ import {
   type PipelineColumn,
 } from '@/lib/hooks/use-crm';
 import { usePermission, useWorkspaceLocale } from '@/lib/session';
+import { useTerminology } from '@/lib/terminology';
 import { LeadForm } from './lead-form';
 import { useLeadMove } from './lead-move';
 
@@ -41,6 +43,10 @@ export function LeadDetail({ leadId }: { leadId: string }) {
   const queryClient = useQueryClient();
   const canEdit = usePermission('lead:edit');
   const canAssign = usePermission('lead:assign');
+  const canQuote = usePermission('quotation:create');
+  const canOrder = usePermission('order:create');
+  const term = useTerminology();
+  const router = useRouter();
   const canSeeStaff = usePermission('user:view');
   const staff = useStaffQuery(canAssign && canSeeStaff);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -82,6 +88,19 @@ export function LeadDetail({ leadId }: { leadId: string }) {
       await api.post(`/leads/${leadId}/assign`, { assignedToId: assignedToId || null });
       await queryClient.invalidateQueries({ queryKey: ['lead'] });
       await queryClient.invalidateQueries({ queryKey: ['timeline'] });
+    } catch (e) {
+      setActionError(message(e));
+    }
+  }
+
+  /** Turns the lead into a draft quotation or order, pre-filled from what it asked for (Requirement 9.4). */
+  async function convertTo(target: 'QUOTATION' | 'ORDER') {
+    setActionError(null);
+    try {
+      const result = await api.post<{ document: { id: string } }>(`/leads/${leadId}/convert`, {
+        target,
+      });
+      router.push(`/${target === 'QUOTATION' ? 'quotations' : 'orders'}/${result.document.id}`);
     } catch (e) {
       setActionError(message(e));
     }
@@ -193,6 +212,29 @@ export function LeadDetail({ leadId }: { leadId: string }) {
             </div>
           )}
         </section>
+      ) : null}
+
+      {canEdit && canQuote ? (
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => void convertTo('QUOTATION')}
+          >
+            {t('createQuotation', { quotation: term('quotation').toLowerCase() })}
+          </Button>
+          {canOrder ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => void convertTo('ORDER')}
+            >
+              {t('createOrder', { order: term('order').toLowerCase() })}
+            </Button>
+          ) : null}
+        </div>
       ) : null}
 
       <LeadForm key={`${l.id}-${l.version}`} lead={l} />

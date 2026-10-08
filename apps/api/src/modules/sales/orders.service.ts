@@ -76,14 +76,21 @@ export class OrdersService {
     return order;
   }
 
-  private async full(user: AuthUser, id: string): Promise<OrderDto> {
+  private async full(
+    user: AuthUser,
+    id: string,
+  ): Promise<OrderDto & { allowedTransitions: unknown[] }> {
     const order = await this.prisma.scoped.order.findFirst({
       where: { AND: [{ id }, this.scope(user)] },
       include: { items: { orderBy: { lineNo: 'asc' } }, salespeople: true },
     });
     if (!order) throw new NotFoundAppException();
     const { items, salespeople, ...rest } = order;
-    return toOrderDto(rest as Order, { items, salespeople, canViewCost: this.canViewCost(user) });
+    const workflow = await this.workflows.get('ORDER');
+    return {
+      ...toOrderDto(rest as Order, { items, salespeople, canViewCost: this.canViewCost(user) }),
+      allowedTransitions: this.workflows.allowedTransitions(workflow, order.status),
+    };
   }
 
   // ── reads ───────────────────────────────────────────────────────────────────────────────
@@ -115,7 +122,7 @@ export class OrdersService {
     ).map((o) => toOrderDto(o));
   }
 
-  get(user: AuthUser, id: string): Promise<OrderDto> {
+  get(user: AuthUser, id: string) {
     return this.full(user, id);
   }
 
@@ -278,7 +285,7 @@ export class OrdersService {
             existing: existing.customFields as Record<string, unknown>,
           });
     const fulfilment = this.fulfilmentData(dto);
-    const before = await this.full(user, id);
+    const before = toOrderDto(existing);
 
     await this.prisma.scoped.$transaction(async (tx) => {
       const result = await tx.order.updateMany({
@@ -380,11 +387,7 @@ export class OrdersService {
 
   // ── status (Requirement 11.2, 39.5, 39.10) ──────────────────────────────────────────────
 
-  async changeStatus(
-    user: AuthUser,
-    id: string,
-    dto: ChangeOrderStatusDto,
-  ): Promise<{ order: OrderDto; pendingApproval: boolean; approvalRequestId?: string }> {
+  async changeStatus(user: AuthUser, id: string, dto: ChangeOrderStatusDto) {
     const before = await this.row(user, id);
     const result = await this.workflows.transition('ORDER', id, dto.status, {
       note: dto.note,
@@ -447,7 +450,7 @@ export class OrdersService {
       });
     }
     if (dto.deliveredById) await this.lines.assertAssignee(dto.deliveredById);
-    const before = await this.full(user, id);
+    const before = toOrderDto(existing);
     await this.prisma.scoped.$transaction(async (tx) => {
       await tx.order.update({ where: { id }, data: { ...data, version: { increment: 1 } } });
       const after = await tx.order.findFirstOrThrow({ where: { id } });

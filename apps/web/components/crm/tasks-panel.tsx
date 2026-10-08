@@ -37,7 +37,7 @@ export function TaskDialog({
 }: {
   open: boolean;
   onClose: () => void;
-  entity?: { entityType: 'CUSTOMER' | 'LEAD'; entityId: string };
+  entity?: { entityType: 'CUSTOMER' | 'LEAD' | 'ORDER' | 'QUOTATION'; entityId: string };
   onSaved: () => void;
 }) {
   const t = useTranslations('tasks');
@@ -107,7 +107,7 @@ export function TasksPanel({
   entityType,
   entityId,
 }: {
-  entityType: 'CUSTOMER' | 'LEAD';
+  entityType: 'CUSTOMER' | 'LEAD' | 'ORDER' | 'QUOTATION';
   entityId: string;
 }) {
   const t = useTranslations('crm.tasksPanel');

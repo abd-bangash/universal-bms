@@ -79,7 +79,7 @@ export const NAVIGATION: readonly NavigationEntry[] = [
     label: { term: 'quotation' },
     area: 'sales',
     permissions: ['quotation:view'],
-    available: false,
+    available: true,
   },
   {
     key: 'orders',
@@ -87,7 +87,7 @@ export const NAVIGATION: readonly NavigationEntry[] = [
     label: { term: 'order' },
     area: 'sales',
     permissions: ['order:view'],
-    available: false,
+    available: true,
   },
   {
     key: 'pos',

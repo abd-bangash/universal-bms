@@ -304,7 +304,7 @@ How to read this file:
   - [x] 36.1 Unit tests: rendering the same snapshot twice produces the same text content; invoice cannot be modified after issue
     - _Requirements: 29.5, 29.6_
 
-- [ ] 37. Sales screens
+- [x] 37. Sales screens
   - `/quotations` list, `/quotations/new` and `/quotations/[id]` with the shared line editor (product picker, custom line, per-line `DynamicFields`, reference image upload, live totals from `packages/calc`), send, accept, reject, convert, open PDF
   - `/orders` list with status and payment-status filters; `/orders/[id]` with status control showing only allowed transitions, status timeline, lines, fulfilment panel, payments panel (wired in task 43), documents, notes and tasks
   - _Requirements: 10.1, 11.1, 11.3, 39.2, 39.9, 49.4, 49.5_

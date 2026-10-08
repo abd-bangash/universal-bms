@@ -30,7 +30,7 @@ export function NotesPanel({
   canWrite,
   onAdded,
 }: {
-  entityType: 'CUSTOMER' | 'LEAD';
+  entityType: 'CUSTOMER' | 'LEAD' | 'ORDER' | 'QUOTATION';
   entityId: string;
   canWrite: boolean;
   onAdded?: () => void;
