@@ -1,0 +1,1487 @@
+{
+  "key": "furniture",
+  "name": "Furniture",
+  "terminology": {
+    "customer": {
+      "singular": "Customer",
+      "plural": "Customers"
+    },
+    "lead": {
+      "singular": "Lead",
+      "plural": "Leads"
+    },
+    "order": {
+      "singular": "Order",
+      "plural": "Orders"
+    },
+    "quotation": {
+      "singular": "Quotation",
+      "plural": "Quotations"
+    },
+    "product": {
+      "singular": "Product",
+      "plural": "Products"
+    },
+    "variant": {
+      "singular": "Variant",
+      "plural": "Variants"
+    },
+    "salesperson": {
+      "singular": "Salesperson",
+      "plural": "Salespeople"
+    },
+    "supplier": {
+      "singular": "Supplier",
+      "plural": "Suppliers"
+    },
+    "purchaseOrder": {
+      "singular": "Purchase Order",
+      "plural": "Purchase Orders"
+    },
+    "location": {
+      "singular": "Location",
+      "plural": "Locations"
+    },
+    "productionJob": {
+      "singular": "Workshop Job",
+      "plural": "Workshop Jobs"
+    }
+  },
+  "modules": {
+    "pos": true,
+    "purchasing": true,
+    "commissions": true,
+    "messaging": true,
+    "ai": true,
+    "automation": false,
+    "production": true,
+    "priceLists": false,
+    "multiLocation": false
+  },
+  "configDefaults": {
+    "sales": {
+      "requiredDepositPercent": 50
+    },
+    "documents": {
+      "quotationValidityDays": 14
+    }
+  },
+  "fieldDefinitions": [
+    {
+      "key": "size_type",
+      "label": "Size type",
+      "type": "DROPDOWN",
+      "options": [
+        {
+          "key": "standard",
+          "label": "Standard"
+        },
+        {
+          "key": "custom",
+          "label": "Custom"
+        }
+      ],
+      "required": false,
+      "entityType": "ORDER_ITEM",
+      "sortOrder": 0
+    },
+    {
+      "key": "length",
+      "label": "Length",
+      "type": "MEASUREMENT",
+      "unitDimension": "length",
+      "defaultUnit": "ft",
+      "visibleWhen": {
+        "source": "field",
+        "key": "size_type",
+        "op": "eq",
+        "value": "custom"
+      },
+      "entityType": "ORDER_ITEM",
+      "sortOrder": 10
+    },
+    {
+      "key": "width",
+      "label": "Width",
+      "type": "MEASUREMENT",
+      "unitDimension": "length",
+      "defaultUnit": "ft",
+      "visibleWhen": {
+        "source": "field",
+        "key": "size_type",
+        "op": "eq",
+        "value": "custom"
+      },
+      "entityType": "ORDER_ITEM",
+      "sortOrder": 20
+    },
+    {
+      "key": "height",
+      "label": "Height",
+      "type": "MEASUREMENT",
+      "unitDimension": "length",
+      "defaultUnit": "ft",
+      "visibleWhen": {
+        "source": "field",
+        "key": "size_type",
+        "op": "eq",
+        "value": "custom"
+      },
+      "entityType": "ORDER_ITEM",
+      "sortOrder": 30
+    },
+    {
+      "key": "area",
+      "label": "Area",
+      "type": "MEASUREMENT",
+      "unitDimension": "area",
+      "defaultUnit": "ft²",
+      "entityType": "ORDER_ITEM",
+      "sortOrder": 40
+    },
+    {
+      "key": "material",
+      "label": "Material",
+      "type": "DROPDOWN",
+      "options": [
+        {
+          "key": "wood",
+          "label": "Wood"
+        },
+        {
+          "key": "leather",
+          "label": "Leather"
+        },
+        {
+          "key": "fabric",
+          "label": "Fabric"
+        },
+        {
+          "key": "metal",
+          "label": "Metal"
+        },
+        {
+          "key": "glass",
+          "label": "Glass"
+        },
+        {
+          "key": "marble",
+          "label": "Marble"
+        },
+        {
+          "key": "mdf",
+          "label": "MDF"
+        }
+      ],
+      "entityType": "ORDER_ITEM",
+      "sortOrder": 50
+    },
+    {
+      "key": "fabric",
+      "label": "Fabric",
+      "type": "TEXT",
+      "entityType": "ORDER_ITEM",
+      "sortOrder": 60
+    },
+    {
+      "key": "wood_type",
+      "label": "Wood type",
+      "type": "DROPDOWN",
+      "options": [
+        {
+          "key": "teak",
+          "label": "Teak"
+        },
+        {
+          "key": "sheesham",
+          "label": "Sheesham"
+        },
+        {
+          "key": "oak",
+          "label": "Oak"
+        },
+        {
+          "key": "walnut",
+          "label": "Walnut"
+        },
+        {
+          "key": "pine",
+          "label": "Pine"
+        },
+        {
+          "key": "mango",
+          "label": "Mango"
+        },
+        {
+          "key": "deodar",
+          "label": "Deodar"
+        }
+      ],
+      "entityType": "ORDER_ITEM",
+      "sortOrder": 70
+    },
+    {
+      "key": "color",
+      "label": "Colour",
+      "type": "TEXT",
+      "entityType": "ORDER_ITEM",
+      "sortOrder": 80
+    },
+    {
+      "key": "design",
+      "label": "Design",
+      "type": "TEXT",
+      "entityType": "ORDER_ITEM",
+      "sortOrder": 90
+    },
+    {
+      "key": "reference_image",
+      "label": "Reference image",
+      "type": "IMAGE",
+      "entityType": "ORDER_ITEM",
+      "sortOrder": 100
+    },
+    {
+      "key": "customization_notes",
+      "label": "Customisation notes",
+      "type": "TEXT",
+      "entityType": "ORDER_ITEM",
+      "sortOrder": 110
+    },
+    {
+      "key": "estimated_production_days",
+      "label": "Estimated production days",
+      "type": "NUMBER",
+      "entityType": "ORDER_ITEM",
+      "sortOrder": 120
+    },
+    {
+      "key": "size_type",
+      "label": "Size type",
+      "type": "DROPDOWN",
+      "options": [
+        {
+          "key": "standard",
+          "label": "Standard"
+        },
+        {
+          "key": "custom",
+          "label": "Custom"
+        }
+      ],
+      "required": false,
+      "entityType": "QUOTATION_ITEM",
+      "sortOrder": 0
+    },
+    {
+      "key": "length",
+      "label": "Length",
+      "type": "MEASUREMENT",
+      "unitDimension": "length",
+      "defaultUnit": "ft",
+      "visibleWhen": {
+        "source": "field",
+        "key": "size_type",
+        "op": "eq",
+        "value": "custom"
+      },
+      "entityType": "QUOTATION_ITEM",
+      "sortOrder": 10
+    },
+    {
+      "key": "width",
+      "label": "Width",
+      "type": "MEASUREMENT",
+      "unitDimension": "length",
+      "defaultUnit": "ft",
+      "visibleWhen": {
+        "source": "field",
+        "key": "size_type",
+        "op": "eq",
+        "value": "custom"
+      },
+      "entityType": "QUOTATION_ITEM",
+      "sortOrder": 20
+    },
+    {
+      "key": "height",
+      "label": "Height",
+      "type": "MEASUREMENT",
+      "unitDimension": "length",
+      "defaultUnit": "ft",
+      "visibleWhen": {
+        "source": "field",
+        "key": "size_type",
+        "op": "eq",
+        "value": "custom"
+      },
+      "entityType": "QUOTATION_ITEM",
+      "sortOrder": 30
+    },
+    {
+      "key": "area",
+      "label": "Area",
+      "type": "MEASUREMENT",
+      "unitDimension": "area",
+      "defaultUnit": "ft²",
+      "entityType": "QUOTATION_ITEM",
+      "sortOrder": 40
+    },
+    {
+      "key": "material",
+      "label": "Material",
+      "type": "DROPDOWN",
+      "options": [
+        {
+          "key": "wood",
+          "label": "Wood"
+        },
+        {
+          "key": "leather",
+          "label": "Leather"
+        },
+        {
+          "key": "fabric",
+          "label": "Fabric"
+        },
+        {
+          "key": "metal",
+          "label": "Metal"
+        },
+        {
+          "key": "glass",
+          "label": "Glass"
+        },
+        {
+          "key": "marble",
+          "label": "Marble"
+        },
+        {
+          "key": "mdf",
+          "label": "MDF"
+        }
+      ],
+      "entityType": "QUOTATION_ITEM",
+      "sortOrder": 50
+    },
+    {
+      "key": "fabric",
+      "label": "Fabric",
+      "type": "TEXT",
+      "entityType": "QUOTATION_ITEM",
+      "sortOrder": 60
+    },
+    {
+      "key": "wood_type",
+      "label": "Wood type",
+      "type": "DROPDOWN",
+      "options": [
+        {
+          "key": "teak",
+          "label": "Teak"
+        },
+        {
+          "key": "sheesham",
+          "label": "Sheesham"
+        },
+        {
+          "key": "oak",
+          "label": "Oak"
+        },
+        {
+          "key": "walnut",
+          "label": "Walnut"
+        },
+        {
+          "key": "pine",
+          "label": "Pine"
+        },
+        {
+          "key": "mango",
+          "label": "Mango"
+        },
+        {
+          "key": "deodar",
+          "label": "Deodar"
+        }
+      ],
+      "entityType": "QUOTATION_ITEM",
+      "sortOrder": 70
+    },
+    {
+      "key": "color",
+      "label": "Colour",
+      "type": "TEXT",
+      "entityType": "QUOTATION_ITEM",
+      "sortOrder": 80
+    },
+    {
+      "key": "design",
+      "label": "Design",
+      "type": "TEXT",
+      "entityType": "QUOTATION_ITEM",
+      "sortOrder": 90
+    },
+    {
+      "key": "reference_image",
+      "label": "Reference image",
+      "type": "IMAGE",
+      "entityType": "QUOTATION_ITEM",
+      "sortOrder": 100
+    },
+    {
+      "key": "customization_notes",
+      "label": "Customisation notes",
+      "type": "TEXT",
+      "entityType": "QUOTATION_ITEM",
+      "sortOrder": 110
+    },
+    {
+      "key": "estimated_production_days",
+      "label": "Estimated production days",
+      "type": "NUMBER",
+      "entityType": "QUOTATION_ITEM",
+      "sortOrder": 120
+    },
+    {
+      "key": "size_type",
+      "label": "Size type",
+      "type": "DROPDOWN",
+      "options": [
+        {
+          "key": "standard",
+          "label": "Standard"
+        },
+        {
+          "key": "custom",
+          "label": "Custom"
+        }
+      ],
+      "required": false,
+      "entityType": "LEAD",
+      "sortOrder": 0
+    },
+    {
+      "key": "length",
+      "label": "Length",
+      "type": "MEASUREMENT",
+      "unitDimension": "length",
+      "defaultUnit": "ft",
+      "visibleWhen": {
+        "source": "field",
+        "key": "size_type",
+        "op": "eq",
+        "value": "custom"
+      },
+      "entityType": "LEAD",
+      "sortOrder": 10
+    },
+    {
+      "key": "width",
+      "label": "Width",
+      "type": "MEASUREMENT",
+      "unitDimension": "length",
+      "defaultUnit": "ft",
+      "visibleWhen": {
+        "source": "field",
+        "key": "size_type",
+        "op": "eq",
+        "value": "custom"
+      },
+      "entityType": "LEAD",
+      "sortOrder": 20
+    },
+    {
+      "key": "height",
+      "label": "Height",
+      "type": "MEASUREMENT",
+      "unitDimension": "length",
+      "defaultUnit": "ft",
+      "visibleWhen": {
+        "source": "field",
+        "key": "size_type",
+        "op": "eq",
+        "value": "custom"
+      },
+      "entityType": "LEAD",
+      "sortOrder": 30
+    },
+    {
+      "key": "area",
+      "label": "Area",
+      "type": "MEASUREMENT",
+      "unitDimension": "area",
+      "defaultUnit": "ft²",
+      "entityType": "LEAD",
+      "sortOrder": 40
+    },
+    {
+      "key": "material",
+      "label": "Material",
+      "type": "DROPDOWN",
+      "options": [
+        {
+          "key": "wood",
+          "label": "Wood"
+        },
+        {
+          "key": "leather",
+          "label": "Leather"
+        },
+        {
+          "key": "fabric",
+          "label": "Fabric"
+        },
+        {
+          "key": "metal",
+          "label": "Metal"
+        },
+        {
+          "key": "glass",
+          "label": "Glass"
+        },
+        {
+          "key": "marble",
+          "label": "Marble"
+        },
+        {
+          "key": "mdf",
+          "label": "MDF"
+        }
+      ],
+      "entityType": "LEAD",
+      "sortOrder": 50
+    },
+    {
+      "key": "fabric",
+      "label": "Fabric",
+      "type": "TEXT",
+      "entityType": "LEAD",
+      "sortOrder": 60
+    },
+    {
+      "key": "wood_type",
+      "label": "Wood type",
+      "type": "DROPDOWN",
+      "options": [
+        {
+          "key": "teak",
+          "label": "Teak"
+        },
+        {
+          "key": "sheesham",
+          "label": "Sheesham"
+        },
+        {
+          "key": "oak",
+          "label": "Oak"
+        },
+        {
+          "key": "walnut",
+          "label": "Walnut"
+        },
+        {
+          "key": "pine",
+          "label": "Pine"
+        },
+        {
+          "key": "mango",
+          "label": "Mango"
+        },
+        {
+          "key": "deodar",
+          "label": "Deodar"
+        }
+      ],
+      "entityType": "LEAD",
+      "sortOrder": 70
+    },
+    {
+      "key": "color",
+      "label": "Colour",
+      "type": "TEXT",
+      "entityType": "LEAD",
+      "sortOrder": 80
+    },
+    {
+      "key": "design",
+      "label": "Design",
+      "type": "TEXT",
+      "entityType": "LEAD",
+      "sortOrder": 90
+    },
+    {
+      "key": "reference_image",
+      "label": "Reference image",
+      "type": "IMAGE",
+      "entityType": "LEAD",
+      "sortOrder": 100
+    },
+    {
+      "key": "customization_notes",
+      "label": "Customisation notes",
+      "type": "TEXT",
+      "entityType": "LEAD",
+      "sortOrder": 110
+    },
+    {
+      "key": "estimated_production_days",
+      "label": "Estimated production days",
+      "type": "NUMBER",
+      "entityType": "LEAD",
+      "sortOrder": 120
+    },
+    {
+      "key": "width",
+      "label": "Width",
+      "type": "MEASUREMENT",
+      "unitDimension": "length",
+      "defaultUnit": "ft",
+      "entityType": "PRODUCT",
+      "sortOrder": 0
+    },
+    {
+      "key": "depth",
+      "label": "Depth",
+      "type": "MEASUREMENT",
+      "unitDimension": "length",
+      "defaultUnit": "ft",
+      "entityType": "PRODUCT",
+      "sortOrder": 10
+    },
+    {
+      "key": "height",
+      "label": "Height",
+      "type": "MEASUREMENT",
+      "unitDimension": "length",
+      "defaultUnit": "ft",
+      "entityType": "PRODUCT",
+      "sortOrder": 20
+    },
+    {
+      "key": "material",
+      "label": "Material",
+      "type": "DROPDOWN",
+      "options": [
+        {
+          "key": "wood",
+          "label": "Wood"
+        },
+        {
+          "key": "leather",
+          "label": "Leather"
+        },
+        {
+          "key": "fabric",
+          "label": "Fabric"
+        },
+        {
+          "key": "metal",
+          "label": "Metal"
+        },
+        {
+          "key": "glass",
+          "label": "Glass"
+        },
+        {
+          "key": "marble",
+          "label": "Marble"
+        },
+        {
+          "key": "mdf",
+          "label": "MDF"
+        }
+      ],
+      "entityType": "PRODUCT",
+      "sortOrder": 30
+    },
+    {
+      "key": "color",
+      "label": "Colour",
+      "type": "TEXT",
+      "entityType": "PRODUCT",
+      "sortOrder": 40
+    },
+    {
+      "key": "finish",
+      "label": "Finish",
+      "type": "DROPDOWN",
+      "options": [
+        {
+          "key": "matte",
+          "label": "Matte"
+        },
+        {
+          "key": "gloss",
+          "label": "Gloss"
+        },
+        {
+          "key": "natural",
+          "label": "Natural"
+        },
+        {
+          "key": "polished",
+          "label": "Polished"
+        },
+        {
+          "key": "lacquer",
+          "label": "Lacquer"
+        },
+        {
+          "key": "upholstered",
+          "label": "Upholstered"
+        }
+      ],
+      "entityType": "PRODUCT",
+      "sortOrder": 50
+    },
+    {
+      "key": "color",
+      "label": "Colour",
+      "type": "DROPDOWN",
+      "options": [
+        {
+          "key": "brown",
+          "label": "Brown"
+        },
+        {
+          "key": "black",
+          "label": "Black"
+        },
+        {
+          "key": "grey",
+          "label": "Grey"
+        },
+        {
+          "key": "beige",
+          "label": "Beige"
+        },
+        {
+          "key": "white",
+          "label": "White"
+        },
+        {
+          "key": "blue",
+          "label": "Blue"
+        },
+        {
+          "key": "green",
+          "label": "Green"
+        }
+      ],
+      "isVariantAxis": true,
+      "entityType": "VARIANT",
+      "sortOrder": 0
+    },
+    {
+      "key": "material",
+      "label": "Material",
+      "type": "DROPDOWN",
+      "options": [
+        {
+          "key": "wood",
+          "label": "Wood"
+        },
+        {
+          "key": "leather",
+          "label": "Leather"
+        },
+        {
+          "key": "fabric",
+          "label": "Fabric"
+        }
+      ],
+      "isVariantAxis": true,
+      "entityType": "VARIANT",
+      "sortOrder": 10
+    }
+  ],
+  "workflows": [
+    {
+      "entityType": "LEAD",
+      "name": "Lead pipeline",
+      "states": [
+        {
+          "key": "new",
+          "label": "New",
+          "color": "#3b82f6",
+          "category": "OPEN",
+          "isInitial": true,
+          "systemRole": "NEW"
+        },
+        {
+          "key": "contacted",
+          "label": "Contacted",
+          "color": "#6366f1",
+          "category": "IN_PROGRESS",
+          "isInitial": false
+        },
+        {
+          "key": "qualified",
+          "label": "Qualified",
+          "color": "#8b5cf6",
+          "category": "IN_PROGRESS",
+          "isInitial": false
+        },
+        {
+          "key": "quoted",
+          "label": "Quoted",
+          "color": "#f59e0b",
+          "category": "IN_PROGRESS",
+          "isInitial": false
+        },
+        {
+          "key": "negotiation",
+          "label": "Negotiation",
+          "color": "#f97316",
+          "category": "IN_PROGRESS",
+          "isInitial": false
+        },
+        {
+          "key": "won",
+          "label": "Won",
+          "color": "#16a34a",
+          "category": "DONE",
+          "isInitial": false,
+          "systemRole": "WON"
+        },
+        {
+          "key": "lost",
+          "label": "Lost",
+          "color": "#dc2626",
+          "category": "CANCELLED",
+          "isInitial": false,
+          "systemRole": "LOST"
+        }
+      ],
+      "transitions": [
+        {
+          "from": "new",
+          "to": "contacted"
+        },
+        {
+          "from": "new",
+          "to": "qualified"
+        },
+        {
+          "from": "new",
+          "to": "quoted"
+        },
+        {
+          "from": "new",
+          "to": "negotiation"
+        },
+        {
+          "from": "contacted",
+          "to": "new"
+        },
+        {
+          "from": "contacted",
+          "to": "qualified"
+        },
+        {
+          "from": "contacted",
+          "to": "quoted"
+        },
+        {
+          "from": "contacted",
+          "to": "negotiation"
+        },
+        {
+          "from": "qualified",
+          "to": "new"
+        },
+        {
+          "from": "qualified",
+          "to": "contacted"
+        },
+        {
+          "from": "qualified",
+          "to": "quoted"
+        },
+        {
+          "from": "qualified",
+          "to": "negotiation"
+        },
+        {
+          "from": "quoted",
+          "to": "new"
+        },
+        {
+          "from": "quoted",
+          "to": "contacted"
+        },
+        {
+          "from": "quoted",
+          "to": "qualified"
+        },
+        {
+          "from": "quoted",
+          "to": "negotiation"
+        },
+        {
+          "from": "negotiation",
+          "to": "new"
+        },
+        {
+          "from": "negotiation",
+          "to": "contacted"
+        },
+        {
+          "from": "negotiation",
+          "to": "qualified"
+        },
+        {
+          "from": "negotiation",
+          "to": "quoted"
+        },
+        {
+          "from": "new",
+          "to": "won"
+        },
+        {
+          "from": "contacted",
+          "to": "won"
+        },
+        {
+          "from": "qualified",
+          "to": "won"
+        },
+        {
+          "from": "quoted",
+          "to": "won"
+        },
+        {
+          "from": "negotiation",
+          "to": "won"
+        },
+        {
+          "from": "new",
+          "to": "lost"
+        },
+        {
+          "from": "contacted",
+          "to": "lost"
+        },
+        {
+          "from": "qualified",
+          "to": "lost"
+        },
+        {
+          "from": "quoted",
+          "to": "lost"
+        },
+        {
+          "from": "negotiation",
+          "to": "lost"
+        }
+      ]
+    },
+    {
+      "entityType": "ORDER",
+      "name": "Order",
+      "states": [
+        {
+          "key": "draft",
+          "label": "Draft",
+          "color": "#64748b",
+          "category": "OPEN",
+          "isInitial": true,
+          "systemRole": "DRAFT"
+        },
+        {
+          "key": "confirmed",
+          "label": "Confirmed",
+          "color": "#3b82f6",
+          "category": "IN_PROGRESS",
+          "isInitial": false,
+          "systemRole": "CONFIRMED"
+        },
+        {
+          "key": "deposit_paid",
+          "label": "Deposit paid",
+          "color": "#0ea5e9",
+          "category": "IN_PROGRESS",
+          "isInitial": false
+        },
+        {
+          "key": "in_production",
+          "label": "In production",
+          "color": "#f59e0b",
+          "category": "IN_PROGRESS",
+          "isInitial": false,
+          "systemRole": "IN_PRODUCTION"
+        },
+        {
+          "key": "ready",
+          "label": "Ready",
+          "color": "#14b8a6",
+          "category": "IN_PROGRESS",
+          "isInitial": false,
+          "systemRole": "READY"
+        },
+        {
+          "key": "out_for_delivery",
+          "label": "Out for delivery",
+          "color": "#8b5cf6",
+          "category": "IN_PROGRESS",
+          "isInitial": false
+        },
+        {
+          "key": "delivered",
+          "label": "Delivered",
+          "color": "#22c55e",
+          "category": "IN_PROGRESS",
+          "isInitial": false,
+          "systemRole": "DELIVERED"
+        },
+        {
+          "key": "completed",
+          "label": "Completed",
+          "color": "#16a34a",
+          "category": "DONE",
+          "isInitial": false,
+          "systemRole": "COMPLETED"
+        },
+        {
+          "key": "on_hold",
+          "label": "On hold",
+          "color": "#a3a3a3",
+          "category": "IN_PROGRESS",
+          "isInitial": false,
+          "systemRole": "ON_HOLD"
+        },
+        {
+          "key": "cancelled",
+          "label": "Cancelled",
+          "color": "#dc2626",
+          "category": "CANCELLED",
+          "isInitial": false,
+          "systemRole": "CANCELLED"
+        }
+      ],
+      "transitions": [
+        {
+          "from": "draft",
+          "to": "confirmed"
+        },
+        {
+          "from": "confirmed",
+          "to": "deposit_paid"
+        },
+        {
+          "from": "deposit_paid",
+          "to": "in_production"
+        },
+        {
+          "from": "in_production",
+          "to": "ready"
+        },
+        {
+          "from": "ready",
+          "to": "out_for_delivery"
+        },
+        {
+          "from": "out_for_delivery",
+          "to": "delivered"
+        },
+        {
+          "from": "delivered",
+          "to": "completed"
+        },
+        {
+          "from": "confirmed",
+          "to": "in_production"
+        },
+        {
+          "from": "ready",
+          "to": "delivered"
+        },
+        {
+          "from": "draft",
+          "to": "on_hold"
+        },
+        {
+          "from": "confirmed",
+          "to": "on_hold"
+        },
+        {
+          "from": "deposit_paid",
+          "to": "on_hold"
+        },
+        {
+          "from": "in_production",
+          "to": "on_hold"
+        },
+        {
+          "from": "ready",
+          "to": "on_hold"
+        },
+        {
+          "from": "out_for_delivery",
+          "to": "on_hold"
+        },
+        {
+          "from": "delivered",
+          "to": "on_hold"
+        },
+        {
+          "from": "draft",
+          "to": "cancelled",
+          "requiredPermission": "order:cancel"
+        },
+        {
+          "from": "confirmed",
+          "to": "cancelled",
+          "requiredPermission": "order:cancel"
+        },
+        {
+          "from": "deposit_paid",
+          "to": "cancelled",
+          "requiredPermission": "order:cancel"
+        },
+        {
+          "from": "in_production",
+          "to": "cancelled",
+          "requiredPermission": "order:cancel"
+        },
+        {
+          "from": "ready",
+          "to": "cancelled",
+          "requiredPermission": "order:cancel"
+        },
+        {
+          "from": "out_for_delivery",
+          "to": "cancelled",
+          "requiredPermission": "order:cancel"
+        },
+        {
+          "from": "delivered",
+          "to": "cancelled",
+          "requiredPermission": "order:cancel"
+        },
+        {
+          "from": "on_hold",
+          "to": "cancelled",
+          "requiredPermission": "order:cancel"
+        },
+        {
+          "from": "on_hold",
+          "to": "confirmed"
+        },
+        {
+          "from": "on_hold",
+          "to": "deposit_paid"
+        },
+        {
+          "from": "on_hold",
+          "to": "in_production"
+        },
+        {
+          "from": "on_hold",
+          "to": "ready"
+        },
+        {
+          "from": "on_hold",
+          "to": "out_for_delivery"
+        }
+      ]
+    },
+    {
+      "entityType": "PURCHASE_ORDER",
+      "name": "Purchase order",
+      "states": [
+        {
+          "key": "draft",
+          "label": "Draft",
+          "color": "#64748b",
+          "category": "OPEN",
+          "isInitial": true,
+          "systemRole": "DRAFT"
+        },
+        {
+          "key": "sent",
+          "label": "Sent",
+          "color": "#3b82f6",
+          "category": "IN_PROGRESS",
+          "isInitial": false,
+          "systemRole": "SENT"
+        },
+        {
+          "key": "partially_received",
+          "label": "Partially received",
+          "color": "#f59e0b",
+          "category": "IN_PROGRESS",
+          "isInitial": false,
+          "systemRole": "PARTIALLY_RECEIVED"
+        },
+        {
+          "key": "received",
+          "label": "Received",
+          "color": "#16a34a",
+          "category": "DONE",
+          "isInitial": false,
+          "systemRole": "RECEIVED"
+        },
+        {
+          "key": "cancelled",
+          "label": "Cancelled",
+          "color": "#dc2626",
+          "category": "CANCELLED",
+          "isInitial": false,
+          "systemRole": "CANCELLED"
+        }
+      ],
+      "transitions": [
+        {
+          "from": "draft",
+          "to": "sent"
+        },
+        {
+          "from": "draft",
+          "to": "cancelled"
+        },
+        {
+          "from": "sent",
+          "to": "cancelled"
+        },
+        {
+          "from": "sent",
+          "to": "partially_received",
+          "requiredPermission": "purchase:receive"
+        },
+        {
+          "from": "sent",
+          "to": "received",
+          "requiredPermission": "purchase:receive"
+        },
+        {
+          "from": "partially_received",
+          "to": "received",
+          "requiredPermission": "purchase:receive"
+        },
+        {
+          "from": "draft",
+          "to": "received",
+          "requiredPermission": "purchase:receive"
+        }
+      ]
+    },
+    {
+      "entityType": "PRODUCTION_JOB",
+      "name": "Workshop job",
+      "states": [
+        {
+          "key": "queued",
+          "label": "Queued",
+          "color": "#64748b",
+          "category": "OPEN",
+          "isInitial": true,
+          "systemRole": "QUEUED"
+        },
+        {
+          "key": "in_progress",
+          "label": "In progress",
+          "color": "#f59e0b",
+          "category": "IN_PROGRESS",
+          "isInitial": false
+        },
+        {
+          "key": "quality_check",
+          "label": "Quality check",
+          "color": "#8b5cf6",
+          "category": "IN_PROGRESS",
+          "isInitial": false
+        },
+        {
+          "key": "done",
+          "label": "Done",
+          "color": "#16a34a",
+          "category": "DONE",
+          "isInitial": false,
+          "systemRole": "DONE"
+        }
+      ],
+      "transitions": [
+        {
+          "from": "queued",
+          "to": "in_progress"
+        },
+        {
+          "from": "in_progress",
+          "to": "quality_check"
+        },
+        {
+          "from": "quality_check",
+          "to": "done"
+        },
+        {
+          "from": "quality_check",
+          "to": "in_progress"
+        }
+      ]
+    }
+  ],
+  "units": [
+    {
+      "name": "Piece",
+      "symbol": "pc",
+      "dimension": "count",
+      "toBase": "1"
+    },
+    {
+      "name": "Dozen",
+      "symbol": "doz",
+      "dimension": "count",
+      "toBase": "12"
+    },
+    {
+      "name": "Metre",
+      "symbol": "m",
+      "dimension": "length",
+      "toBase": "1"
+    },
+    {
+      "name": "Centimetre",
+      "symbol": "cm",
+      "dimension": "length",
+      "toBase": "0.01"
+    },
+    {
+      "name": "Millimetre",
+      "symbol": "mm",
+      "dimension": "length",
+      "toBase": "0.001"
+    },
+    {
+      "name": "Foot",
+      "symbol": "ft",
+      "dimension": "length",
+      "toBase": "0.3048"
+    },
+    {
+      "name": "Inch",
+      "symbol": "in",
+      "dimension": "length",
+      "toBase": "0.0254"
+    },
+    {
+      "name": "Square metre",
+      "symbol": "m²",
+      "dimension": "area",
+      "toBase": "1"
+    },
+    {
+      "name": "Square foot",
+      "symbol": "ft²",
+      "dimension": "area",
+      "toBase": "0.09290304"
+    },
+    {
+      "name": "Kilogram",
+      "symbol": "kg",
+      "dimension": "weight",
+      "toBase": "1"
+    },
+    {
+      "name": "Gram",
+      "symbol": "g",
+      "dimension": "weight",
+      "toBase": "0.001"
+    },
+    {
+      "name": "Pound",
+      "symbol": "lb",
+      "dimension": "weight",
+      "toBase": "0.45359237"
+    }
+  ],
+  "categories": [
+    {
+      "name": "Sofas",
+      "children": ["Sectional sofas", "Sofa sets", "Recliners"]
+    },
+    {
+      "name": "Beds",
+      "children": ["Double beds", "Single beds", "Mattresses"]
+    },
+    {
+      "name": "Tables",
+      "children": ["Dining tables", "Coffee tables", "Side tables"]
+    },
+    {
+      "name": "Chairs",
+      "children": ["Dining chairs", "Office chairs", "Accent chairs"]
+    },
+    {
+      "name": "Storage",
+      "children": ["Wardrobes", "Shelves", "Cabinets"]
+    },
+    {
+      "name": "Office furniture",
+      "children": ["Desks", "Filing cabinets"]
+    }
+  ],
+  "questionFlow": [
+    {
+      "key": "type",
+      "question": "Which piece of furniture are you looking for?",
+      "fieldKey": "design"
+    },
+    {
+      "key": "size",
+      "question": "What size do you need (length, width, height)?",
+      "fieldKey": "size_type"
+    },
+    {
+      "key": "material",
+      "question": "Which material do you prefer?",
+      "fieldKey": "material"
+    },
+    {
+      "key": "color",
+      "question": "Which colour would you like?",
+      "fieldKey": "color"
+    },
+    {
+      "key": "quantity",
+      "question": "How many pieces do you need?"
+    },
+    {
+      "key": "reference",
+      "question": "Do you have a reference picture?",
+      "fieldKey": "reference_image"
+    }
+  ],
+  "dashboardKpis": [
+    "sales_today",
+    "sales_week",
+    "sales_month",
+    "open_orders",
+    "lead_funnel",
+    "low_stock",
+    "outstanding_balances",
+    "pending_commissions",
+    "my_tasks"
+  ],
+  "lostReasons": [
+    "Price too high",
+    "Chose a competitor",
+    "Not responding",
+    "Changed mind",
+    "Delivery time too long",
+    "Design not available",
+    "Other"
+  ],
+  "expenseCategories": [
+    "Raw materials",
+    "Workshop wages",
+    "Transport and delivery",
+    "Rent",
+    "Utilities",
+    "Marketing",
+    "Equipment maintenance",
+    "Office supplies",
+    "Other"
+  ]
+}

@@ -17,6 +17,8 @@ export interface AuditInput {
   before?: Record<string, unknown> | null;
   after?: Record<string, unknown> | null;
   metadata?: Record<string, unknown>;
+  /** Needed only when no workspace is in context (workspace creation, background work). */
+  workspaceId?: string;
   /** Defaults to the user in the request context. */
   actor?: { type?: ActorType; userId?: string | null; role?: string | null };
 }
@@ -46,8 +48,8 @@ export class AuditService {
    * event and a rolled-back change leaves none (design D9).
    */
   async record(tx: AuditTx, input: AuditInput): Promise<void> {
-    const workspaceId = this.cls.get('workspaceId');
-    if (!workspaceId) throw new Error('AuditService.record needs a workspace in context');
+    const workspaceId = input.workspaceId ?? this.cls.get('workspaceId');
+    if (!workspaceId) throw new Error('AuditService.record needs a workspace');
     await tx.auditEvent.create({ data: this.build(workspaceId, input) });
   }
 
@@ -56,7 +58,7 @@ export class AuditService {
    * error). Retries three times, then logs at error level with an alert tag. Never throws.
    * `workspaceId` is needed only when no workspace is in context.
    */
-  async recordAsync(input: AuditInput & { workspaceId?: string }): Promise<void> {
+  async recordAsync(input: AuditInput): Promise<void> {
     const workspaceId = input.workspaceId ?? this.cls.get('workspaceId');
     if (!workspaceId) {
       this.logger.error(

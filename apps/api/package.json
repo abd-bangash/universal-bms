@@ -10,7 +10,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "jest",
     "generate": "prisma generate",
-    "generate:tenant-models": "node scripts/generate-tenant-models.cjs"
+    "generate:tenant-models": "node scripts/generate-tenant-models.cjs",
+    "workspace:create": "node dist/cli/workspace-create.js"
   },
   "dependencies": {
     "@bms/calc": "workspace:*",

@@ -90,13 +90,13 @@ How to read this file:
   - [x] 8.2 Property test — Property 2 (permission enforcement) and the route scan that fails when a non-public route has no `@RequirePermission`
     - _Requirements: 2.5, 2.6, 53.3_
 
-- [ ] 9. Workspace creation, system defaults and the furniture industry profile
+- [x] 9. Workspace creation, system defaults and the furniture industry profile
   - `IndustryProfileService.apply(workspaceId, key)` upserting terminology, module toggles, Field_Definitions, Workflows (states and transitions), Units, Categories, lost reasons, expense categories — never deleting business-added data
   - `prisma/seed/profiles/furniture.json` with the furniture Field_Definitions and default Lead, Order, Purchase_Order and Production_Job workflows from `design.md`
   - `TenantsService.createWorkspace` in one transaction: Workspace with validated default config, Owner user and membership, system Roles (all nine of Requirement 2.8 with `maxDiscountPercent`), profile applied, default Inventory_Location, numbering sequences; a `WorkspaceDefaultsRegistry` lets later modules add their own defaults to the same transaction (walk-in Customer in task 23, cash account and payment methods in task 39, adjustment reasons in task 45)
   - `POST /tenants` — allowed only for a Platform_Admin unless `ALLOW_PUBLIC_SIGNUP=true`; CLI command `workspace:create` for R1 use
   - _Requirements: 1.1, 1.2, 1.5, 1.6, 2.8, 2.9, 26.2, 27.1, 27.2, 28.3, 46.4, 50.1_
-  - [ ] 9.1 Integration test: creating a workspace produces every default listed in Requirement 50.1; applying the profile twice changes nothing the second time
+  - [x] 9.1 Integration test: creating a workspace produces every default listed in Requirement 50.1; applying the profile twice changes nothing the second time
     - _Requirements: 1.6, 50.1_
 
 - [ ] 10. Users, staff profiles, invitations and roles

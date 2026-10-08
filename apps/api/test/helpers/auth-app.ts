@@ -46,12 +46,12 @@ export interface TestApp {
 }
 
 /** Boots the real AppModule against a fresh database. */
-export async function createTestApp(): Promise<TestApp> {
+export async function createTestApp(envOverrides: Partial<Env> = {}): Promise<TestApp> {
   const db = await createTestDatabase();
   process.env.DATABASE_URL = db.url;
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(ENV)
-    .useValue(testEnv())
+    .useValue({ ...testEnv(), ...envOverrides })
     .compile();
   const app = moduleRef.createNestApplication();
   configureApp(app, { APP_ENV: 'development', WEB_ORIGIN: 'http://localhost:3000' });

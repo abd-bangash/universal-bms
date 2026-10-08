@@ -5,6 +5,7 @@ import { EventsModule } from './common/events/events.module';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { SchedulingModule } from './common/scheduling/scheduling.module';
 import { ConfigModule } from './config/config.module';
+import { TenantsModule } from './modules/tenants/tenants.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { HealthModule } from './modules/health/health.module';
@@ -20,6 +21,7 @@ import { HealthModule } from './modules/health/health.module';
     PrismaModule,
     AuditModule,
     AuthModule,
+    TenantsModule,
   ],
 })
 export class AppModule {}
