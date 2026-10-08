@@ -219,7 +219,7 @@ export function useVariantSearch(q: string) {
   });
 }
 
-export function useWorkflowStates(entityType: 'ORDER') {
+export function useWorkflowStates(entityType: 'ORDER' | 'PURCHASE_ORDER') {
   return useQuery({
     queryKey: ['workflow', entityType],
     queryFn: ({ signal }) =>

@@ -161,6 +161,25 @@ describe('Suppliers and purchasing (real PostgreSQL)', () => {
       ).toBeGreaterThanOrEqual(4);
     });
 
+    it('suppliers are found by the global search by name or contact (31.1)', async () => {
+      const b = await business();
+      const other = await business();
+      await http
+        .patch(`/suppliers/${b.supplier}`, { contactName: 'Tariq Mehmood' }, b.token)
+        .expect(200);
+      for (const q of ['timber', 'tariq']) {
+        const groups = (await http.get(`/search?q=${q}`, b.token)).body.data.groups as Json[];
+        expect(groups.find((g) => g.type === 'SUPPLIER')?.hits[0]).toMatchObject({
+          title: 'Timber Co',
+          href: `/purchasing/suppliers/${b.supplier}`,
+        });
+      }
+      const none = (await http.get('/search?q=timber', other.token)).body.data.groups as Json[];
+      expect(none.find((g) => g.type === 'SUPPLIER')?.hits.map((h: Json) => h.id)).toEqual([
+        other.supplier,
+      ]);
+    });
+
     it('an archived supplier cannot receive new orders', async () => {
       const b = await business();
       await post(b, `/suppliers/${b.supplier}/archive`).expect(200);

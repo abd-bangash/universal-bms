@@ -442,7 +442,7 @@ How to read this file:
   - [x] 56.1 Integration tests: partial then final receipt sets Partially received then Received; average cost updates as specified
     - _Requirements: 7.9, 37.7_
 
-- [ ] 57. Purchasing screens
+- [x] 57. Purchasing screens
   - `/purchasing/suppliers`, `/purchasing/orders` list, quick purchase form, purchase order detail with receive dialog
   - Suppliers added to global search
   - _Requirements: 7.8, 7.9, 31.1_

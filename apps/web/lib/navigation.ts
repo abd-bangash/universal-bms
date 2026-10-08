@@ -96,7 +96,7 @@ export const NAVIGATION: readonly NavigationEntry[] = [
     area: 'pos',
     permissions: ['pos:sell'],
     module: 'pos',
-    available: false,
+    available: true,
   },
   {
     key: 'products',
@@ -121,7 +121,7 @@ export const NAVIGATION: readonly NavigationEntry[] = [
     area: 'purchasing',
     permissions: ['supplier:view'],
     module: 'purchasing',
-    available: false,
+    available: true,
   },
   {
     key: 'purchase-orders',
@@ -130,7 +130,7 @@ export const NAVIGATION: readonly NavigationEntry[] = [
     area: 'purchasing',
     permissions: ['purchase:view'],
     module: 'purchasing',
-    available: false,
+    available: true,
   },
   {
     key: 'payments',
