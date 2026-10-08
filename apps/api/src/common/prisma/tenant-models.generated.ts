@@ -64,6 +64,12 @@ export const ALL_MODEL_NAMES: readonly string[] = [
   'StockCountLine',
   'PosSession',
   'CashMovement',
+  'Supplier',
+  'PurchaseOrder',
+  'PurchaseOrderItem',
+  'GoodsReceipt',
+  'SupplierPayment',
+  'SupplierReturn',
 ];
 
 export const TENANT_MODEL_NAMES: readonly string[] = [
@@ -123,4 +129,10 @@ export const TENANT_MODEL_NAMES: readonly string[] = [
   'StockCountLine',
   'PosSession',
   'CashMovement',
+  'Supplier',
+  'PurchaseOrder',
+  'PurchaseOrderItem',
+  'GoodsReceipt',
+  'SupplierPayment',
+  'SupplierReturn',
 ];

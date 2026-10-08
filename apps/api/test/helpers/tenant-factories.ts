@@ -145,6 +145,25 @@ async function makeReturn(prisma: PrismaClient, workspaceId: string) {
   });
 }
 
+async function makeSupplier(prisma: PrismaClient, workspaceId: string) {
+  return prisma.supplier.create({ data: { workspaceId, name: `Supplier ${rand()}` } });
+}
+
+async function makePurchaseOrder(prisma: PrismaClient, workspaceId: string) {
+  const supplier = await makeSupplier(prisma, workspaceId);
+  const location = await makeLocation(prisma, workspaceId);
+  return prisma.purchaseOrder.create({
+    data: {
+      workspaceId,
+      orderNumber: `PO-${rand()}`,
+      supplierId: supplier.id,
+      locationId: location.id,
+      subtotal: '100',
+      totalAmount: '100',
+    },
+  });
+}
+
 const byId = (row: { id: string }) => ({ where: { id: row.id } });
 
 const factories: Record<string, TenantFactory> = {
@@ -532,6 +551,71 @@ const factories: Record<string, TenantFactory> = {
     return byId(
       await p.stockCountLine.create({
         data: { workspaceId: ws, stockCountId: c.id, variantId: v.id, expectedQty: '3' },
+      }),
+    );
+  },
+  Supplier: async (p, ws) => byId(await makeSupplier(p, ws)),
+  PurchaseOrder: async (p, ws) => byId(await makePurchaseOrder(p, ws)),
+  PurchaseOrderItem: async (p, ws) => {
+    const po = await makePurchaseOrder(p, ws);
+    const v = await makeVariant(p, ws);
+    return byId(
+      await p.purchaseOrderItem.create({
+        data: {
+          workspaceId: ws,
+          purchaseOrderId: po.id,
+          lineNo: 1,
+          variantId: v.id,
+          quantity: '2',
+          unitCost: '50',
+          lineTotal: '100',
+        },
+      }),
+    );
+  },
+  GoodsReceipt: async (p, ws) => {
+    const po = await makePurchaseOrder(p, ws);
+    return byId(
+      await p.goodsReceipt.create({
+        data: {
+          workspaceId: ws,
+          receiptNumber: `GRN-${rand()}`,
+          purchaseOrderId: po.id,
+          lines: [],
+        },
+      }),
+    );
+  },
+  SupplierPayment: async (p, ws) => {
+    const po = await makePurchaseOrder(p, ws);
+    const method = await makeMethod(p, ws);
+    return byId(
+      await p.supplierPayment.create({
+        data: {
+          workspaceId: ws,
+          supplierId: po.supplierId,
+          purchaseOrderId: po.id,
+          paymentMethodId: method.id,
+          accountId: method.accountId,
+          amount: '10',
+          paidAt: new Date(),
+        },
+      }),
+    );
+  },
+  SupplierReturn: async (p, ws) => {
+    const po = await makePurchaseOrder(p, ws);
+    return byId(
+      await p.supplierReturn.create({
+        data: {
+          workspaceId: ws,
+          returnNumber: `SR-${rand()}`,
+          purchaseOrderId: po.id,
+          supplierId: po.supplierId,
+          reason: 'Damaged',
+          totalAmount: '10',
+          lines: [],
+        },
       }),
     );
   },

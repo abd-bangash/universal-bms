@@ -428,7 +428,7 @@ How to read this file:
 
 ### Phase 8 — Suppliers and Purchasing `[R1 · Day 8]`
 
-- [ ] 55. Schema: purchasing
+- [x] 55. Schema: purchasing
   - Add `Supplier`, `PurchaseOrder`, `PurchaseOrderItem`, `GoodsReceipt`, `SupplierPayment`, `SupplierReturn`; migration `purchasing` with `rollback.sql`
   - _Requirements: 7.8, 22.1, 22.2_
 

@@ -82,6 +82,12 @@ model Workspace {
   stockCountLines     StockCountLine[]
   posSessions         PosSession[]
   cashMovements       CashMovement[]
+  suppliers           Supplier[]
+  purchaseOrders      PurchaseOrder[]
+  purchaseOrderItems  PurchaseOrderItem[]
+  goodsReceipts       GoodsReceipt[]
+  supplierPayments    SupplierPayment[]
+  supplierReturns     SupplierReturn[]
 
   @@map("workspaces")
 }
@@ -578,6 +584,7 @@ model InventoryLocation {
   reservations  StockReservation[]
   counts        StockCount[]
   posSessions   PosSession[]
+  purchases     PurchaseOrder[]
 
   @@unique([workspaceId, name])
   @@map("inventory_locations")
@@ -768,26 +775,26 @@ enum TrackingMode {
 }
 
 model ProductVariant {
-  id                String             @id @default(cuid())
-  workspaceId       String             @map("workspace_id")
-  workspace         Workspace          @relation(fields: [workspaceId], references: [id])
-  productId         String             @map("product_id")
-  product           Product            @relation(fields: [productId], references: [id])
+  id                String              @id @default(cuid())
+  workspaceId       String              @map("workspace_id")
+  workspace         Workspace           @relation(fields: [workspaceId], references: [id])
+  productId         String              @map("product_id")
+  product           Product             @relation(fields: [productId], references: [id])
   sku               String
   barcode           String?
   name              String?
-  isDefault         Boolean            @default(false) @map("is_default")
-  priceOverride     Decimal?           @map("price_override") @db.Decimal(18, 4)
-  costOverride      Decimal?           @map("cost_override") @db.Decimal(18, 4)
-  weight            Decimal?           @db.Decimal(18, 4)
-  minStockLevel     Decimal?           @map("min_stock_level") @db.Decimal(18, 4)
-  maxStockLevel     Decimal?           @map("max_stock_level") @db.Decimal(18, 4)
-  status            ProductStatus      @default(ACTIVE)
-  customFields      Json               @default("{}") @map("custom_fields")
-  createdAt         DateTime           @default(now()) @map("created_at")
-  updatedAt         DateTime           @updatedAt @map("updated_at")
+  isDefault         Boolean             @default(false) @map("is_default")
+  priceOverride     Decimal?            @map("price_override") @db.Decimal(18, 4)
+  costOverride      Decimal?            @map("cost_override") @db.Decimal(18, 4)
+  weight            Decimal?            @db.Decimal(18, 4)
+  minStockLevel     Decimal?            @map("min_stock_level") @db.Decimal(18, 4)
+  maxStockLevel     Decimal?            @map("max_stock_level") @db.Decimal(18, 4)
+  status            ProductStatus       @default(ACTIVE)
+  customFields      Json                @default("{}") @map("custom_fields")
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
   images            ProductImage[]
-  bundleComponents  BundleComponent[]  @relation("BundleComponentVariant")
+  bundleComponents  BundleComponent[]   @relation("BundleComponentVariant")
   priceListItems    PriceListItem[]
   quotationItems    QuotationItem[]
   orderItems        OrderItem[]
@@ -795,6 +802,7 @@ model ProductVariant {
   stockLevels       StockLevel[]
   stockReservations StockReservation[]
   stockCountLines   StockCountLine[]
+  purchaseItems     PurchaseOrderItem[]
 
   @@unique([workspaceId, sku])
   @@unique([workspaceId, barcode])
@@ -1345,40 +1353,42 @@ enum PaymentStatus {
 }
 
 model FinancialAccount {
-  id              String          @id @default(cuid())
-  workspaceId     String          @map("workspace_id")
-  workspace       Workspace       @relation(fields: [workspaceId], references: [id])
+  id               String            @id @default(cuid())
+  workspaceId      String            @map("workspace_id")
+  workspace        Workspace         @relation(fields: [workspaceId], references: [id])
   /// CASH | BANK | MOBILE_WALLET | CARD_TERMINAL
-  type            String
-  name            String
-  bankName        String?         @map("bank_name")
-  accountTitle    String?         @map("account_title")
-  accountNumber   String?         @map("account_number")
-  branch          String?
-  showToCustomers Boolean         @default(false) @map("show_to_customers")
-  active          Boolean         @default(true)
-  createdAt       DateTime        @default(now()) @map("created_at")
-  methods         PaymentMethod[]
-  payments        Payment[]
-  expenses        Expense[]
+  type             String
+  name             String
+  bankName         String?           @map("bank_name")
+  accountTitle     String?           @map("account_title")
+  accountNumber    String?           @map("account_number")
+  branch           String?
+  showToCustomers  Boolean           @default(false) @map("show_to_customers")
+  active           Boolean           @default(true)
+  createdAt        DateTime          @default(now()) @map("created_at")
+  methods          PaymentMethod[]
+  payments         Payment[]
+  expenses         Expense[]
+  supplierPayments SupplierPayment[]
 
   @@unique([workspaceId, name])
   @@map("financial_accounts")
 }
 
 model PaymentMethod {
-  id                String           @id @default(cuid())
-  workspaceId       String           @map("workspace_id")
-  workspace         Workspace        @relation(fields: [workspaceId], references: [id])
+  id                String            @id @default(cuid())
+  workspaceId       String            @map("workspace_id")
+  workspace         Workspace         @relation(fields: [workspaceId], references: [id])
   name              String
   /// CASH | CARD | BANK_TRANSFER | MOBILE_MONEY | OTHER
   type              String
-  accountId         String           @map("account_id")
-  account           FinancialAccount @relation(fields: [accountId], references: [id])
-  requiresReference Boolean          @default(false) @map("requires_reference")
-  active            Boolean          @default(true)
+  accountId         String            @map("account_id")
+  account           FinancialAccount  @relation(fields: [accountId], references: [id])
+  requiresReference Boolean           @default(false) @map("requires_reference")
+  active            Boolean           @default(true)
   payments          Payment[]
   expenses          Expense[]
+  supplierPayments  SupplierPayment[]
 
   @@unique([workspaceId, name])
   @@map("payment_methods")
@@ -1693,4 +1703,149 @@ model CashMovement {
 
   @@index([workspaceId, posSessionId])
   @@map("cash_movements")
+}
+
+// ═══ Purchasing (task 55) ════════════════════════════════════════════════
+
+model Supplier {
+  id             String            @id @default(cuid())
+  workspaceId    String            @map("workspace_id")
+  workspace      Workspace         @relation(fields: [workspaceId], references: [id])
+  name           String
+  contactName    String?           @map("contact_name")
+  phone          String?
+  email          String?
+  address        String?
+  notes          String?
+  /// ACTIVE | ARCHIVED
+  status         String            @default("ACTIVE")
+  customFields   Json              @default("{}") @map("custom_fields")
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime          @updatedAt @map("updated_at")
+  purchaseOrders PurchaseOrder[]
+  payments       SupplierPayment[]
+  returns        SupplierReturn[]
+
+  @@index([workspaceId, status, name])
+  @@map("suppliers")
+}
+
+model PurchaseOrder {
+  id           String              @id @default(cuid())
+  workspaceId  String              @map("workspace_id")
+  workspace    Workspace           @relation(fields: [workspaceId], references: [id])
+  orderNumber  String              @map("order_number")
+  supplierId   String              @map("supplier_id")
+  supplier     Supplier            @relation(fields: [supplierId], references: [id])
+  locationId   String              @map("location_id")
+  location     InventoryLocation   @relation(fields: [locationId], references: [id])
+  /// A state key of the PURCHASE_ORDER workflow. RECEIVED and PARTIALLY_RECEIVED are set by goods receipt only.
+  status       String              @default("draft")
+  orderDate    DateTime            @default(now()) @map("order_date")
+  expectedDate DateTime?           @map("expected_date")
+  subtotal     Decimal             @db.Decimal(18, 4)
+  taxAmount    Decimal             @default(0) @map("tax_amount") @db.Decimal(18, 4)
+  totalAmount  Decimal             @map("total_amount") @db.Decimal(18, 4)
+  notes        String?
+  customFields Json                @default("{}") @map("custom_fields")
+  createdById  String?             @map("created_by_id")
+  createdAt    DateTime            @default(now()) @map("created_at")
+  updatedAt    DateTime            @updatedAt @map("updated_at")
+  version      Int                 @default(1)
+  items        PurchaseOrderItem[]
+  receipts     GoodsReceipt[]
+  payments     SupplierPayment[]
+  returns      SupplierReturn[]
+
+  @@unique([workspaceId, orderNumber])
+  @@index([workspaceId, supplierId, orderDate])
+  @@index([workspaceId, status])
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderItem {
+  id              String         @id @default(cuid())
+  workspaceId     String         @map("workspace_id")
+  workspace       Workspace      @relation(fields: [workspaceId], references: [id])
+  purchaseOrderId String         @map("purchase_order_id")
+  purchaseOrder   PurchaseOrder  @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  lineNo          Int            @map("line_no")
+  variantId       String         @map("variant_id")
+  variant         ProductVariant @relation(fields: [variantId], references: [id])
+  /// In the purchase unit; the product's purchase unit factor converts it to the base unit on receipt.
+  quantity        Decimal        @db.Decimal(18, 4)
+  unitCost        Decimal        @map("unit_cost") @db.Decimal(18, 4)
+  receivedQty     Decimal        @default(0) @map("received_qty") @db.Decimal(18, 4)
+  returnedQty     Decimal        @default(0) @map("returned_qty") @db.Decimal(18, 4)
+  lineTotal       Decimal        @map("line_total") @db.Decimal(18, 4)
+
+  @@unique([workspaceId, purchaseOrderId, lineNo])
+  @@index([workspaceId, purchaseOrderId])
+  @@index([workspaceId, variantId])
+  @@map("purchase_order_items")
+}
+
+model GoodsReceipt {
+  id              String        @id @default(cuid())
+  workspaceId     String        @map("workspace_id")
+  workspace       Workspace     @relation(fields: [workspaceId], references: [id])
+  receiptNumber   String        @map("receipt_number")
+  purchaseOrderId String        @map("purchase_order_id")
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  receivedById    String?       @map("received_by_id")
+  receivedAt      DateTime      @default(now()) @map("received_at")
+  note            String?
+  /// [{ purchaseOrderItemId, variantId, quantity, unitCost }]
+  lines           Json
+
+  @@unique([workspaceId, receiptNumber])
+  @@index([workspaceId, purchaseOrderId])
+  @@map("goods_receipts")
+}
+
+/// Recorded in Release 3; the table exists now so payables can be read from one schema.
+model SupplierPayment {
+  id              String           @id @default(cuid())
+  workspaceId     String           @map("workspace_id")
+  workspace       Workspace        @relation(fields: [workspaceId], references: [id])
+  supplierId      String           @map("supplier_id")
+  supplier        Supplier         @relation(fields: [supplierId], references: [id])
+  purchaseOrderId String?          @map("purchase_order_id")
+  purchaseOrder   PurchaseOrder?   @relation(fields: [purchaseOrderId], references: [id])
+  paymentMethodId String           @map("payment_method_id")
+  paymentMethod   PaymentMethod    @relation(fields: [paymentMethodId], references: [id])
+  accountId       String           @map("account_id")
+  account         FinancialAccount @relation(fields: [accountId], references: [id])
+  amount          Decimal          @db.Decimal(18, 4)
+  paidAt          DateTime         @map("paid_at")
+  referenceNumber String?          @map("reference_number")
+  status          PaymentStatus    @default(CONFIRMED)
+  voidReason      String?          @map("void_reason")
+  recordedById    String?          @map("recorded_by_id")
+  createdAt       DateTime         @default(now()) @map("created_at")
+
+  @@index([workspaceId, supplierId, paidAt])
+  @@map("supplier_payments")
+}
+
+/// Recorded in Release 3 (Requirement 38.8).
+model SupplierReturn {
+  id              String        @id @default(cuid())
+  workspaceId     String        @map("workspace_id")
+  workspace       Workspace     @relation(fields: [workspaceId], references: [id])
+  returnNumber    String        @map("return_number")
+  purchaseOrderId String        @map("purchase_order_id")
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  supplierId      String        @map("supplier_id")
+  supplier        Supplier      @relation(fields: [supplierId], references: [id])
+  reason          String
+  totalAmount     Decimal       @map("total_amount") @db.Decimal(18, 4)
+  /// [{ purchaseOrderItemId, variantId, quantity, unitCost }]
+  lines           Json
+  createdById     String?       @map("created_by_id")
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  @@unique([workspaceId, returnNumber])
+  @@index([workspaceId, supplierId])
+  @@map("supplier_returns")
 }
