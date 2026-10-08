@@ -221,7 +221,7 @@ export const NAVIGATION: readonly NavigationEntry[] = [
     label: { message: 'reports' },
     area: 'reports',
     permissions: ['report:view'],
-    available: false,
+    available: true,
   },
   {
     key: 'settings',

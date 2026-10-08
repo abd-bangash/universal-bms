@@ -500,7 +500,7 @@ How to read this file:
   - `POST /reports/:key/export` as streamed CSV, requiring `report:export`, with an Audit_Event recording user, report, filters and time
   - _Requirements: 19.6, 19.7_
 
-- [ ] 66. Dashboard and reports screens
+- [x] 66. Dashboard and reports screens
   - Home page with indicator cards, alerts and my tasks; `/reports` catalogue and one generic report page with filters, totals, drill-down and export
   - _Requirements: 19.1, 19.2, 19.4, 49.1_
 

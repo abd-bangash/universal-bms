@@ -75,14 +75,3 @@ export function useAdjustmentReasons() {
       api.get<ReasonView[]>('/settings/adjustment-reasons', undefined, signal),
   });
 }
-
-/** How many variants are below their minimum level, for the home page. */
-export function useLowStockCount(enabled: boolean) {
-  return useQuery({
-    queryKey: ['inventory', 'low-count'],
-    enabled,
-    queryFn: ({ signal }) =>
-      api.getPage<StockRow>('/inventory/stock', { low: true, limit: 100 }, signal),
-    select: (page) => page.items.length,
-  });
-}

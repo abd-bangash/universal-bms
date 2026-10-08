@@ -134,6 +134,20 @@ export const api = {
     const response = await send('POST', path, { headers: { Accept: 'application/json' } }, form);
     return ((await response.json()) as SuccessEnvelope<T>).data;
   },
+  /** A file produced by a POST (a report export): the bytes and the name the server suggests. */
+  async download(path: string, body: unknown): Promise<{ blob: Blob; filename: string | null }> {
+    const response = await send(
+      'POST',
+      path,
+      { headers: { Accept: '*/*', 'Content-Type': 'application/json' } },
+      JSON.stringify(body),
+    );
+    const disposition = response.headers.get('content-disposition') ?? '';
+    return {
+      blob: await response.blob(),
+      filename: /filename="([^"]+)"/.exec(disposition)?.[1] ?? null,
+    };
+  },
   /** Binary downloads such as PDFs. */
   async blob(path: string, params?: QueryParams): Promise<Blob> {
     return (await send('GET', path, { params })).blob();

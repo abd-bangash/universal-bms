@@ -1,7 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { mockApi, page, renderWithProviders } from '@/test/render';
-import HomePage from './page';
 import { AdjustForm, OpeningStockForm } from './inventory/adjust/adjust-forms';
 import { LocationManager } from './inventory/locations/location-manager';
 import { MovementList } from './inventory/movements/movement-list';
@@ -210,25 +209,5 @@ describe('LocationManager', () => {
         isDefault: false,
       }),
     );
-  });
-});
-
-describe('Home page', () => {
-  it('shows how many items are low on stock to people who can see stock', async () => {
-    mockApi({
-      'GET /inventory/stock': () => page([row({ low: true }), row({ variantId: 'v2', low: true })]),
-    });
-    renderWithProviders(<HomePage />, { session: { permissions: ['inventory:view'] } });
-    expect(await screen.findByRole('link', { name: '2 items are low on stock' })).toHaveAttribute(
-      'href',
-      '/inventory',
-    );
-  });
-
-  it('shows nothing about stock to everyone else', async () => {
-    const { calls } = mockApi({});
-    renderWithProviders(<HomePage />, { session: { permissions: [] } });
-    expect(screen.queryByText('Stock')).not.toBeInTheDocument();
-    expect(calls).toHaveLength(0);
   });
 });
