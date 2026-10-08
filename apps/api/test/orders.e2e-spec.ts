@@ -41,6 +41,7 @@ describe('Orders API (real PostgreSQL)', () => {
         .post(
           '/catalog/products',
           {
+            type: 'NON_STOCKABLE',
             code: 'SOFA',
             name: 'Sofa',
             basePrice: '1000.00',

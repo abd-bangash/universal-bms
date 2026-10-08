@@ -42,10 +42,11 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
       { name: 'staff', created: 8, existing: 0 },
       { name: 'catalog', created: 30, existing: 0 },
       { name: 'crm', created: 35, existing: 0 },
+      { name: 'inventory', created: 43, existing: 0 },
       { name: 'sales', created: 25, existing: 0 },
       { name: 'finance', created: 21, existing: 0 },
     ]);
-    expect(logs).toHaveLength(6);
+    expect(logs).toHaveLength(7);
 
     const workspace = await t.db.prisma.workspace.findUniqueOrThrow({
       where: { id: report.workspaceId },
@@ -316,6 +317,7 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
       { name: 'staff', created: 0, existing: 8 },
       { name: 'catalog', created: 0, existing: 30 },
       { name: 'crm', created: 0, existing: 35 },
+      { name: 'inventory', created: 0, existing: 43 },
       { name: 'sales', created: 0, existing: 25 },
       { name: 'finance', created: 0, existing: 21 },
     ]);
@@ -401,6 +403,7 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
       'staff',
       'catalog',
       'crm',
+      'inventory',
       'sales',
       'finance',
       'probe',

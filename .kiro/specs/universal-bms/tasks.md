@@ -374,13 +374,13 @@ How to read this file:
   - [x] 46.2 Property test — Property 17 (no oversell under concurrency)
     - _Requirements: 37.5, 37.6_
 
-- [ ] 47. Reservations wired to the order workflow
+- [x] 47. Reservations wired to the order workflow
   - `reserve`, `release`, `fulfil` as in `design.md`; registered as side effects of Order `CONFIRMED`, `CANCELLED` and `DELIVERED`
   - `OrderItem.stockTracked` set at line creation; `costPrice` snapshot written at fulfilment
   - Insufficient stock on confirmation returns 409 `INSUFFICIENT_STOCK` listing the lines
   - Product search now returns available quantity
   - _Requirements: 7.4, 11.6, 11.7, 37.8, 27.3_
-  - [ ] 47.1 Property test — Property 6 (reservation arithmetic)
+  - [x] 47.1 Property test — Property 6 (reservation arithmetic)
     - _Requirements: 7.4, 11.6, 11.7_
 
 - [ ] 48. Inventory screens

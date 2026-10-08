@@ -9,7 +9,7 @@ import { isInbound, type MovementRequest, type PostedMovements } from './invento
 
 const COST_DECIMALS = 4;
 
-interface LevelState {
+export interface LevelState {
   id: string;
   variantId: string;
   locationId: string;
@@ -20,7 +20,7 @@ interface LevelState {
   minLevel: Dec | null;
 }
 
-const keyOf = (variantId: string, locationId: string) => `${variantId}\u0000${locationId}`;
+export const keyOf = (variantId: string, locationId: string) => `${variantId}\u0000${locationId}`;
 
 /**
  * The single writer of the stock ledger (Requirements 7, 37). `post` locks the affected levels in
@@ -139,10 +139,10 @@ export class InventoryService {
    * one fixed order so that two operations touching the same stock cannot deadlock or both take
    * the last unit (Requirement 37.6).
    */
-  private async lockLevels(
+  async lockLevels(
     tx: ScopedTransaction,
     workspaceId: string,
-    requests: readonly MovementRequest[],
+    requests: ReadonlyArray<{ variantId: string; locationId: string }>,
   ): Promise<Map<string, LevelState>> {
     const pairs = [
       ...new Map(requests.map((r) => [keyOf(r.variantId, r.locationId), r] as const)).values(),

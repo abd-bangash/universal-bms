@@ -41,7 +41,13 @@ describe('Checkpoint — payments', () => {
       await http
         .post(
           '/catalog/products',
-          { code: 'S', name: 'Sofa', basePrice: '1000.00', variants: [{ sku: 'S-A' }] },
+          {
+            type: 'NON_STOCKABLE',
+            code: 'S',
+            name: 'Sofa',
+            basePrice: '1000.00',
+            variants: [{ sku: 'S-A' }],
+          },
           token,
         )
         .expect(201)

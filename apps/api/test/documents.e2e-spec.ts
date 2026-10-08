@@ -52,7 +52,13 @@ describe('Documents (real PostgreSQL)', () => {
       await http
         .post(
           '/catalog/products',
-          { code: 'SOFA', name: 'Sofa', basePrice: '1000.00', variants: [{ sku: 'SOFA-A' }] },
+          {
+            type: 'NON_STOCKABLE',
+            code: 'SOFA',
+            name: 'Sofa',
+            basePrice: '1000.00',
+            variants: [{ sku: 'SOFA-A' }],
+          },
           token,
         )
         .expect(201)

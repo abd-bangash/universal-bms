@@ -3,6 +3,7 @@ import { ClsService } from 'nestjs-cls';
 import type { RequestContext } from '../../common/context/request-context';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { CrmModule } from '../crm/crm.module';
+import { InventoryModule } from '../inventory/inventory.module';
 import { EntityLinkRegistry } from '../crm/entity-link.registry';
 import { LeadConversionRegistry } from '../crm/lead-conversion.registry';
 import { SearchService } from '../search/search.service';
@@ -20,7 +21,7 @@ import { orderSearch, quotationSearch } from './sales-search';
 
 /** Quotations (task 34), Orders (35), documents (36). */
 @Module({
-  imports: [CrmModule],
+  imports: [CrmModule, InventoryModule],
   controllers: [QuotationsController, OrdersController],
   providers: [
     DocumentLinesService,

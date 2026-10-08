@@ -17,6 +17,7 @@ import {
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { TimelineQuery } from '../crm/dto/customers.dto';
+import { ReservationsService } from '../inventory/reservations.service';
 import { LeadsService } from '../crm/leads.service';
 import { TimelineService } from '../crm/timeline.service';
 import { FieldsService } from '../fields/fields.service';
@@ -54,6 +55,7 @@ export class OrdersService {
     private readonly files: FilesService,
     private readonly fields: FieldsService,
     private readonly leads: LeadsService,
+    private readonly reservations: ReservationsService,
   ) {}
 
   // ── visibility ──────────────────────────────────────────────────────────────────────────
@@ -394,6 +396,7 @@ export class OrdersService {
       data: { reason: dto.reason, paymentDecision: dto.paymentDecision },
       actor: { userId: user.userId, permissions: user.permissions },
     });
+    await this.reservations.announcePending(user.workspaceId, user.userId);
     if (!result.pendingApproval) {
       await this.timeline.record({
         customerId: before.customerId,

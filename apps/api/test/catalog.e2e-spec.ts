@@ -418,7 +418,7 @@ describe('Catalog API (real PostgreSQL)', () => {
       expect(byBarcode.body.data).toMatchObject({
         sku: 'CS-1',
         price: '1000',
-        availableStock: null,
+        availableStock: '0', // stocked, none on hand
       });
       const bySku = await http.get('/catalog/variants/lookup?code=cs-1', b.token).expect(200);
       expect(bySku.body.data.sku).toBe('CS-1');

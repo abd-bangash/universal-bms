@@ -1,3 +1,4 @@
+import Decimal from 'decimal.js';
 import { Injectable } from '@nestjs/common';
 import { Prisma, type Product, type ProductImage, type ProductVariant } from '@prisma/client';
 import { ClsService } from 'nestjs-cls';
@@ -64,6 +65,34 @@ export class VariantLookupService {
     private readonly cls: ClsService<RequestContext>,
   ) {}
 
+  /**
+   * Fills in the stock each variant can still promise: on hand minus reserved, over all locations.
+   * Services, made-to-order items and the like are not stocked, so they carry no figure.
+   */
+  private async withAvailability(rows: Row[]): Promise<VariantPickerDto[]> {
+    const stocked = rows.filter((v) => v.product.type === 'STOCKABLE' && !v.product.madeToOrder);
+    const sums = stocked.length
+      ? await this.prisma.scoped.stockLevel.groupBy({
+          by: ['variantId'],
+          where: { variantId: { in: stocked.map((v) => v.id) } },
+          _sum: { onHand: true, reserved: true },
+        })
+      : [];
+    const available = new Map(
+      sums.map((s) => [
+        s.variantId,
+        new Decimal(s._sum.onHand?.toString() ?? '0')
+          .minus(s._sum.reserved?.toString() ?? '0')
+          .toFixed(),
+      ]),
+    );
+    return rows.map((v) => {
+      const picker = toPicker(v);
+      if (v.product.type !== 'STOCKABLE' || v.product.madeToOrder) return picker;
+      return { ...picker, availableStock: available.get(v.id) ?? '0' };
+    });
+  }
+
   /** Barcode first, then SKU (design.md Catalog). Archived matches say so instead of vanishing. */
   async lookup(code: string): Promise<VariantPickerDto> {
     const text = code.trim();
@@ -81,7 +110,8 @@ export class VariantLookupService {
     if (found.status === 'ARCHIVED' || found.product.status === 'ARCHIVED') {
       throw new AppException('PRODUCT_ARCHIVED', 422, 'This product is archived');
     }
-    return toPicker(found);
+    const [picker] = await this.withAvailability([found]);
+    return picker as VariantPickerDto;
   }
 
   /** Name, SKU, barcode, code, variant name and aliases; exact matches first. Active items only. */
@@ -119,7 +149,9 @@ export class VariantLookupService {
       include: INCLUDE,
     });
     const order = new Map(ids.map((r, i) => [r.id, i]));
-    return rows.sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0)).map(toPicker);
+    return this.withAvailability(
+      rows.sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0)),
+    );
   }
 
   /**

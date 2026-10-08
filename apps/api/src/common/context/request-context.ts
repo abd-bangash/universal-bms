@@ -11,6 +11,11 @@ export interface RequestContext extends ClsStore {
   requestId?: string;
   /** Per-request cache of the workspace configuration (see SettingsService). */
   settingsCache?: { workspaceId: string; configVersion: number; config: unknown };
+  /** Stock movements posted inside workflow transactions, announced once the request's transaction has committed. */
+  pendingStock?: Array<{
+    movementIds: string[];
+    lowStock: Array<{ variantId: string; locationId: string }>;
+  }>;
   ip?: string;
   userAgent?: string;
 }

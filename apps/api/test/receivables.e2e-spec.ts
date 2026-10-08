@@ -39,7 +39,13 @@ describe('Receivables and bank details (real PostgreSQL)', () => {
       await http
         .post(
           '/catalog/products',
-          { code: 'P', name: 'P', basePrice: '1000.00', variants: [{ sku: 'P-A' }] },
+          {
+            type: 'NON_STOCKABLE',
+            code: 'P',
+            name: 'P',
+            basePrice: '1000.00',
+            variants: [{ sku: 'P-A' }],
+          },
           token,
         )
         .expect(201)
