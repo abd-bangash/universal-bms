@@ -563,7 +563,7 @@ How to read this file:
   - Usable at 360 pixels wide
   - _Requirements: 16.2, 16.3, 16.4, 42.10, 49.3, 31.1_
 
-- [ ] 75. Checkpoint — messaging
+- [x] 75. Checkpoint — messaging
   - On Meta's test number or the client's number: an inbound message creates a lead and conversation; a reply arrives on the phone; delivery status updates; a duplicate webhook creates nothing; a quotation PDF is sent
   - Workflow A steps 1 to 5 and 9 to 11
   - Stop and ask the user to review.
