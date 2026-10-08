@@ -269,10 +269,10 @@ How to read this file:
   - [x] 32.1 Property test — Property 14 (pricing arithmetic), plus worked-example unit tests for inclusive and exclusive tax
     - _Requirements: 35.3, 35.5, 35.6_
 
-- [ ] 33. Document numbering
+- [x] 33. Document numbering
   - `NumberingService.next(tx, docType)` with row lock and the configured format
   - _Requirements: 10.2, 23.5, 54.5_
-  - [ ] 33.1 Property test — Property 15 (unique, gap-free under concurrency)
+  - [x] 33.1 Property test — Property 15 (unique, gap-free under concurrency)
     - _Requirements: 23.5, 54.5_
 
 - [ ] 34. Quotations API
