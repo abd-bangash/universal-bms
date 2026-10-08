@@ -6,6 +6,7 @@ import { PrismaModule } from './common/prisma/prisma.module';
 import { SchedulingModule } from './common/scheduling/scheduling.module';
 import { ConfigModule } from './config/config.module';
 import { RolesModule } from './modules/roles/roles.module';
+import { FieldsModule } from './modules/fields/fields.module';
 import { FilesModule } from './modules/files/files.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { UsersModule } from './modules/users/users.module';
@@ -30,6 +31,7 @@ import { HealthModule } from './modules/health/health.module';
     RolesModule,
     SettingsModule,
     FilesModule,
+    FieldsModule,
   ],
 })
 export class AppModule {}

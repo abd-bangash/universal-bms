@@ -16,7 +16,7 @@ const termKeys = [
 
 const term = z.object({ singular: z.string().min(1), plural: z.string().min(1) });
 
-const condition: z.ZodType = z.lazy(() =>
+export const conditionSchema: z.ZodType = z.lazy(() =>
   z.union([
     z
       .object({
@@ -26,7 +26,12 @@ const condition: z.ZodType = z.lazy(() =>
         value: z.unknown().optional(),
       })
       .strict(),
-    z.object({ all: z.array(condition).optional(), any: z.array(condition).optional() }).strict(),
+    z
+      .object({
+        all: z.array(conditionSchema).optional(),
+        any: z.array(conditionSchema).optional(),
+      })
+      .strict(),
   ]),
 );
 
@@ -62,7 +67,7 @@ const fieldDefinition = z.object({
   defaultUnit: z.string().optional(),
   options: z.array(z.object({ key: z.string().min(1), label: z.string().min(1) })).default([]),
   required: z.boolean().default(false),
-  visibleWhen: condition.optional(),
+  visibleWhen: conditionSchema.optional(),
   isVariantAxis: z.boolean().default(false),
   sortOrder: z.number().int().default(0),
 });

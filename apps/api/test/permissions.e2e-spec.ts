@@ -34,6 +34,7 @@ const AUTHENTICATED_ONLY_ROUTES = [
   'DELETE /api/v1/files/:id',
   'GET /api/v1/settings/units',
   'GET /api/v1/settings/tax-classes',
+  'GET /api/v1/fields',
   'DELETE /api/v1/auth/sessions/:id',
 ];
 

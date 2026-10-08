@@ -163,12 +163,12 @@ How to read this file:
   - Add `Category`, `Brand`, `Product`, `ProductVariant`, `ProductImage`, `BundleComponent`, `PriceList`, `PriceListItem`; migration `catalog` with `rollback.sql`; GIN index on `Product.customFields`; trigram indexes on product name, code, SKU and barcode
   - _Requirements: 6.1, 6.2, 36.1, 22.1, 22.2_
 
-- [ ] 18. Custom fields engine
+- [x] 18. Custom fields engine
   - `packages/calc/src/fields.ts`: `validateCustomFields`, `isVisible`, `buildFieldSnapshot`, value shapes per type exactly as in `design.md`
   - `FieldsService` and `GET /fields?entityType=`, `POST /fields`, `PATCH /fields/:id` (key immutable after first use; deactivate instead of delete)
   - Helper used by every module to validate `customFields` on write and to parse `?cf.<key>=` filters into JSONB queries
   - _Requirements: 6.3, 6.5, 26.1, 26.2, 26.3, 26.4, 26.5, 26.6, 26.7, 26.9, 28.7_
-  - [ ] 18.1 Property test — Property 11 (custom field round-trip and rejection of invalid values), plus unit tests for visibility conditions
+  - [x] 18.1 Property test — Property 11 (custom field round-trip and rejection of invalid values), plus unit tests for visibility conditions
     - _Requirements: 6.3, 26.3, 26.4_
 
 - [ ] 19. Catalog API
