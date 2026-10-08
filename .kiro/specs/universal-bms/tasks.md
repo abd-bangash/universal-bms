@@ -447,7 +447,7 @@ How to read this file:
   - Suppliers added to global search
   - _Requirements: 7.8, 7.9, 31.1_
 
-- [ ] 58. Checkpoint — purchasing
+- [x] 58. Checkpoint — purchasing
   - Extend `seed:demo` with 5 suppliers and 5 purchases
   - Record a quick purchase; stock and average cost update; the movement list shows the receipt
   - Stop and ask the user to review.

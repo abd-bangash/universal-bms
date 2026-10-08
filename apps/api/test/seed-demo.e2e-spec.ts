@@ -45,8 +45,9 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
       { name: 'inventory', created: 43, existing: 0 },
       { name: 'sales', created: 25, existing: 0 },
       { name: 'finance', created: 21, existing: 0 },
+      { name: 'purchasing', created: 10, existing: 0 },
     ]);
-    expect(logs).toHaveLength(7);
+    expect(logs).toHaveLength(8);
 
     const workspace = await t.db.prisma.workspace.findUniqueOrThrow({
       where: { id: report.workspaceId },
@@ -355,6 +356,22 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
     expect(
       await t.db.prisma.stockMovement.count({ where: { workspaceId, movementType: 'SALE' } }),
     ).toBeGreaterThan(0);
+
+    // 5 suppliers and 5 purchases in different states, received ones posted to the ledger (50.2)
+    expect(await t.db.prisma.supplier.count({ where: { workspaceId } })).toBe(5);
+    const purchases = await t.db.prisma.purchaseOrder.findMany({ where: { workspaceId } });
+    expect(purchases.map((p) => p.status).sort()).toEqual([
+      'draft',
+      'partially_received',
+      'received',
+      'received',
+      'sent',
+    ]);
+    expect(
+      await t.db.prisma.stockMovement.count({
+        where: { workspaceId, movementType: 'PURCHASE_RECEIPT' },
+      }),
+    ).toBe(6); // 3 + 2 lines received on the spot, 1 line of the partly received order
   });
 
   it('is safe to run again: nothing is duplicated and passwords are untouched', async () => {
@@ -371,6 +388,7 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
       { name: 'inventory', created: 0, existing: 43 },
       { name: 'sales', created: 0, existing: 25 },
       { name: 'finance', created: 0, existing: 21 },
+      { name: 'purchasing', created: 0, existing: 10 },
     ]);
     expect(await t.db.prisma.customer.count({ where: { isWalkIn: false } })).toBe(22); // 20 + 2 from won leads
     expect(await t.db.prisma.lead.count()).toBe(15);
@@ -457,6 +475,7 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
       'inventory',
       'sales',
       'finance',
+      'purchasing',
       'probe',
     ]);
   });

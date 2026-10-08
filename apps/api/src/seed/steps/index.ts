@@ -3,6 +3,7 @@ import { catalogStep } from './catalog.step';
 import { crmStep } from './crm.step';
 import { financeStep } from './finance.step';
 import { inventoryStep } from './inventory.step';
+import { purchasingStep } from './purchasing.step';
 import { salesStep } from './sales.step';
 import { staffStep } from './staff.step';
 import { workspaceStep } from './workspace.step';
@@ -16,4 +17,5 @@ export const DEMO_STEPS: readonly DemoStep[] = [
   inventoryStep,
   salesStep,
   financeStep,
+  purchasingStep,
 ];

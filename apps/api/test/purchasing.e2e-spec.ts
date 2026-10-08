@@ -489,6 +489,12 @@ describe('Suppliers and purchasing (real PostgreSQL)', () => {
       expect(res.purchase.items[0]).toMatchObject({ quantity: '8', receivedQty: '8' });
       expect(res.receipt.receiptNumber).toMatch(/^GRN-/);
       expect(await level(b, b.chair)).toEqual({ onHand: '8', avgCost: '45' });
+      // the movement list shows the receipt (checkpoint 58)
+      const movements = (await http.get('/inventory/movements?type=PURCHASE_RECEIPT', b.token)).body
+        .data as Json[];
+      expect(movements).toEqual([
+        expect.objectContaining({ sku: 'CH-A', quantityDelta: '8', unitCost: '45' }),
+      ]);
       const supplier = (await http.get(`/suppliers/${b.supplier}`, b.token)).body.data as Json;
       expect(supplier.summary).toEqual({
         totalOrdered: '360',
