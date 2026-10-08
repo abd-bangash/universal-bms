@@ -185,6 +185,38 @@ async function makeCommission(prisma: PrismaClient, workspaceId: string) {
   });
 }
 
+async function makeConnection(prisma: PrismaClient, workspaceId: string, provider = 'WHATSAPP') {
+  return prisma.integrationConnection.create({
+    data: {
+      workspaceId,
+      provider,
+      type: 'CHANNEL',
+      externalAccountId: `acct-${rand()}`,
+      configEncrypted: 'v1:test',
+    },
+  });
+}
+
+async function makeConversation(prisma: PrismaClient, workspaceId: string) {
+  const connection = await makeConnection(prisma, workspaceId);
+  return prisma.conversation.create({
+    data: {
+      workspaceId,
+      connectionId: connection.id,
+      channelType: 'WHATSAPP',
+      externalContactId: `+92300${rand()}`,
+      contactName: 'Test Contact',
+    },
+  });
+}
+
+async function makeSuggestion(prisma: PrismaClient, workspaceId: string) {
+  const conversation = await makeConversation(prisma, workspaceId);
+  return prisma.aISuggestion.create({
+    data: { workspaceId, conversationId: conversation.id, type: 'SUMMARY', payload: {} },
+  });
+}
+
 const byId = (row: { id: string }) => ({ where: { id: row.id } });
 
 const factories: Record<string, TenantFactory> = {
@@ -577,6 +609,71 @@ const factories: Record<string, TenantFactory> = {
   },
   CommissionRule: async (p, ws) => byId(await makeCommissionRule(p, ws)),
   Commission: async (p, ws) => byId(await makeCommission(p, ws)),
+  IntegrationConnection: async (p, ws) => byId(await makeConnection(p, ws)),
+  Conversation: async (p, ws) => byId(await makeConversation(p, ws)),
+  Message: async (p, ws) => {
+    const c = await makeConversation(p, ws);
+    return byId(
+      await p.message.create({
+        data: {
+          workspaceId: ws,
+          conversationId: c.id,
+          externalId: `wamid.${rand()}`,
+          direction: 'INBOUND',
+          senderType: 'CUSTOMER',
+          body: 'Hello',
+          status: 'RECEIVED',
+          providerTimestamp: new Date(),
+        },
+      }),
+    );
+  },
+  MessageTemplate: async (p, ws) =>
+    byId(
+      await p.messageTemplate.create({
+        data: {
+          workspaceId: ws,
+          name: `Template ${rand()}`,
+          kind: 'QUICK_REPLY',
+          body: 'Hi {{name}}',
+          variables: ['name'],
+        },
+      }),
+    ),
+  ContactConsent: async (p, ws) =>
+    byId(
+      await p.contactConsent.create({
+        data: { workspaceId: ws, channelType: 'WHATSAPP', externalContactId: `+92300${rand()}` },
+      }),
+    ),
+  KnowledgeItem: async (p, ws) =>
+    byId(
+      await p.knowledgeItem.create({
+        data: { workspaceId: ws, title: `Item ${rand()}`, body: 'Delivery takes 4 weeks.' },
+      }),
+    ),
+  QuestionFlow: async (p, ws) =>
+    byId(
+      await p.questionFlow.create({
+        data: { workspaceId: ws, steps: [{ fieldKey: 'length', question: 'How long?' }] },
+      }),
+    ),
+  AISuggestion: async (p, ws) => byId(await makeSuggestion(p, ws)),
+  AIActionLog: async (p, ws) =>
+    byId(
+      await p.aIActionLog.create({
+        data: {
+          workspaceId: ws,
+          actionType: 'SUMMARIZE',
+          providerName: 'fake',
+          promptVersion: 'v1',
+          promptHash: 'h',
+          outcome: 'SUCCESS',
+        },
+      }),
+    ),
+  AIUsage: async (p, ws) =>
+    byId(await p.aIUsage.create({ data: { workspaceId: ws, day: new Date('2026-01-01') } })),
   Supplier: async (p, ws) => byId(await makeSupplier(p, ws)),
   PurchaseOrder: async (p, ws) => byId(await makePurchaseOrder(p, ws)),
   PurchaseOrderItem: async (p, ws) => {

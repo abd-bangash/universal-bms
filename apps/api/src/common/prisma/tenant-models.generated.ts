@@ -72,6 +72,17 @@ export const ALL_MODEL_NAMES: readonly string[] = [
   'SupplierReturn',
   'CommissionRule',
   'Commission',
+  'IntegrationConnection',
+  'WebhookEvent',
+  'Conversation',
+  'Message',
+  'MessageTemplate',
+  'ContactConsent',
+  'KnowledgeItem',
+  'QuestionFlow',
+  'AISuggestion',
+  'AIActionLog',
+  'AIUsage',
 ];
 
 export const TENANT_MODEL_NAMES: readonly string[] = [
@@ -139,4 +150,14 @@ export const TENANT_MODEL_NAMES: readonly string[] = [
   'SupplierReturn',
   'CommissionRule',
   'Commission',
+  'IntegrationConnection',
+  'Conversation',
+  'Message',
+  'MessageTemplate',
+  'ContactConsent',
+  'KnowledgeItem',
+  'QuestionFlow',
+  'AISuggestion',
+  'AIActionLog',
+  'AIUsage',
 ];

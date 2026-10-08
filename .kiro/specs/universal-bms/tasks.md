@@ -518,7 +518,7 @@ How to read this file:
   - Move commission calculation to the queue; add the key-value store to `deploy/render.yaml`
   - _Requirements: 21.5, 51.1, 52.1_
 
-- [ ] 69. Schema: messaging and AI
+- [x] 69. Schema: messaging and AI
   - Add `IntegrationConnection`, `WebhookEvent`, `Conversation`, `Message`, `MessageTemplate`, `ContactConsent`, `KnowledgeItem`, `QuestionFlow`, `AISuggestion`, `AIActionLog`, `AIUsage`; migration `messaging_ai` with `rollback.sql`; trigram indexes on conversation contact fields
   - _Requirements: 15.2, 16.1, 18.8, 22.1, 22.2_
 

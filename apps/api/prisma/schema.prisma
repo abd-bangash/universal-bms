@@ -14,82 +14,92 @@ datasource db {
 }
 
 model Workspace {
-  id                  String               @id @default(cuid())
-  name                String
-  slug                String               @unique
-  industryProfile     String               @map("industry_profile")
-  config              Json                 @default("{}")
-  configVersion       Int                  @default(1) @map("config_version")
-  status              WorkspaceStatus      @default(ACTIVE)
-  isDemo              Boolean              @default(false) @map("is_demo")
-  deletedAt           DateTime?            @map("deleted_at")
-  createdAt           DateTime             @default(now()) @map("created_at")
-  updatedAt           DateTime             @updatedAt @map("updated_at")
-  userWorkspaces      UserWorkspace[]
-  roles               Role[]
-  userWorkspaceRoles  UserWorkspaceRole[]
-  invitations         Invitation[]
-  auditEvents         AuditEvent[]
-  idempotencyKeys     IdempotencyKey[]
-  documentSequences   DocumentSequence[]
-  fileAssets          FileAsset[]
-  fieldDefinitions    FieldDefinition[]
-  workflows           Workflow[]
-  workflowStates      WorkflowState[]
-  workflowTransitions WorkflowTransition[]
-  statusHistories     StatusHistory[]
-  approvalRequests    ApprovalRequest[]
-  units               Unit[]
-  taxClasses          TaxClass[]
-  inventoryLocations  InventoryLocation[]
-  tasks               Task[]
-  notes               Note[]
-  notifications       Notification[]
-  userSessions        UserSession[]
-  categories          Category[]
-  brands              Brand[]
-  products            Product[]
-  productVariants     ProductVariant[]
-  productImages       ProductImage[]
-  bundleComponents    BundleComponent[]
-  priceLists          PriceList[]
-  priceListItems      PriceListItem[]
-  customers           Customer[]
-  leads               Lead[]
-  lostReasons         LostReason[]
-  timelineEntries     TimelineEntry[]
-  quotations          Quotation[]
-  quotationItems      QuotationItem[]
-  orders              Order[]
-  orderItems          OrderItem[]
-  orderSalespeople    OrderSalesperson[]
-  invoices            Invoice[]
-  productionJobs      ProductionJob[]
-  returns             Return[]
-  returnLines         ReturnLine[]
-  financialAccounts   FinancialAccount[]
-  paymentMethods      PaymentMethod[]
-  payments            Payment[]
-  customerCredits     CustomerCredit[]
-  receipts            Receipt[]
-  expenseCategories   ExpenseCategory[]
-  expenses            Expense[]
-  stockMovements      StockMovement[]
-  stockLevels         StockLevel[]
-  stockReservations   StockReservation[]
-  adjustmentReasons   AdjustmentReason[]
-  stockCounts         StockCount[]
-  stockCountLines     StockCountLine[]
-  posSessions         PosSession[]
-  cashMovements       CashMovement[]
-  suppliers           Supplier[]
-  purchaseOrders      PurchaseOrder[]
-  purchaseOrderItems  PurchaseOrderItem[]
-  goodsReceipts       GoodsReceipt[]
-  supplierPayments    SupplierPayment[]
-  supplierReturns     SupplierReturn[]
-  commissionRules     CommissionRule[]
-  commissions         Commission[]
+  id                     String                  @id @default(cuid())
+  name                   String
+  slug                   String                  @unique
+  industryProfile        String                  @map("industry_profile")
+  config                 Json                    @default("{}")
+  configVersion          Int                     @default(1) @map("config_version")
+  status                 WorkspaceStatus         @default(ACTIVE)
+  isDemo                 Boolean                 @default(false) @map("is_demo")
+  deletedAt              DateTime?               @map("deleted_at")
+  createdAt              DateTime                @default(now()) @map("created_at")
+  updatedAt              DateTime                @updatedAt @map("updated_at")
+  userWorkspaces         UserWorkspace[]
+  roles                  Role[]
+  userWorkspaceRoles     UserWorkspaceRole[]
+  invitations            Invitation[]
+  auditEvents            AuditEvent[]
+  idempotencyKeys        IdempotencyKey[]
+  documentSequences      DocumentSequence[]
+  fileAssets             FileAsset[]
+  fieldDefinitions       FieldDefinition[]
+  workflows              Workflow[]
+  workflowStates         WorkflowState[]
+  workflowTransitions    WorkflowTransition[]
+  statusHistories        StatusHistory[]
+  approvalRequests       ApprovalRequest[]
+  units                  Unit[]
+  taxClasses             TaxClass[]
+  inventoryLocations     InventoryLocation[]
+  tasks                  Task[]
+  notes                  Note[]
+  notifications          Notification[]
+  userSessions           UserSession[]
+  categories             Category[]
+  brands                 Brand[]
+  products               Product[]
+  productVariants        ProductVariant[]
+  productImages          ProductImage[]
+  bundleComponents       BundleComponent[]
+  priceLists             PriceList[]
+  priceListItems         PriceListItem[]
+  customers              Customer[]
+  leads                  Lead[]
+  lostReasons            LostReason[]
+  timelineEntries        TimelineEntry[]
+  quotations             Quotation[]
+  quotationItems         QuotationItem[]
+  orders                 Order[]
+  orderItems             OrderItem[]
+  orderSalespeople       OrderSalesperson[]
+  invoices               Invoice[]
+  productionJobs         ProductionJob[]
+  returns                Return[]
+  returnLines            ReturnLine[]
+  financialAccounts      FinancialAccount[]
+  paymentMethods         PaymentMethod[]
+  payments               Payment[]
+  customerCredits        CustomerCredit[]
+  receipts               Receipt[]
+  expenseCategories      ExpenseCategory[]
+  expenses               Expense[]
+  stockMovements         StockMovement[]
+  stockLevels            StockLevel[]
+  stockReservations      StockReservation[]
+  adjustmentReasons      AdjustmentReason[]
+  stockCounts            StockCount[]
+  stockCountLines        StockCountLine[]
+  posSessions            PosSession[]
+  cashMovements          CashMovement[]
+  suppliers              Supplier[]
+  purchaseOrders         PurchaseOrder[]
+  purchaseOrderItems     PurchaseOrderItem[]
+  goodsReceipts          GoodsReceipt[]
+  supplierPayments       SupplierPayment[]
+  supplierReturns        SupplierReturn[]
+  commissionRules        CommissionRule[]
+  commissions            Commission[]
+  integrationConnections IntegrationConnection[]
+  conversations          Conversation[]
+  messages               Message[]
+  messageTemplates       MessageTemplate[]
+  contactConsents        ContactConsent[]
+  knowledgeItems         KnowledgeItem[]
+  questionFlows          QuestionFlow[]
+  aiSuggestions          AISuggestion[]
+  aiActionLogs           AIActionLog[]
+  aiUsage                AIUsage[]
 
   @@map("workspaces")
 }
@@ -103,41 +113,45 @@ enum WorkspaceStatus {
 }
 
 model User {
-  id                  String               @id @default(cuid())
-  email               String               @unique @db.Citext
-  passwordHash        String?              @map("password_hash")
-  firstName           String               @map("first_name")
-  lastName            String               @map("last_name")
-  status              UserStatus           @default(PENDING)
-  isPlatformAdmin     Boolean              @default(false) @map("is_platform_admin")
-  lockedUntil         DateTime?            @map("locked_until")
-  createdAt           DateTime             @default(now()) @map("created_at")
-  updatedAt           DateTime             @updatedAt @map("updated_at")
-  sessions            UserSession[]
-  passwordResetTokens PasswordResetToken[]
-  memberships         UserWorkspace[]
-  invitationsSent     Invitation[]         @relation("InvitationInvitedBy")
-  uploadedFiles       FileAsset[]
-  statusChanges       StatusHistory[]
-  approvalsRequested  ApprovalRequest[]    @relation("ApprovalRequestedBy")
-  approvalsDecided    ApprovalRequest[]    @relation("ApprovalDecidedBy")
-  tasksAssigned       Task[]               @relation("TaskAssignee")
-  tasksCreated        Task[]               @relation("TaskCreator")
-  tasksCompleted      Task[]               @relation("TaskCompleter")
-  notesCreated        Note[]
-  notifications       Notification[]
-  customersAssigned   Customer[]           @relation("CustomerAssignee")
-  leadsAssigned       Lead[]               @relation("LeadAssignee")
-  leadsCreated        Lead[]               @relation("LeadCreator")
-  quotationsAssigned  Quotation[]          @relation("QuotationAssignee")
-  quotationsCreated   Quotation[]          @relation("QuotationCreator")
-  ordersAssigned      Order[]              @relation("OrderAssignee")
-  ordersCreated       Order[]              @relation("OrderCreator")
-  orderShares         OrderSalesperson[]
-  posSessions         PosSession[]         @relation("PosCashier")
-  commissionRules     CommissionRule[]     @relation("CommissionRuleSalesperson")
-  commissionsEarned   Commission[]         @relation("CommissionSalesperson")
-  commissionsApproved Commission[]         @relation("CommissionApprover")
+  id                    String               @id @default(cuid())
+  email                 String               @unique @db.Citext
+  passwordHash          String?              @map("password_hash")
+  firstName             String               @map("first_name")
+  lastName              String               @map("last_name")
+  status                UserStatus           @default(PENDING)
+  isPlatformAdmin       Boolean              @default(false) @map("is_platform_admin")
+  lockedUntil           DateTime?            @map("locked_until")
+  createdAt             DateTime             @default(now()) @map("created_at")
+  updatedAt             DateTime             @updatedAt @map("updated_at")
+  sessions              UserSession[]
+  passwordResetTokens   PasswordResetToken[]
+  memberships           UserWorkspace[]
+  invitationsSent       Invitation[]         @relation("InvitationInvitedBy")
+  uploadedFiles         FileAsset[]
+  statusChanges         StatusHistory[]
+  approvalsRequested    ApprovalRequest[]    @relation("ApprovalRequestedBy")
+  approvalsDecided      ApprovalRequest[]    @relation("ApprovalDecidedBy")
+  tasksAssigned         Task[]               @relation("TaskAssignee")
+  tasksCreated          Task[]               @relation("TaskCreator")
+  tasksCompleted        Task[]               @relation("TaskCompleter")
+  notesCreated          Note[]
+  notifications         Notification[]
+  customersAssigned     Customer[]           @relation("CustomerAssignee")
+  leadsAssigned         Lead[]               @relation("LeadAssignee")
+  leadsCreated          Lead[]               @relation("LeadCreator")
+  quotationsAssigned    Quotation[]          @relation("QuotationAssignee")
+  quotationsCreated     Quotation[]          @relation("QuotationCreator")
+  ordersAssigned        Order[]              @relation("OrderAssignee")
+  ordersCreated         Order[]              @relation("OrderCreator")
+  orderShares           OrderSalesperson[]
+  posSessions           PosSession[]         @relation("PosCashier")
+  commissionRules       CommissionRule[]     @relation("CommissionRuleSalesperson")
+  commissionsEarned     Commission[]         @relation("CommissionSalesperson")
+  commissionsApproved   Commission[]         @relation("CommissionApprover")
+  conversationsAssigned Conversation[]       @relation("ConversationAssignee")
+  messagesSent          Message[]            @relation("MessageSender")
+  aiSuggestionsDecided  AISuggestion[]       @relation("AISuggestionDecider")
+  aiActionsApproved     AIActionLog[]        @relation("AIActionApprover")
 
   @@map("users")
 }
@@ -679,16 +693,17 @@ model Notification {
 // ═══ Catalog (task 17) ═══════════════════════════════════════════════════
 
 model Category {
-  id          String     @id @default(cuid())
-  workspaceId String     @map("workspace_id")
-  workspace   Workspace  @relation(fields: [workspaceId], references: [id])
-  name        String
-  parentId    String?    @map("parent_id")
-  parent      Category?  @relation("CategoryTree", fields: [parentId], references: [id])
-  children    Category[] @relation("CategoryTree")
-  sortOrder   Int        @default(0) @map("sort_order")
-  active      Boolean    @default(true)
-  products    Product[]
+  id            String         @id @default(cuid())
+  workspaceId   String         @map("workspace_id")
+  workspace     Workspace      @relation(fields: [workspaceId], references: [id])
+  name          String
+  parentId      String?        @map("parent_id")
+  parent        Category?      @relation("CategoryTree", fields: [parentId], references: [id])
+  children      Category[]     @relation("CategoryTree")
+  sortOrder     Int            @default(0) @map("sort_order")
+  active        Boolean        @default(true)
+  products      Product[]
+  questionFlows QuestionFlow[]
 
   @@unique([workspaceId, parentId, name])
   @@index([workspaceId, parentId])
@@ -914,6 +929,8 @@ model Customer {
   timeline         TimelineEntry[]
   quotations       Quotation[]
   orders           Order[]
+  conversations    Conversation[]
+  consents         ContactConsent[]
   invoices         Invoice[]
   returns          Return[]
   payments         Payment[]
@@ -964,6 +981,8 @@ model Lead {
   timeline        TimelineEntry[]
   quotations      Quotation[]
   orders          Order[]
+  conversations   Conversation[]
+  aiSuggestions   AISuggestion[]
 
   @@index([workspaceId, stage])
   @@index([workspaceId, phoneNormalized])
@@ -1945,4 +1964,269 @@ model Commission {
   @@index([workspaceId, orderId])
   @@index([workspaceId, createdAt])
   @@map("commissions")
+}
+
+// ═══ Messaging and AI (task 69) ══════════════════════════════════════════
+
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+
+  @@map("message_direction")
+}
+
+model IntegrationConnection {
+  id                String         @id @default(cuid())
+  workspaceId       String         @map("workspace_id")
+  workspace         Workspace      @relation(fields: [workspaceId], references: [id])
+  /// WHATSAPP | FACEBOOK_LEADS | INSTAGRAM | AI_<name> | SMTP | S3
+  provider          String
+  /// CHANNEL | AI | EMAIL | STORAGE | PAYMENT
+  type              String
+  /// CONNECTED | DISCONNECTED | ERROR
+  status            String         @default("CONNECTED")
+  displayName       String?        @map("display_name")
+  /// The receiving phone number id or page id; one workspace per (provider, account) across the platform
+  /// (partial unique index in the migration).
+  externalAccountId String?        @map("external_account_id")
+  /// AES-256-GCM; never returned by any endpoint.
+  configEncrypted   String         @map("config_encrypted")
+  lastSuccessAt     DateTime?      @map("last_success_at")
+  lastErrorAt       DateTime?      @map("last_error_at")
+  lastError         String?        @map("last_error")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+  conversations     Conversation[]
+
+  @@unique([workspaceId, provider])
+  @@map("integration_connections")
+}
+
+/// Received before the workspace is known, so it has no workspace relation; the account id finds it afterwards.
+model WebhookEvent {
+  id           String    @id @default(cuid())
+  provider     String
+  dedupeKey    String    @map("dedupe_key")
+  workspaceId  String?   @map("workspace_id")
+  connectionId String?   @map("connection_id")
+  /// message | status | lead_form
+  kind         String
+  payload      Json
+  /// RECEIVED | PROCESSED | FAILED | IGNORED
+  status       String    @default("RECEIVED")
+  attempts     Int       @default(0)
+  error        String?
+  receivedAt   DateTime  @default(now()) @map("received_at")
+  processedAt  DateTime? @map("processed_at")
+
+  @@unique([provider, dedupeKey])
+  @@index([status, receivedAt])
+  @@map("webhook_events")
+}
+
+model Conversation {
+  id                String                @id @default(cuid())
+  workspaceId       String                @map("workspace_id")
+  workspace         Workspace             @relation(fields: [workspaceId], references: [id])
+  connectionId      String                @map("connection_id")
+  connection        IntegrationConnection @relation(fields: [connectionId], references: [id])
+  channelType       String                @map("channel_type")
+  externalContactId String                @map("external_contact_id")
+  contactName       String?               @map("contact_name")
+  contactPhone      String?               @map("contact_phone")
+  customerId        String?               @map("customer_id")
+  customer          Customer?             @relation(fields: [customerId], references: [id])
+  leadId            String?               @map("lead_id")
+  lead              Lead?                 @relation(fields: [leadId], references: [id])
+  assignedToId      String?               @map("assigned_to_id")
+  assignedTo        User?                 @relation("ConversationAssignee", fields: [assignedToId], references: [id])
+  /// OPEN | PENDING | CLOSED
+  status            String                @default("OPEN")
+  unreadCount       Int                   @default(0) @map("unread_count")
+  automationActive  Boolean               @default(true) @map("automation_active")
+  aiEnabled         Boolean               @default(true) @map("ai_enabled")
+  needsHuman        Boolean               @default(false) @map("needs_human")
+  needsHumanReason  String?               @map("needs_human_reason")
+  lastMessageAt     DateTime?             @map("last_message_at")
+  lastInboundAt     DateTime?             @map("last_inbound_at")
+  createdAt         DateTime              @default(now()) @map("created_at")
+  updatedAt         DateTime              @updatedAt @map("updated_at")
+  messages          Message[]
+  aiSuggestions     AISuggestion[]
+
+  @@unique([workspaceId, connectionId, externalContactId])
+  @@index([workspaceId, status, lastMessageAt])
+  @@index([workspaceId, assignedToId, status])
+  @@index([workspaceId, customerId])
+  @@index([workspaceId, leadId])
+  @@map("conversations")
+}
+
+model Message {
+  id                String           @id @default(cuid())
+  workspaceId       String           @map("workspace_id")
+  workspace         Workspace        @relation(fields: [workspaceId], references: [id])
+  conversationId    String           @map("conversation_id")
+  conversation      Conversation     @relation(fields: [conversationId], references: [id])
+  /// The provider's message id; null until the provider accepts an outbound message.
+  externalId        String?          @map("external_id")
+  direction         MessageDirection
+  /// CUSTOMER | STAFF | AI | AUTOMATION | SYSTEM
+  senderType        String           @map("sender_type")
+  senderUserId      String?          @map("sender_user_id")
+  senderUser        User?            @relation("MessageSender", fields: [senderUserId], references: [id])
+  /// TEXT | IMAGE | DOCUMENT | AUDIO | VIDEO | LOCATION | TEMPLATE | UNSUPPORTED
+  type              String           @default("TEXT")
+  body              String?
+  /// [{ fileId, name, mime }]
+  attachments       Json             @default("[]")
+  templateId        String?          @map("template_id")
+  template          MessageTemplate? @relation(fields: [templateId], references: [id])
+  /// QUEUED | SENT | DELIVERED | READ | FAILED | RECEIVED
+  status            String           @default("QUEUED")
+  failureReason     String?          @map("failure_reason")
+  providerTimestamp DateTime         @map("provider_timestamp")
+  channelMeta       Json?            @map("channel_meta")
+  createdAt         DateTime         @default(now()) @map("created_at")
+
+  @@unique([workspaceId, conversationId, externalId])
+  @@index([workspaceId, conversationId, providerTimestamp])
+  @@map("messages")
+}
+
+model MessageTemplate {
+  id             String    @id @default(cuid())
+  workspaceId    String    @map("workspace_id")
+  workspace      Workspace @relation(fields: [workspaceId], references: [id])
+  name           String
+  /// QUICK_REPLY | MESSAGE | PROVIDER | NOTIFICATION | BANK_DETAILS
+  kind           String
+  channel        String?
+  body           String
+  variables      String[]
+  providerName   String?   @map("provider_name")
+  language       String?
+  /// APPROVED | PENDING | REJECTED
+  providerStatus String?   @map("provider_status")
+  active         Boolean   @default(true)
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  messages       Message[]
+
+  @@unique([workspaceId, kind, name])
+  @@map("message_templates")
+}
+
+model ContactConsent {
+  id                String    @id @default(cuid())
+  workspaceId       String    @map("workspace_id")
+  workspace         Workspace @relation(fields: [workspaceId], references: [id])
+  channelType       String    @map("channel_type")
+  externalContactId String    @map("external_contact_id")
+  customerId        String?   @map("customer_id")
+  customer          Customer? @relation(fields: [customerId], references: [id])
+  /// OPTED_IN | OPTED_OUT | UNKNOWN
+  status            String    @default("UNKNOWN")
+  source            String?
+  changedAt         DateTime  @default(now()) @map("changed_at")
+
+  @@unique([workspaceId, channelType, externalContactId])
+  @@map("contact_consents")
+}
+
+model KnowledgeItem {
+  id          String    @id @default(cuid())
+  workspaceId String    @map("workspace_id")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  title       String
+  body        String
+  active      Boolean   @default(true)
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([workspaceId, active])
+  @@map("knowledge_items")
+}
+
+model QuestionFlow {
+  id          String    @id @default(cuid())
+  workspaceId String    @map("workspace_id")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  /// Null is the default flow.
+  categoryId  String?   @map("category_id")
+  category    Category? @relation(fields: [categoryId], references: [id])
+  /// [{ fieldKey, question }]
+  steps       Json
+
+  @@unique([workspaceId, categoryId])
+  @@map("question_flows")
+}
+
+model AISuggestion {
+  id             String        @id @default(cuid())
+  workspaceId    String        @map("workspace_id")
+  workspace      Workspace     @relation(fields: [workspaceId], references: [id])
+  conversationId String?       @map("conversation_id")
+  conversation   Conversation? @relation(fields: [conversationId], references: [id])
+  leadId         String?       @map("lead_id")
+  lead           Lead?         @relation(fields: [leadId], references: [id])
+  /// EXTRACTION | DRAFT_REPLY | SUMMARY | CLASSIFICATION | NEXT_ACTION | NOTE | NEXT_QUESTION
+  type           String
+  payload        Json
+  flags          String[]
+  confidence     Decimal?      @db.Decimal(5, 4)
+  /// PENDING | APPROVED | EDITED | REJECTED | SUPERSEDED | AUTO_SENT
+  status         String        @default("PENDING")
+  decidedById    String?       @map("decided_by_id")
+  decidedBy      User?         @relation("AISuggestionDecider", fields: [decidedById], references: [id])
+  decidedAt      DateTime?     @map("decided_at")
+  appliedPayload Json?         @map("applied_payload")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  actionLogs     AIActionLog[]
+
+  @@index([workspaceId, conversationId, createdAt])
+  @@index([workspaceId, leadId])
+  @@map("ai_suggestions")
+}
+
+model AIActionLog {
+  id              String        @id @default(cuid())
+  workspaceId     String        @map("workspace_id")
+  workspace       Workspace     @relation(fields: [workspaceId], references: [id])
+  conversationId  String?       @map("conversation_id")
+  suggestionId    String?       @map("suggestion_id")
+  suggestion      AISuggestion? @relation(fields: [suggestionId], references: [id])
+  actionType      String        @map("action_type")
+  providerName    String        @map("provider_name")
+  modelVersion    String?       @map("model_version")
+  promptVersion   String        @map("prompt_version")
+  promptHash      String        @map("prompt_hash")
+  responseHash    String?       @map("response_hash")
+  inputTokens     Int           @default(0) @map("input_tokens")
+  outputTokens    Int           @default(0) @map("output_tokens")
+  latencyMs       Int?          @map("latency_ms")
+  confidenceScore Decimal?      @map("confidence_score") @db.Decimal(5, 4)
+  /// SUCCESS | FAILED | TIMEOUT | DISABLED | LIMIT_REACHED
+  outcome         String
+  error           String?
+  humanApproved   Boolean       @default(false) @map("human_approved")
+  approvedById    String?       @map("approved_by_id")
+  approvedBy      User?         @relation("AIActionApprover", fields: [approvedById], references: [id])
+  approvedAt      DateTime?     @map("approved_at")
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  @@index([workspaceId, createdAt])
+  @@index([workspaceId, conversationId])
+  @@map("ai_action_logs")
+}
+
+model AIUsage {
+  id          String    @id @default(cuid())
+  workspaceId String    @map("workspace_id")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  day         DateTime  @db.Date
+  requests    Int       @default(0)
+  tokens      Int       @default(0)
+
+  @@unique([workspaceId, day])
+  @@map("ai_usage")
 }

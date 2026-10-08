@@ -12,6 +12,8 @@ export const GLOBAL_MODELS: ReadonlySet<string> = new Set([
   'PlatformSetting',
   'Workspace',
   'LoginAttempt',
+  // received before the workspace is known; resolved from the account id afterwards
+  'WebhookEvent',
 ]);
 
 /** Every model with a `workspaceId` column; the tenant extension scopes exactly these. */
