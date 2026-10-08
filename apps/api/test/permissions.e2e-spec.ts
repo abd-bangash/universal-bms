@@ -20,6 +20,8 @@ const PUBLIC_ROUTES = [
   'POST /api/v1/tenants',
   'GET /api/v1/files/local',
   'POST /api/v1/auth/invite/accept',
+  'GET /api/v1/webhooks/:provider',
+  'POST /api/v1/webhooks/:provider',
 ];
 
 /** Routes that need a session but no specific permission (self-service). Also listed deliberately. */

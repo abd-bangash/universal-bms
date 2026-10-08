@@ -164,6 +164,42 @@ export class FilesService {
     }
   }
 
+  /**
+   * Keeps a file that arrived from a provider (a customer's photo or PDF) in the workspace. The
+   * same allow-list and size limit apply as to uploads; anything else returns null and the caller
+   * keeps the message without the file.
+   */
+  async storeInbound(
+    workspaceId: string,
+    file: { buffer: Buffer; name?: string },
+  ): Promise<FileDto | null> {
+    if (file.buffer.length === 0 || file.buffer.length > this.env.MAX_UPLOAD_MB * 1024 * 1024) {
+      return null;
+    }
+    const type = await detectAllowedType(file.buffer, false);
+    if (!type) return null;
+    const now = new Date();
+    const folder = `ws/${workspaceId}/${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
+    const storageKey = `${folder}/${randomUUID()}.${type.ext}`;
+    await this.storage.put(storageKey, file.buffer, type.mime);
+    try {
+      const row = await this.prisma.scoped.fileAsset.create({
+        data: {
+          workspaceId,
+          storageKey,
+          originalName: sanitizeName(file.name ?? `received.${type.ext}`),
+          mimeType: type.mime,
+          sizeBytes: file.buffer.length,
+          purpose: 'MESSAGE_ATTACHMENT',
+        },
+      });
+      return toDto(row);
+    } catch (err) {
+      await this.discard([storageKey]);
+      throw err;
+    }
+  }
+
   /** The bytes of a file of this workspace, for documents the server renders itself (no user check). */
   async readBytes(id: string): Promise<Buffer | null> {
     const file = await this.prisma.scoped.fileAsset.findFirst({ where: { id } });

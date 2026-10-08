@@ -231,6 +231,85 @@ export class LeadsService {
     return { lead: toLeadDto(created), existing: false };
   }
 
+  /** The newest still-open lead of a contact, whenever it was created (used to attach an incoming message to it). */
+  async findOpenByPhone(phoneNormalized: string): Promise<Lead | null> {
+    const workflow = await this.workflows.get('LEAD');
+    const openKeys = workflow.states
+      .filter((s) => s.category === 'OPEN' || s.category === 'IN_PROGRESS')
+      .map((s) => s.key);
+    return this.prisma.scoped.lead.findFirst({
+      where: { phoneNormalized, stage: { in: openKeys } },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
+   * A lead that arrived through a channel (an incoming message or an ad form), not through a
+   * person at a keyboard: no user creates it, so it is audited as the webhook and left unassigned.
+   */
+  async createFromChannel(
+    workspaceId: string,
+    input: {
+      fullName: string;
+      phone: string | null;
+      phoneNormalized: string | null;
+      email?: string | null;
+      source: 'MESSAGING' | 'AD_FORM';
+      channel: string;
+      campaign?: string | null;
+      adId?: string | null;
+      formId?: string | null;
+      requirements?: string | null;
+    },
+  ): Promise<Lead> {
+    const initial = await this.workflows.initialState('LEAD');
+    const created = await this.prisma.scoped.$transaction(async (tx) => {
+      const lead = await tx.lead.create({
+        data: {
+          workspaceId,
+          fullName: input.fullName.trim() || input.phone || 'Unknown contact',
+          phone: input.phone,
+          phoneNormalized: input.phoneNormalized,
+          email: input.email?.trim().toLowerCase() || null,
+          source: input.source,
+          channel: input.channel,
+          campaign: input.campaign ?? null,
+          adId: input.adId ?? null,
+          formId: input.formId ?? null,
+          requirements: input.requirements ?? null,
+          stage: initial.key,
+        },
+      });
+      await tx.statusHistory.create({
+        data: {
+          workspaceId,
+          entityType: 'LEAD',
+          entityId: lead.id,
+          fromKey: null,
+          toKey: initial.key,
+          changedById: null,
+        },
+      });
+      await this.audit.record(tx, {
+        action: 'lead.create',
+        entityType: 'Lead',
+        entityId: lead.id,
+        after: audited(toLeadDto(lead)),
+        actor: { type: 'WEBHOOK', userId: null },
+      });
+      return lead;
+    });
+    await this.timeline.record({
+      leadId: created.id,
+      type: 'SYSTEM',
+      refType: 'Lead',
+      refId: created.id,
+      summary: `Lead created from ${input.channel}`,
+    });
+    await this.events.publish('lead.created', { workspaceId, leadId: created.id });
+    return created;
+  }
+
   // ── update ──────────────────────────────────────────────────────────────────────────────
 
   async update(user: AuthUser, id: string, dto: UpdateLeadDto): Promise<LeadDto> {

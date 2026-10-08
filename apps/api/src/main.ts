@@ -9,7 +9,7 @@ import { AppModule } from './app.module';
 
 async function bootstrap(): Promise<void> {
   const env = loadEnv(); // exits with a clear message when the environment is invalid
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const app = await NestFactory.create(AppModule, { bufferLogs: true, rawBody: true });
   app.useLogger(app.get(AppLogger));
   configureApp(app, env);
   await app.listen(4000);

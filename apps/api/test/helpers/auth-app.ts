@@ -61,7 +61,7 @@ export async function createTestApp(
     .overrideProvider(ENV)
     .useValue({ ...testEnv(), ...envOverrides })
     .compile();
-  const app = moduleRef.createNestApplication();
+  const app = moduleRef.createNestApplication({ rawBody: true });
   configureApp(app, { APP_ENV: 'development', WEB_ORIGIN: 'http://localhost:3000' });
   // Tests give every request its own client address so rate limits do not couple test cases.
   app.getHttpAdapter().getInstance().set('trust proxy', true);

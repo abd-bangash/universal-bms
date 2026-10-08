@@ -538,14 +538,14 @@ How to read this file:
   - [x] 71.1 Property test — Property 9 (normalization completeness) over the fixtures and generated variations
     - _Requirements: 15.1, 15.2_
 
-- [ ] 72. Webhook ingestion pipeline
+- [x] 72. Webhook ingestion pipeline
   - `GET` and `POST /webhooks/:provider` as in `design.md`: raw body, signature check, workspace resolution by account id, durable `WebhookEvent` insert with dedupe key, enqueue, then acknowledge
   - `ChannelInboundProcessor` for message and status events: conversation upsert, identity matching by normalized phone to Customer, then open Lead, else new Lead; message insert; media to storage; counters; reopen closed conversations; forward-only status rank; retry on unknown message for out-of-order statuses
   - Three retries with backoff, then `FAILED`, audit and `integration.failed`
   - _Requirements: 15.2, 15.3, 15.5, 15.6, 15.7, 15.8, 15.9, 42.1, 42.2, 42.3, 42.11, 42.13_
-  - [ ] 72.1 Property test — Property 10 (idempotency and ordering) delivering shuffled, duplicated event sets
+  - [x] 72.1 Property test — Property 10 (idempotency and ordering) delivering shuffled, duplicated event sets
     - _Requirements: 15.5, 42.1, 42.2_
-  - [ ] 72.2 Integration tests: invalid signature returns 401 and is audited; unknown account is acknowledged and ignored; an inbound message from an unknown number creates a lead and a linked conversation
+  - [x] 72.2 Integration tests: invalid signature returns 401 and is audited; unknown account is acknowledged and ignored; an inbound message from an unknown number creates a lead and a linked conversation
     - _Requirements: 15.3, 15.7, 15.8_
 
 - [ ] 73. Conversations and outbound messaging
