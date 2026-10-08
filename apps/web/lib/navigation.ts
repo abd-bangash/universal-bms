@@ -213,7 +213,7 @@ export const NAVIGATION: readonly NavigationEntry[] = [
     label: { message: 'integrations' },
     area: 'integrations',
     permissions: ['integration:view'],
-    available: false,
+    available: true,
   },
   {
     key: 'reports',

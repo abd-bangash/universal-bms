@@ -522,12 +522,12 @@ How to read this file:
   - Add `IntegrationConnection`, `WebhookEvent`, `Conversation`, `Message`, `MessageTemplate`, `ContactConsent`, `KnowledgeItem`, `QuestionFlow`, `AISuggestion`, `AIActionLog`, `AIUsage`; migration `messaging_ai` with `rollback.sql`; trigram indexes on conversation contact fields
   - _Requirements: 15.2, 16.1, 18.8, 22.1, 22.2_
 
-- [ ] 70. Integration connections
+- [x] 70. Integration connections
   - `IntegrationService`: connect (encrypt secrets with AES-256-GCM), test, disconnect, masked reads, status and last-error tracking
   - `AdapterRunner.run` (timeout, retry, circuit breaker with `cockatiel`, error mapping, logging, audit)
   - Endpoints under `/integrations`; `/integrations` screen showing status, last success, last error and a test button
   - _Requirements: 24.3, 24.4, 24.5, 42.12, 48.1, 48.6, 48.8, 48.9, 48.10, 21.3_
-  - [ ] 70.1 Unit tests: secrets never appear in any API response or log; an adapter exception surfaces as a normalized error
+  - [x] 70.1 Unit tests: secrets never appear in any API response or log; an adapter exception surfaces as a normalized error
     - _Requirements: 24.4, 42.12, 48.6_
 
 - [ ] 71. Channel adapter framework and WhatsApp adapter

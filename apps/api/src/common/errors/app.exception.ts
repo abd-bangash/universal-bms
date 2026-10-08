@@ -32,6 +32,10 @@ export class ExternalServiceException extends AppException {
     readonly normalizedCode: string,
     status: 502 | 503 = 502,
   ) {
-    super('EXTERNAL_SERVICE_FAILED', status, 'An external service failed');
+    // the provider's name and our own code are safe to show; the provider's text never is
+    super('EXTERNAL_SERVICE_FAILED', status, 'An external service failed', undefined, {
+      provider,
+      normalizedCode,
+    });
   }
 }

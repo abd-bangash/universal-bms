@@ -1645,5 +1645,50 @@
       "detailsFor": "Records for {row}",
       "empty": "Nothing to show for this period."
     }
+  },
+  "integrations": {
+    "title": "Integrations",
+    "loading": "Loading…",
+    "connected": "Connected services",
+    "noneConnected": "Nothing is connected yet.",
+    "available": "Available services",
+    "status": {
+      "CONNECTED": "Connected",
+      "ERROR": "Problem",
+      "DISCONNECTED": "Disconnected"
+    },
+    "lastSuccess": "Last success",
+    "lastError": "Last problem",
+    "never": "Never",
+    "none": "None",
+    "test": "Test",
+    "testLabel": "Test {name}",
+    "testOk": "The connection works. {detail}",
+    "testFailed": "The test failed: {code}.",
+    "disconnect": "Disconnect",
+    "disconnectLabel": "Disconnect {name}",
+    "disconnectTitle": "Disconnect {name}?",
+    "disconnectDescription": "The saved credentials are deleted. Conversations that came through it are kept.",
+    "connect": "Connect",
+    "reconnect": "Reconnect",
+    "connectLabel": "Connect {name}",
+    "reconnectLabel": "Reconnect {name}",
+    "code": {
+      "TIMEOUT": "The service did not answer in time",
+      "CIRCUIT_OPEN": "Too many recent failures; trying again later",
+      "AUTH_FAILED": "The credentials were refused",
+      "RATE_LIMITED": "Too many requests",
+      "BAD_REQUEST": "The request was refused",
+      "PROVIDER_ERROR": "The service had an error",
+      "NETWORK_ERROR": "The service could not be reached",
+      "UNKNOWN": "Something went wrong"
+    },
+    "dialog": {
+      "title": "Connect {name}",
+      "hint": "Credentials are encrypted when saved and are never shown again in full.",
+      "displayName": "Name (optional)",
+      "cancel": "Cancel",
+      "save": "Save"
+    }
   }
 }
