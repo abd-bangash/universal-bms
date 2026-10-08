@@ -530,12 +530,12 @@ How to read this file:
   - [x] 70.1 Unit tests: secrets never appear in any API response or log; an adapter exception surfaces as a normalized error
     - _Requirements: 24.4, 42.12, 48.6_
 
-- [ ] 71. Channel adapter framework and WhatsApp adapter
+- [x] 71. Channel adapter framework and WhatsApp adapter
   - `ChannelAdapter` interface and `NormalizedEvent` types in `packages/types`; `ChannelRegistry`
   - `WhatsAppAdapter` for the WhatsApp Business Platform Cloud API: challenge verification, signature verification on the raw body, account id extraction, parsing of message and status events (text, image, document, audio, video, location, unsupported), free-form window check, send text, media and template messages, media download, connection test
   - Recorded sample payloads as test fixtures
   - _Requirements: 15.1, 15.4, 15.7, 24.1, 24.3, 42.3, 42.4, 48.1, 48.7_
-  - [ ] 71.1 Property test — Property 9 (normalization completeness) over the fixtures and generated variations
+  - [x] 71.1 Property test — Property 9 (normalization completeness) over the fixtures and generated variations
     - _Requirements: 15.1, 15.2_
 
 - [ ] 72. Webhook ingestion pipeline

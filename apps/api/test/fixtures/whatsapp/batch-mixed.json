@@ -1,0 +1,56 @@
+{
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "104444444444444",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "923001234567",
+              "phone_number_id": "109876543210987"
+            },
+            "contacts": [
+              {
+                "profile": {
+                  "name": "Sana Malik"
+                },
+                "wa_id": "923331234567"
+              }
+            ],
+            "messages": [
+              {
+                "from": "923331234567",
+                "timestamp": "1741600000",
+                "id": "wamid.B1",
+                "type": "text",
+                "text": {
+                  "body": "First"
+                }
+              },
+              {
+                "from": "923331234567",
+                "timestamp": "1741600001",
+                "id": "wamid.B2",
+                "type": "text",
+                "text": {
+                  "body": "Second"
+                }
+              }
+            ],
+            "statuses": [
+              {
+                "id": "wamid.S1",
+                "status": "delivered",
+                "timestamp": "1741600002",
+                "recipient_id": "923331234567"
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}

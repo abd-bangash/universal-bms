@@ -1,0 +1,42 @@
+{
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "104444444444444",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "923001234567",
+              "phone_number_id": "109876543210987"
+            },
+            "contacts": [
+              {
+                "profile": {
+                  "name": "Sana Malik"
+                },
+                "wa_id": "923331234567"
+              }
+            ],
+            "messages": [
+              {
+                "from": "923331234567",
+                "timestamp": "1741600000",
+                "id": "wamid.HBgMOTIzMzMxMjM0NTY3FQIAEhgUM0E5QjQw",
+                "type": "location",
+                "location": {
+                  "latitude": 24.8138,
+                  "longitude": 67.0299,
+                  "name": "Our house",
+                  "address": "Clifton, Karachi"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}

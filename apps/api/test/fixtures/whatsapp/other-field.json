@@ -1,0 +1,16 @@
+{
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "1",
+      "changes": [
+        {
+          "value": {
+            "event": "VERIFIED"
+          },
+          "field": "account_update"
+        }
+      ]
+    }
+  ]
+}

@@ -14,6 +14,7 @@ import { InventoryModule } from './modules/inventory/inventory.module';
 import { CommissionsModule } from './modules/commissions/commissions.module';
 import { ReportingModule } from './modules/reporting/reporting.module';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
+import { ChannelsModule } from './modules/channels/channels.module';
 import { QueueModule } from './modules/queue/queue.module';
 import { PosModule } from './modules/pos/pos.module';
 import { PurchasingModule } from './modules/purchasing/purchasing.module';
@@ -41,6 +42,7 @@ import { HealthModule } from './modules/health/health.module';
     HealthModule,
     QueueModule,
     IntegrationsModule,
+    ChannelsModule,
     PrismaModule,
     AuditModule,
     AuthModule,
