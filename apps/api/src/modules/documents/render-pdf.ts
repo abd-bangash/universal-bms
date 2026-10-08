@@ -1,5 +1,11 @@
 import { buildDocument } from './document-layout';
-import type { DocumentSnapshot, RenderOptions } from './document.types';
+import type {
+  DocumentSnapshot,
+  ReceiptData,
+  ReceiptRenderOptions,
+  RenderOptions,
+} from './document.types';
+import { buildReceipt } from './receipt-layout';
 
 /**
  * Draws a snapshot with @react-pdf/renderer. The library is published as an ES module only; Node
@@ -13,4 +19,13 @@ export async function renderPdf(
   // eslint-disable-next-line @typescript-eslint/no-require-imports -- loaded lazily, see above
   const { renderToBuffer } = require('@react-pdf/renderer') as typeof import('@react-pdf/renderer');
   return renderToBuffer(buildDocument(snapshot, options));
+}
+
+export async function renderReceiptPdf(
+  data: ReceiptData,
+  options: ReceiptRenderOptions,
+): Promise<Buffer> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports -- loaded lazily, see above
+  const { renderToBuffer } = require('@react-pdf/renderer') as typeof import('@react-pdf/renderer');
+  return renderToBuffer(buildReceipt(data, options));
 }

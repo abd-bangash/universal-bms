@@ -4,7 +4,12 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { promisify } from 'node:util';
 import ts from 'typescript';
-import type { DocumentSnapshot, RenderOptions } from '../../src/modules/documents/document.types';
+import type {
+  DocumentSnapshot,
+  ReceiptData,
+  ReceiptRenderOptions,
+  RenderOptions,
+} from '../../src/modules/documents/document.types';
 
 const run = promisify(execFile);
 const root = resolve(__dirname, '../..');
@@ -18,7 +23,7 @@ let compiled: string | undefined;
 function compileOnce(): string {
   if (compiled) return compiled;
   const out = mkdtempSync(join(tmpdir(), 'bms-render-'));
-  for (const file of ['render-pdf', 'document-layout', 'format']) {
+  for (const file of ['render-pdf', 'document-layout', 'receipt-layout', 'format']) {
     const source = readFileSync(join(root, 'src/modules/documents', `${file}.ts`), 'utf8');
     const { outputText } = ts.transpileModule(source, {
       compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
@@ -28,12 +33,15 @@ function compileOnce(): string {
   mkdirSync(join(out, 'node_modules'), { recursive: true });
   writeFileSync(
     join(out, 'run.js'),
-    `const { renderPdf } = require('./render-pdf');
+    `const { renderPdf, renderReceiptPdf } = require('./render-pdf');
 let input = '';
 process.stdin.on('data', (c) => (input += c));
 process.stdin.on('end', async () => {
-  const { snapshot, logo } = JSON.parse(input);
-  const pdf = await renderPdf(snapshot, { logo: logo ? Buffer.from(logo, 'base64') : null });
+  const { snapshot, receipt, logo } = JSON.parse(input);
+  const bytes = logo ? Buffer.from(logo, 'base64') : null;
+  const pdf = receipt
+    ? await renderReceiptPdf(receipt.data, { ...receipt.options, logo: bytes })
+    : await renderPdf(snapshot, { logo: bytes });
   process.stdout.write(pdf.toString('base64'));
 });`,
   );
@@ -52,6 +60,26 @@ export async function renderInNode(
   });
   child.child.stdin?.end(
     JSON.stringify({ snapshot, logo: options.logo ? options.logo.toString('base64') : null }),
+  );
+  const { stdout } = await child;
+  return Buffer.from(stdout, 'base64');
+}
+
+export async function renderReceiptInNode(
+  data: ReceiptData,
+  options: ReceiptRenderOptions,
+): Promise<Buffer> {
+  const dir = compileOnce();
+  const child = run('node', [join(dir, 'run.js')], {
+    env: { ...process.env, NODE_PATH: join(root, 'node_modules') },
+    maxBuffer: 64 * 1024 * 1024,
+  });
+  const { logo, ...rest } = options;
+  child.child.stdin?.end(
+    JSON.stringify({
+      receipt: { data, options: rest },
+      logo: logo ? logo.toString('base64') : null,
+    }),
   );
   const { stdout } = await child;
   return Buffer.from(stdout, 'base64');

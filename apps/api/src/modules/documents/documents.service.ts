@@ -13,7 +13,13 @@ import { QuotationsService } from '../sales/quotations.service';
 import { buildQuotationSnapshot } from '../sales/quotation-snapshot';
 import { SettingsService } from '../settings/settings.service';
 import { DocumentRenderer } from './document-renderer';
-import type { DocumentKind, DocumentPayment, DocumentSnapshot } from './document.types';
+import type {
+  DocumentKind,
+  DocumentPayment,
+  DocumentSnapshot,
+  ReceiptData,
+  ReceiptPaper,
+} from './document.types';
 import { buildOrderSnapshot } from './snapshot.builders';
 import { loadSnapshotSettings } from './snapshot-settings';
 
@@ -195,6 +201,29 @@ export class DocumentsService {
       invoice.data as unknown as DocumentSnapshot,
       invoice.invoiceNumber,
     );
+  }
+
+  /**
+   * A sale receipt drawn from the data stored with it. The paper is the one asked for, else the
+   * workspace's; a receipt that has been reprinted carries the REPRINT mark.
+   */
+  async receiptPdf(receiptId: string, paper?: ReceiptPaper): Promise<PdfFile> {
+    const receipt = await this.prisma.scoped.receipt.findFirst({ where: { id: receiptId } });
+    if (!receipt) throw new NotFoundAppException();
+    const size =
+      paper ??
+      (await this.settings.get<ReceiptPaper | undefined>('documents.receiptPaper')) ??
+      '80mm';
+    const data = receipt.data as unknown as ReceiptData;
+    const logoId = data.business.logoFileId;
+    const logo = logoId ? await this.files.readBytes(logoId).catch(() => null) : null;
+    const buffer = await this.renderer.renderReceipt(data, {
+      logo,
+      paper: size,
+      receiptNumber: receipt.receiptNumber,
+      reprint: receipt.reprintCount > 0,
+    });
+    return { buffer, filename: `${receipt.receiptNumber.replace(/[^A-Za-z0-9._-]/g, '_')}.pdf` };
   }
 
   // ── helpers ─────────────────────────────────────────────────────────────────────────────

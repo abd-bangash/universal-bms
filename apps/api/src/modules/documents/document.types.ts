@@ -73,3 +73,34 @@ export interface RenderOptions {
   logo?: Buffer | null;
   paper?: 'A4';
 }
+
+export type ReceiptPaper = '58mm' | '80mm' | 'A4';
+export const RECEIPT_PAPERS: readonly ReceiptPaper[] = ['58mm', '80mm', 'A4'];
+
+/** What a sale receipt stores in `Receipt.data` (Requirement 12.5): everything needed to draw it again. */
+export interface ReceiptData {
+  business: DocumentSnapshot['business'];
+  currency: { code: string; decimals: number };
+  locale?: { language: string; dateFormat: string; timezone: string };
+  transactionNumber: string;
+  issuedAt: string;
+  cashier: string | null;
+  salesperson?: string | null;
+  customer: { id?: string; name: string } | null;
+  lines: LineDto[];
+  totals: DocumentSnapshot['totals'];
+  discount: { type: string | null; value: string };
+  taxBreakdown?: TaxBreakdownRow[];
+  payments: Array<{ method: string; amount: string; reference?: string | null }>;
+  tendered?: string;
+  changeDue?: string;
+  footer: string | null;
+}
+
+export interface ReceiptRenderOptions {
+  logo?: Buffer | null;
+  paper: ReceiptPaper;
+  receiptNumber: string;
+  /** Copies printed after the first one carry a REPRINT mark (Requirement 29.8). */
+  reprint?: boolean;
+}

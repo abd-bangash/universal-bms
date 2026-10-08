@@ -409,7 +409,7 @@ How to read this file:
   - [x] 51.2 Property test — Property 16 on `POST /pos/checkout` (repeated and concurrent identical keys create one sale)
     - _Requirements: 54.1, 56.2_
 
-- [ ] 52. Receipt PDFs
+- [x] 52. Receipt PDFs
   - Receipt layouts for 80mm, 58mm and A4 rendered from `Receipt.data`; all fields of Requirement 12.5; logo and footer from settings; "REPRINT" mark on reprints
   - `GET /documents/receipts/:id/pdf?paper=`
   - _Requirements: 12.5, 12.6, 23.1, 23.2, 23.3, 29.8, 48.5, 56.3, 56.4_

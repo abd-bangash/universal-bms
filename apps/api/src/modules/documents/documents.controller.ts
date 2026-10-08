@@ -1,10 +1,11 @@
-import { Controller, Get, Param, Post, Res, StreamableFile } from '@nestjs/common';
+import { Controller, Get, Param, Post, Query, Res, StreamableFile } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsIn, IsOptional, IsString } from 'class-validator';
 import type { Response } from 'express';
 import { CurrentUser, type AuthUser } from '../../common/decorators/current-user.decorator';
 import { RequirePermission } from '../../common/decorators/require-permission.decorator';
 import { SkipEnvelope } from '../../common/decorators/skip-envelope.decorator';
+import { RECEIPT_PAPERS, type ReceiptPaper } from './document.types';
 import { DocumentsService, type PdfFile } from './documents.service';
 
 class IdParam {
@@ -19,6 +20,10 @@ function inline(res: Response, file: PdfFile): StreamableFile {
     'Cache-Control': 'private, no-store',
   });
   return new StreamableFile(file.buffer);
+}
+
+class PaperQuery {
+  @IsOptional() @IsIn(RECEIPT_PAPERS as unknown as string[]) paper?: ReceiptPaper;
 }
 
 @ApiTags('documents')
@@ -55,6 +60,17 @@ export class DocumentsController {
     @Res({ passthrough: true }) res: Response,
   ) {
     return inline(res, await this.documents.orderConfirmationPdf(user, p.id));
+  }
+
+  @Get('documents/receipts/:id/pdf')
+  @RequirePermission('pos:sell')
+  @SkipEnvelope()
+  async receipt(
+    @Param() p: IdParam,
+    @Query() q: PaperQuery,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return inline(res, await this.documents.receiptPdf(p.id, q.paper));
   }
 
   @Get('invoices/:id/pdf')
