@@ -395,7 +395,7 @@ How to read this file:
 
 ### Phase 7 — Point of Sale `[R1 · Day 7]`
 
-- [ ] 50. Schema: POS
+- [x] 50. Schema: POS
   - Add `PosSession`, `CashMovement`; partial unique index for one open session per cashier; migration `pos` with `rollback.sql`
   - _Requirements: 12.1, 22.1, 22.2_
 

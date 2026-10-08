@@ -122,6 +122,14 @@ async function makeLocation(prisma: PrismaClient, workspaceId: string) {
   return prisma.inventoryLocation.create({ data: { workspaceId, name: `Location ${rand()}` } });
 }
 
+async function makePosSession(prisma: PrismaClient, workspaceId: string) {
+  const member = await makeMembership(prisma, workspaceId);
+  const location = await makeLocation(prisma, workspaceId);
+  return prisma.posSession.create({
+    data: { workspaceId, cashierId: member.userId, locationId: location.id },
+  });
+}
+
 async function makeReturn(prisma: PrismaClient, workspaceId: string) {
   const order = await makeOrder(prisma, workspaceId);
   return prisma.return.create({
@@ -524,6 +532,21 @@ const factories: Record<string, TenantFactory> = {
     return byId(
       await p.stockCountLine.create({
         data: { workspaceId: ws, stockCountId: c.id, variantId: v.id, expectedQty: '3' },
+      }),
+    );
+  },
+  PosSession: async (p, ws) => byId(await makePosSession(p, ws)),
+  CashMovement: async (p, ws) => {
+    const session = await makePosSession(p, ws);
+    return byId(
+      await p.cashMovement.create({
+        data: {
+          workspaceId: ws,
+          posSessionId: session.id,
+          direction: 'IN',
+          amount: '100',
+          reason: 'Float top-up',
+        },
       }),
     );
   },

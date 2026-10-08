@@ -22,10 +22,10 @@ describe('Migrations (real PostgreSQL)', () => {
         SELECT extname FROM pg_extension WHERE extname IN ('pg_trgm', 'citext') ORDER BY extname`
     ).map((r) => r.extname);
 
-  it('0001 creates the extensions, 0002 the 27 core tables and 0003 the 8 catalog tables 0004 the 4 CRM tables and 0006 the 9 sales tables, and 0008 the 7 finance tables and 0009 the 6 inventory tables', async () => {
+  it('0001 creates the extensions, 0002 the 27 core tables and 0003 the 8 catalog tables 0004 the 4 CRM tables and 0006 the 9 sales tables, and 0008 the 7 finance tables and 0009 the 6 inventory tables and 0010 the 2 POS tables', async () => {
     expect(await extensions()).toEqual(['citext', 'pg_trgm']);
     const names = await tables();
-    expect(names).toHaveLength(61);
+    expect(names).toHaveLength(63);
     expect(names).toEqual(
       expect.arrayContaining([
         'workspaces',
@@ -203,6 +203,8 @@ describe('Migrations (real PostgreSQL)', () => {
 
   it('rollback.sql files undo their migrations in reverse order, and the migrations re-apply', async () => {
     // The audit trigger forbids deleting audit rows, so none exist here; other tables are dropped whole.
+    await runScript(db.prisma, migrationFile('0010_pos', 'rollback.sql'));
+    expect(await tables()).toHaveLength(61);
     await runScript(db.prisma, migrationFile('0009_inventory', 'rollback.sql'));
     expect(await tables()).toHaveLength(55);
     await runScript(db.prisma, migrationFile('0008_finance', 'rollback.sql'));
@@ -233,7 +235,8 @@ describe('Migrations (real PostgreSQL)', () => {
     await runScript(db.prisma, migrationFile('0007_invoice_immutable', 'migration.sql'));
     await runScript(db.prisma, migrationFile('0008_finance', 'migration.sql'));
     await runScript(db.prisma, migrationFile('0009_inventory', 'migration.sql'));
-    expect(await tables()).toHaveLength(61);
+    await runScript(db.prisma, migrationFile('0010_pos', 'migration.sql'));
+    expect(await tables()).toHaveLength(63);
     expect(await extensions()).toEqual(['citext', 'pg_trgm']);
   });
 });

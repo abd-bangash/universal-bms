@@ -80,6 +80,8 @@ model Workspace {
   adjustmentReasons   AdjustmentReason[]
   stockCounts         StockCount[]
   stockCountLines     StockCountLine[]
+  posSessions         PosSession[]
+  cashMovements       CashMovement[]
 
   @@map("workspaces")
 }
@@ -124,6 +126,7 @@ model User {
   ordersAssigned      Order[]              @relation("OrderAssignee")
   ordersCreated       Order[]              @relation("OrderCreator")
   orderShares         OrderSalesperson[]
+  posSessions         PosSession[]         @relation("PosCashier")
 
   @@map("users")
 }
@@ -574,6 +577,7 @@ model InventoryLocation {
   levels        StockLevel[]
   reservations  StockReservation[]
   counts        StockCount[]
+  posSessions   PosSession[]
 
   @@unique([workspaceId, name])
   @@map("inventory_locations")
@@ -1150,8 +1154,8 @@ model Order {
   internalNotes    String?            @map("internal_notes")
   assignedToId     String?            @map("assigned_to_id")
   assignedTo       User?              @relation("OrderAssignee", fields: [assignedToId], references: [id])
-  /// The POS session table arrives with task 50, which adds the foreign key.
   posSessionId     String?            @map("pos_session_id")
+  posSession       PosSession?        @relation(fields: [posSessionId], references: [id])
   customFields     Json               @default("{}") @map("custom_fields")
   cancelledAt      DateTime?          @map("cancelled_at")
   cancelReason     String?            @map("cancel_reason")
@@ -1291,8 +1295,8 @@ model Return {
   reason       String
   refundAmount Decimal      @map("refund_amount") @db.Decimal(18, 4)
   refundTo     String       @map("refund_to")
-  /// The POS session table arrives with task 50, which adds the foreign key.
   posSessionId String?      @map("pos_session_id")
+  posSession   PosSession?  @relation(fields: [posSessionId], references: [id])
   createdById  String?      @map("created_by_id")
   createdAt    DateTime     @default(now()) @map("created_at")
   lines        ReturnLine[]
@@ -1404,8 +1408,8 @@ model Payment {
   referenceNumber String?           @map("reference_number")
   proofFileId     String?           @map("proof_file_id")
   note            String?
-  /// The POS session table arrives with task 50, which adds the foreign key.
   posSessionId    String?           @map("pos_session_id")
+  posSession      PosSession?       @relation(fields: [posSessionId], references: [id])
   recordedById    String?           @map("recorded_by_id")
   confirmedById   String?           @map("confirmed_by_id")
   confirmedAt     DateTime?         @map("confirmed_at")
@@ -1641,4 +1645,52 @@ model StockCountLine {
 
   @@unique([workspaceId, stockCountId, variantId])
   @@map("stock_count_lines")
+}
+
+// ═══ Point of sale (task 50) ═════════════════════════════════════════════
+
+model PosSession {
+  id            String            @id @default(cuid())
+  workspaceId   String            @map("workspace_id")
+  workspace     Workspace         @relation(fields: [workspaceId], references: [id])
+  cashierId     String            @map("cashier_id")
+  cashier       User              @relation("PosCashier", fields: [cashierId], references: [id])
+  locationId    String            @map("location_id")
+  location      InventoryLocation @relation(fields: [locationId], references: [id])
+  /// OPEN | CLOSED. A cashier has at most one OPEN session (partial unique index in the migration).
+  status        String            @default("OPEN")
+  openedAt      DateTime          @default(now()) @map("opened_at")
+  closedAt      DateTime?         @map("closed_at")
+  openingFloat  Decimal           @default(0) @map("opening_float") @db.Decimal(18, 4)
+  expectedClose Decimal?          @map("expected_close") @db.Decimal(18, 4)
+  actualClose   Decimal?          @map("actual_close") @db.Decimal(18, 4)
+  discrepancy   Decimal?          @db.Decimal(18, 4)
+  closeNote     String?           @map("close_note")
+  /// A snapshot of the daily closing report, written when the session closes.
+  closingData   Json?             @map("closing_data")
+  orders        Order[]
+  returns       Return[]
+  payments      Payment[]
+  cashMovements CashMovement[]
+
+  @@index([workspaceId, cashierId, status])
+  @@map("pos_sessions")
+}
+
+/// Cash put into or taken out of the drawer during a session (Release 3 screens; the table exists now).
+model CashMovement {
+  id           String     @id @default(cuid())
+  workspaceId  String     @map("workspace_id")
+  workspace    Workspace  @relation(fields: [workspaceId], references: [id])
+  posSessionId String     @map("pos_session_id")
+  posSession   PosSession @relation(fields: [posSessionId], references: [id])
+  /// IN | OUT
+  direction    String
+  amount       Decimal    @db.Decimal(18, 4)
+  reason       String
+  createdById  String?    @map("created_by_id")
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  @@index([workspaceId, posSessionId])
+  @@map("cash_movements")
 }
