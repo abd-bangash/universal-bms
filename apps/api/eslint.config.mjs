@@ -8,6 +8,8 @@ export const UNSCOPED_ALLOWED = [
   'src/modules/platform/**',
   'src/modules/channels/webhook-workspace/**',
   'prisma/seed/**',
+  'src/seed/**',
+  'src/cli/**',
   'test/**',
   '**/*.spec.ts',
 ];

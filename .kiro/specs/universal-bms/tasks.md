@@ -146,7 +146,7 @@ How to read this file:
   - `/settings/audit` audit log viewer with filters and before/after view
   - _Requirements: 1.7, 3.1, 3.3, 3.5, 4.4, 5.1, 5.3, 41.1_
 
-- [ ] 15. Testing environment deployment
+- [x] 15. Testing environment deployment
   - `deploy/render.yaml`: web service, API service (`WORKERS_IN_PROCESS=true`), PostgreSQL; release command `prisma migrate deploy`; health check path
   - Seed command `seed:demo` creating the demo workspace with the furniture profile and one user per default Role (extended by later seed tasks); refuses to run when `APP_ENV=production` without `SEED_ALLOW_PRODUCTION=true`
   - `docs/deployment-testing.md`

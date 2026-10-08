@@ -11,7 +11,8 @@
     "test": "jest",
     "generate": "prisma generate",
     "generate:tenant-models": "node scripts/generate-tenant-models.cjs",
-    "workspace:create": "node dist/cli/workspace-create.js"
+    "workspace:create": "node dist/cli/workspace-create.js",
+    "seed:demo": "node dist/cli/seed-demo.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1147.0",

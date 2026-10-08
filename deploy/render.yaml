@@ -1,0 +1,114 @@
+# Render Blueprint for the TESTING environment (design.md "Environments and Deployment").
+# Production runs on the client's own server and is a task of Release 4 (deploy/compose.prod.yml).
+#
+# What you must fill in after the first sync is listed in docs/deployment-testing.md. Variables
+# marked `sync: false` are asked for in the Render dashboard and are never stored in this file.
+#
+# Plans: Render's free tier cannot run a pre-deploy command, so paid plans are named here. Pick the
+# sizes you want; nothing in the application depends on them.
+
+databases:
+  - name: bms-db
+    databaseName: bms
+    user: bms
+    plan: basic-256mb
+    postgresMajorVersion: '16'
+    ipAllowList: [] # only Render services in this account can connect
+
+services:
+  # ── API (NestJS) ──────────────────────────────────────────────────────────
+  - type: web
+    name: bms-api
+    runtime: node
+    plan: starter
+    rootDir: .
+    # devDependencies are needed to build; --prod=false keeps them even though NODE_ENV=production.
+    buildCommand: corepack enable && pnpm install --frozen-lockfile --prod=false && pnpm exec turbo run build --filter=api
+    # The release step: migrations run before the new version takes traffic (Requirement 52.3).
+    preDeployCommand: cd apps/api && pnpm exec prisma migrate deploy
+    startCommand: cd apps/api && node dist/main.js
+    healthCheckPath: /api/v1/health/ready
+    # Deploy only when the CI checks pass (Requirement 53.8).
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: NODE_VERSION
+        value: '22'
+      - key: NODE_ENV
+        value: production
+      - key: APP_ENV
+        value: testing
+      - key: PORT
+        value: '4000'
+      - key: DATABASE_URL
+        fromDatabase:
+          name: bms-db
+          property: connectionString
+      # Redis arrives with the messaging phase (task 68). Until then this is only a placeholder that
+      # satisfies startup validation; nothing connects to it.
+      - key: REDIS_URL
+        value: redis://localhost:6379
+      - key: JWT_PRIVATE_KEY
+        sync: false
+      - key: JWT_PUBLIC_KEY
+        sync: false
+      - key: ACCESS_TOKEN_TTL
+        value: 15m
+      - key: REFRESH_TOKEN_TTL
+        value: 30d
+      # Render generates a random 256-bit base64 value, which is the format the application needs.
+      - key: INTEGRATION_ENCRYPTION_KEY
+        generateValue: true
+      - key: STORAGE_DRIVER
+        value: s3
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_ACCESS_KEY
+        sync: false
+      - key: S3_SECRET_KEY
+        sync: false
+      - key: S3_REGION
+        sync: false
+      - key: MAX_UPLOAD_MB
+        value: '10'
+      # The public address of the web service, e.g. https://bms-web.onrender.com
+      - key: WEB_ORIGIN
+        sync: false
+      # The public address of this API service, e.g. https://bms-api.onrender.com
+      - key: API_BASE_URL
+        sync: false
+      - key: WORKERS_IN_PROCESS
+        value: 'true'
+      # Placeholders until the Meta app exists (tasks 71-72).
+      - key: META_APP_SECRET
+        sync: false
+      - key: META_WEBHOOK_VERIFY_TOKEN
+        sync: false
+      - key: ALLOW_PUBLIC_SIGNUP
+        value: 'false'
+      - key: PLATFORM_AUTOMATION_ENABLED
+        value: 'false'
+      - key: SEED_ALLOW_PRODUCTION
+        value: 'false'
+
+  # ── Web (Next.js) ─────────────────────────────────────────────────────────
+  - type: web
+    name: bms-web
+    runtime: node
+    plan: starter
+    rootDir: .
+    buildCommand: corepack enable && pnpm install --frozen-lockfile --prod=false && pnpm exec turbo run build --filter=web
+    startCommand: cd apps/web && pnpm exec next start
+    healthCheckPath: /login
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: NODE_VERSION
+        value: '22'
+      - key: NODE_ENV
+        value: production
+      # The browser never talks to the API; this server does, over Render's private network.
+      - key: API_INTERNAL_URL
+        value: http://bms-api:4000
+      - key: NEXT_PUBLIC_APP_NAME
+        value: Universal BMS
