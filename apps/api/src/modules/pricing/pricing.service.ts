@@ -35,6 +35,9 @@ export interface PricedLine {
   taxClassId: string | null;
   taxRate: string;
   stockTracked: boolean;
+  /** For category-scoped custom fields of the line. */
+  categoryId: string | null;
+  productType: string | null;
   customFields: Record<string, unknown>;
   notes: string | null;
   calc: PricingLineResult;
@@ -160,6 +163,8 @@ export class PricingService {
           taxClassId,
           taxRate: await this.taxRate(config, taxClassId),
           stockTracked: variant.product.type === 'STOCKABLE' && !variant.product.madeToOrder,
+          categoryId: variant.product.categoryId,
+          productType: variant.product.type,
           customFields: raw.customFields ?? {},
           notes: raw.notes ?? null,
           calc: undefined as never,
@@ -189,6 +194,8 @@ export class PricingService {
           taxClassId,
           taxRate: await this.taxRate(config, taxClassId),
           stockTracked: false,
+          categoryId: null,
+          productType: null,
           customFields: raw.customFields ?? {},
           notes: raw.notes ?? null,
           calc: undefined as never,

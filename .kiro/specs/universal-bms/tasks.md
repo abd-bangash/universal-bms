@@ -275,14 +275,14 @@ How to read this file:
   - [x] 33.1 Property test — Property 15 (unique, gap-free under concurrency)
     - _Requirements: 23.5, 54.5_
 
-- [ ] 34. Quotations API
+- [x] 34. Quotations API
   - CRUD for a Customer or Lead with catalog and custom lines, `customFields` and `fieldSnapshot` per line, attachments, totals from the pricing engine, validity date from `quotationValidityDays`
   - `send` (records `sentAt`, `sentVia = MANUAL`, stores `sentSnapshot`), `accept` (records approval details), `reject` with reason
   - `convert` to Order in one transaction; Lead conversion target `QUOTATION`
   - Daily scheduler marking expired quotations
   - R1 edits a sent quotation in place with an Audit_Event; version history is task 108
   - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 26.8, 39.1, 39.2, 39.4_
-  - [ ] 34.1 Integration tests: conversion preserves lines, prices, custom fields and attachments; an expired quotation cannot be converted
+  - [x] 34.1 Integration tests: conversion preserves lines, prices, custom fields and attachments; an expired quotation cannot be converted
     - _Requirements: 10.4, 10.5_
 
 - [ ] 35. Orders API

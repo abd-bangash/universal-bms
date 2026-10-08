@@ -209,7 +209,16 @@ export class FilesService {
         before: { name: file.originalName, entityType: file.entityType, entityId: file.entityId },
       });
     });
-    await this.discard([file.storageKey, file.thumbnailKey]);
+    // Copies of the file (on an order made from a quotation) share the stored object.
+    const shared = await this.prisma.scoped.fileAsset.count({
+      where: {
+        OR: [
+          { storageKey: file.storageKey },
+          ...(file.thumbnailKey ? [{ thumbnailKey: file.thumbnailKey }] : []),
+        ],
+      },
+    });
+    if (shared === 0) await this.discard([file.storageKey, file.thumbnailKey]);
   }
 
   // ── For the modules that own the records files are attached to ───────────
@@ -235,6 +244,40 @@ export class FilesService {
       },
     });
     return toDto(updated);
+  }
+
+  /**
+   * Gives a record the same attachments another record has (for example an order gets its
+   * quotation's reference images). The stored objects are shared, not duplicated; a stored object
+   * is deleted only when the last file row pointing at it goes.
+   */
+  async copyAttachments(
+    from: { entityType: FileEntityType; entityId: string },
+    to: { entityType: FileEntityType; entityId: string },
+    tx?: Parameters<Parameters<PrismaService['scoped']['$transaction']>[0]>[0],
+  ): Promise<number> {
+    const db = tx ?? this.prisma.scoped;
+    const files = await db.fileAsset.findMany({
+      where: { ...from, entityId: from.entityId },
+      orderBy: { createdAt: 'asc' },
+    });
+    for (const file of files) {
+      await db.fileAsset.create({
+        data: {
+          workspaceId: file.workspaceId,
+          storageKey: file.storageKey,
+          thumbnailKey: file.thumbnailKey,
+          originalName: file.originalName,
+          mimeType: file.mimeType,
+          sizeBytes: file.sizeBytes,
+          entityType: to.entityType,
+          entityId: to.entityId,
+          purpose: file.purpose,
+          uploadedById: file.uploadedById,
+        },
+      });
+    }
+    return files.length;
   }
 
   async listForEntity(entityType: FileEntityType, entityId: string): Promise<FileDto[]> {

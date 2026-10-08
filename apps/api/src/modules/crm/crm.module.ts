@@ -3,6 +3,7 @@ import { ProfileSectionRegistry, WorkspaceDefaultsRegistry } from '../tenants/re
 import { applyProfileLostReasons, ensureWalkInCustomer } from './crm-defaults';
 import { LeadAnalyticsService } from './lead-analytics.service';
 import { registerLeadRules } from './lead-workflow';
+import { LeadConversionRegistry } from './lead-conversion.registry';
 import { LeadsController } from './leads.controller';
 import { LeadsService } from './leads.service';
 import { WorkflowRegistry } from '../workflows/workflow.registry';
@@ -35,6 +36,7 @@ import { TimelineService } from './timeline.service';
     TasksService,
     NotesService,
     EntityLinkRegistry,
+    LeadConversionRegistry,
     TaskDueScheduler,
     TaskListener,
     CustomerFinanceService,
@@ -49,6 +51,8 @@ import { TimelineService } from './timeline.service';
     PhoneService,
     TimelineService,
     DuplicateDetectionService,
+    LeadConversionRegistry,
+    EntityLinkRegistry,
   ],
 })
 export class CrmModule implements OnModuleInit {

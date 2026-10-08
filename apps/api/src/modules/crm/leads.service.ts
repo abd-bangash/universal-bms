@@ -26,6 +26,7 @@ import type {
 } from './dto/leads.dto';
 import { staleLead } from './lead-workflow';
 import { KEY_FIELDS, toLeadDto, type LeadDto } from './lead.support';
+import { LeadConversionRegistry } from './lead-conversion.registry';
 import { PhoneService } from './phone.service';
 import { TasksService } from './tasks.service';
 import { TimelineService } from './timeline.service';
@@ -59,6 +60,13 @@ export interface PipelineColumn {
   cards: PipelineCard[];
 }
 
+export interface LeadConversion {
+  customer: CustomerDto;
+  created: boolean;
+  lead: LeadDto;
+  document?: { type: string; id: string; number: string };
+}
+
 @Injectable()
 export class LeadsService {
   constructor(
@@ -71,6 +79,7 @@ export class LeadsService {
     private readonly timeline: TimelineService,
     private readonly events: DomainEventBus,
     private readonly tasks: TasksService,
+    private readonly conversions: LeadConversionRegistry,
   ) {}
 
   // ── visibility ──────────────────────────────────────────────────────────────────────────
@@ -361,11 +370,23 @@ export class LeadsService {
   }
 
   /** Turns a lead into a customer: links an existing match or creates a new record (Requirement 9.4). */
-  async convert(
+  async convert(user: AuthUser, id: string, dto: ConvertLeadDto): Promise<LeadConversion> {
+    const result = await this.convertToCustomer(user, id, dto);
+    if (dto.target === 'CUSTOMER') return result;
+    const handler = this.conversions.get(dto.target);
+    const lead = await this.row(user, id);
+    const customer = await this.prisma.scoped.customer.findFirstOrThrow({
+      where: { id: result.customer.id },
+    });
+    const document = await handler(user, lead, customer);
+    return { ...result, document: { type: dto.target, ...document } };
+  }
+
+  private async convertToCustomer(
     user: AuthUser,
     id: string,
     dto: ConvertLeadDto,
-  ): Promise<{ customer: CustomerDto; created: boolean; lead: LeadDto }> {
+  ): Promise<LeadConversion> {
     const lead = await this.row(user, id);
     if (lead.customerId && !dto.customerId) {
       const linked = await this.prisma.scoped.customer.findFirstOrThrow({
