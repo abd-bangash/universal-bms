@@ -18,6 +18,7 @@ const PUBLIC_ROUTES = [
   'POST /api/v1/auth/password/forgot',
   'POST /api/v1/auth/password/reset',
   'POST /api/v1/tenants',
+  'GET /api/v1/files/local',
   'POST /api/v1/auth/invite/accept',
 ];
 
@@ -28,6 +29,9 @@ const AUTHENTICATED_ONLY_ROUTES = [
   'POST /api/v1/auth/password/change',
   'GET /api/v1/auth/me',
   'GET /api/v1/auth/sessions',
+  'POST /api/v1/files',
+  'GET /api/v1/files/:id/url',
+  'DELETE /api/v1/files/:id',
   'GET /api/v1/settings/units',
   'GET /api/v1/settings/tax-classes',
   'DELETE /api/v1/auth/sessions/:id',

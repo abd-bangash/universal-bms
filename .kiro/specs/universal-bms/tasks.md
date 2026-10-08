@@ -118,14 +118,14 @@ How to read this file:
   - [x] 11.1 Unit tests: invalid config rejected with field paths; a module toggle takes effect on the next request
     - _Requirements: 5.3, 5.4_
 
-- [ ] 12. File storage module
+- [x] 12. File storage module
   - `StorageAdapter` interface; `LocalDiskStorage` and `S3Storage` drivers selected by `STORAGE_DRIVER`
   - `POST /files` (multipart): size limit (413), content-sniffed allow-list, key scheme from `design.md`, thumbnail with `sharp`, `FileAsset` row
   - `GET /files/:id/url` (tenant and linked-entity permission check, 5-minute signed URL); `DELETE /files/:id` refused when referenced by an issued document or a Message
   - Readiness check includes storage
   - `FileAsset.entityType` and `entityId` link a file to a Product, Quotation, Order, Order line, Lead, Customer, Expense, Payment or Message; each owning module attaches and lists its files through `FilesService`
   - _Requirements: 34.1, 34.2, 34.3, 34.4, 34.5, 34.6, 34.7, 34.8, 48.2_
-  - [ ] 12.1 Integration tests: wrong content type rejected despite a valid extension; oversized file rejected; another workspace's file returns 404
+  - [x] 12.1 Integration tests: wrong content type rejected despite a valid extension; oversized file rejected; another workspace's file returns 404
     - _Requirements: 34.2, 34.3, 34.4_
 
 - [ ] 13. Web application shell
