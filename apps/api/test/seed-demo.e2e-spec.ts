@@ -46,8 +46,9 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
       { name: 'sales', created: 25, existing: 0 },
       { name: 'finance', created: 21, existing: 0 },
       { name: 'purchasing', created: 10, existing: 0 },
+      { name: 'commissions', created: 2, existing: 0 },
     ]);
-    expect(logs).toHaveLength(8);
+    expect(logs).toHaveLength(9);
 
     const workspace = await t.db.prisma.workspace.findUniqueOrThrow({
       where: { id: report.workspaceId },
@@ -357,6 +358,16 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
       await t.db.prisma.stockMovement.count({ where: { workspaceId, movementType: 'SALE' } }),
     ).toBeGreaterThan(0);
 
+    // commission settings for the people who sell, and the commissions the completed orders earned
+    expect(
+      await t.db.prisma.commissionRule.findMany({
+        where: { workspaceId, name: 'Staff commission', active: true },
+        orderBy: { rate: 'asc' },
+      }),
+    ).toHaveLength(3);
+    const earned = await t.db.prisma.commission.findMany({ where: { workspaceId } });
+    expect(earned.map((c) => c.status).sort()).toEqual(['PAID', 'PENDING']);
+
     // 5 suppliers and 5 purchases in different states, received ones posted to the ledger (50.2)
     expect(await t.db.prisma.supplier.count({ where: { workspaceId } })).toBe(5);
     const purchases = await t.db.prisma.purchaseOrder.findMany({ where: { workspaceId } });
@@ -389,6 +400,7 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
       { name: 'sales', created: 0, existing: 25 },
       { name: 'finance', created: 0, existing: 21 },
       { name: 'purchasing', created: 0, existing: 10 },
+      { name: 'commissions', created: 0, existing: 1 },
     ]);
     expect(await t.db.prisma.customer.count({ where: { isWalkIn: false } })).toBe(22); // 20 + 2 from won leads
     expect(await t.db.prisma.lead.count()).toBe(15);
@@ -476,6 +488,7 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
       'sales',
       'finance',
       'purchasing',
+      'commissions',
       'probe',
     ]);
   });

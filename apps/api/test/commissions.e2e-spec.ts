@@ -611,4 +611,53 @@ describe('Commissions (real PostgreSQL)', () => {
       expect(perf).toMatchObject({ leadsWon: 1, conversionRate: '50' });
     });
   });
+
+  describe('checkpoint 62: the whole life of a commission', () => {
+    it('percentage set, an order and a counter sale earn commissions, both are approved and paid, a cancelled order is reversed', async () => {
+      const b = await business(); // the trigger is Completed
+      const seller = await member(b, 'Salesperson');
+      await setPercent(b, seller.userId, '5').expect(200);
+
+      const completed = await order(b, seller, 'completed');
+      const sale = (
+        await post(
+          seller,
+          '/pos/checkout',
+          {
+            lines: [{ variantId: b.variantId, quantity: '1' }],
+            payment: { paymentMethodId: b.cash },
+          },
+          `pos-${++keys}`,
+        ).expect(201)
+      ).body.data;
+      const rows = await statement(b);
+      expect(rows.map((r) => [r.orderId, r.amount, r.status]).sort()).toEqual(
+        [
+          [completed.id, '100', 'PENDING'], // 5% of 2000
+          [sale.order.id, '50', 'PENDING'], // 5% of 1000, straight away
+        ].sort(),
+      );
+
+      for (const row of rows) {
+        await post(b, `/commissions/${row.id}/approve`).expect(200);
+        await post(b, `/commissions/${row.id}/pay`, { method: 'Bank transfer' }).expect(200);
+      }
+      expect((await statement(b)).every((r) => r.status === 'PAID')).toBe(true);
+      const perf = (await http.get(`/staff/${seller.userId}/performance`, seller.token)).body.data;
+      expect(perf).toMatchObject({ commissionsPaid: '150', commissionsPending: '0' });
+
+      // a cancelled order has nothing to pay: its pending commission is reversed
+      await runWithWorkspace(t.app, b.workspaceId, () =>
+        t.app.get(SettingsService).update({ commission: { triggerSystemRole: 'CONFIRMED' } }),
+      );
+      const cancelled = await order(b, seller, 'confirmed');
+      const mine = (await statement(seller, `?orderId=${cancelled.id}`))[0];
+      expect(mine).toMatchObject({ status: 'PENDING', amount: '100' });
+      await post(b, `/orders/${cancelled.id}/status`, {
+        status: 'cancelled',
+        reason: 'Customer left',
+      }).expect(200);
+      expect((await statement(seller, `?orderId=${cancelled.id}`))[0].status).toBe('REVERSED');
+    });
+  });
 });

@@ -476,7 +476,7 @@ How to read this file:
   - Activity tab on order, payment and product pages showing that record's Audit_Events
   - _Requirements: 14.4, 14.5, 14.7, 41.6, 4.4_
 
-- [ ] 62. Checkpoint — commissions
+- [x] 62. Checkpoint — commissions
   - Set a percentage for a salesperson, complete an order and a POS sale, approve and pay the commission; cancel an order and see the reversal
   - Stop and ask the user to review.
 

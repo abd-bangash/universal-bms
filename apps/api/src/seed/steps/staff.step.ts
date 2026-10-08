@@ -1,3 +1,4 @@
+import { CommissionsService } from '../../modules/commissions/commissions.service';
 import type { DemoContext, DemoStep, StepResult } from '../demo-seed';
 
 interface DemoPerson {
@@ -7,6 +8,8 @@ interface DemoPerson {
   lastName: string;
   jobTitle: string;
   isSalesperson: boolean;
+  /** Percentage of net sales earned, set as the person's commission rule. */
+  commissionPercent?: string;
 }
 
 /** One synthetic staff member per default role (the Owner is created with the workspace). */
@@ -18,6 +21,7 @@ export const DEMO_STAFF: readonly DemoPerson[] = [
     lastName: 'Manager',
     jobTitle: 'General manager',
     isSalesperson: false,
+    commissionPercent: '1',
   },
   {
     role: 'Salesperson',
@@ -26,6 +30,7 @@ export const DEMO_STAFF: readonly DemoPerson[] = [
     lastName: 'Seller',
     jobTitle: 'Showroom salesperson',
     isSalesperson: true,
+    commissionPercent: '4',
   },
   {
     role: 'Cashier',
@@ -34,6 +39,7 @@ export const DEMO_STAFF: readonly DemoPerson[] = [
     lastName: 'Counter',
     jobTitle: 'Cashier',
     isSalesperson: true,
+    commissionPercent: '2',
   },
   {
     role: 'Inventory Staff',
@@ -123,6 +129,19 @@ export const staffStep: DemoStep = {
         where: { userWorkspaceId_roleId: { userWorkspaceId: membership.id, roleId: role.id } },
         update: {},
         create: { workspaceId: ctx.workspaceId, userWorkspaceId: membership.id, roleId: role.id },
+      });
+    }
+
+    // commission settings: one percentage of net sales per person who earns one
+    const commissions = ctx.get(CommissionsService);
+    for (const person of DEMO_STAFF) {
+      if (!person.commissionPercent) continue;
+      const user = await unscoped.user.findUnique({ where: { email: person.email } });
+      if (!user) continue;
+      await ctx.asOwner(async (owner) => {
+        const current = await commissions.staffPercent(user.id);
+        if (current.percent === person.commissionPercent) return;
+        await commissions.setStaffPercent(owner, user.id, person.commissionPercent as string);
       });
     }
 

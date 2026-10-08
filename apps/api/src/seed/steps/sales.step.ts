@@ -212,7 +212,17 @@ export const salesStep: DemoStep = {
       created += 1;
     }
 
+    // the orders are credited to the people who sell, so commissions have someone to go to
+    const sellers = (
+      await unscoped.user.findMany({
+        where: { email: { in: ['salesperson@demo.test', 'cashier@demo.test'] } },
+        select: { id: true, email: true },
+        orderBy: { email: 'desc' },
+      })
+    ).map((u) => u.id);
+    let orderIndex = 0;
     for (const spec of DEMO_ORDERS) {
+      const seller = sellers.length > 0 ? sellers[orderIndex++ % sellers.length] : undefined;
       if (haveOrder.has(tagOf(spec.tag))) {
         existing += 1;
         continue;
@@ -225,6 +235,7 @@ export const salesStep: DemoStep = {
           lines: spec.lines.map(lineInput),
           campaign: tagOf(spec.tag),
           source: 'STORE',
+          ...(seller ? { assignedToId: seller } : {}),
         });
         for (const status of spec.path) {
           await orders.changeStatus(owner, order.id, {
