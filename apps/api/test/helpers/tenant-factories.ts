@@ -114,6 +114,14 @@ async function makePayment(prisma: PrismaClient, workspaceId: string) {
   });
 }
 
+async function makeReason(prisma: PrismaClient, workspaceId: string) {
+  return prisma.adjustmentReason.create({ data: { workspaceId, name: `Reason ${rand()}` } });
+}
+
+async function makeLocation(prisma: PrismaClient, workspaceId: string) {
+  return prisma.inventoryLocation.create({ data: { workspaceId, name: `Location ${rand()}` } });
+}
+
 async function makeReturn(prisma: PrismaClient, workspaceId: string) {
   const order = await makeOrder(prisma, workspaceId);
   return prisma.return.create({
@@ -448,6 +456,74 @@ const factories: Record<string, TenantFactory> = {
           paymentMethodId: method.id,
           accountId: method.accountId,
         },
+      }),
+    );
+  },
+  AdjustmentReason: async (p, ws) => byId(await makeReason(p, ws)),
+  StockMovement: async (p, ws) => {
+    const v = await makeVariant(p, ws);
+    const l = await makeLocation(p, ws);
+    return byId(
+      await p.stockMovement.create({
+        data: {
+          workspaceId: ws,
+          variantId: v.id,
+          locationId: l.id,
+          movementType: 'OPENING_STOCK',
+          quantityDelta: '5',
+        },
+      }),
+    );
+  },
+  StockLevel: async (p, ws) => {
+    const v = await makeVariant(p, ws);
+    const l = await makeLocation(p, ws);
+    return byId(
+      await p.stockLevel.create({
+        data: { workspaceId: ws, variantId: v.id, locationId: l.id, onHand: '5' },
+      }),
+    );
+  },
+  StockReservation: async (p, ws) => {
+    const o = await makeOrder(p, ws);
+    const item = await p.orderItem.create({
+      data: {
+        workspaceId: ws,
+        orderId: o.id,
+        lineNo: 1,
+        name: 'Line',
+        quantity: '1',
+        listPrice: '10',
+        unitPrice: '10',
+        lineTotal: '10',
+      },
+    });
+    const v = await makeVariant(p, ws);
+    const l = await makeLocation(p, ws);
+    return byId(
+      await p.stockReservation.create({
+        data: {
+          workspaceId: ws,
+          orderId: o.id,
+          orderItemId: item.id,
+          variantId: v.id,
+          locationId: l.id,
+          quantity: '1',
+        },
+      }),
+    );
+  },
+  StockCount: async (p, ws) => {
+    const l = await makeLocation(p, ws);
+    return byId(await p.stockCount.create({ data: { workspaceId: ws, locationId: l.id } }));
+  },
+  StockCountLine: async (p, ws) => {
+    const l = await makeLocation(p, ws);
+    const c = await p.stockCount.create({ data: { workspaceId: ws, locationId: l.id } });
+    const v = await makeVariant(p, ws);
+    return byId(
+      await p.stockCountLine.create({
+        data: { workspaceId: ws, stockCountId: c.id, variantId: v.id, expectedQty: '3' },
       }),
     );
   },

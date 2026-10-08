@@ -56,6 +56,12 @@ export const ALL_MODEL_NAMES: readonly string[] = [
   'Receipt',
   'ExpenseCategory',
   'Expense',
+  'StockMovement',
+  'StockLevel',
+  'StockReservation',
+  'AdjustmentReason',
+  'StockCount',
+  'StockCountLine',
 ];
 
 export const TENANT_MODEL_NAMES: readonly string[] = [
@@ -107,4 +113,10 @@ export const TENANT_MODEL_NAMES: readonly string[] = [
   'Receipt',
   'ExpenseCategory',
   'Expense',
+  'StockMovement',
+  'StockLevel',
+  'StockReservation',
+  'AdjustmentReason',
+  'StockCount',
+  'StockCountLine',
 ];

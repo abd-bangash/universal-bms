@@ -67,11 +67,7 @@ describe('Receivables and bank details (real PostgreSQL)', () => {
   const customer = async (b: Biz, name: string) =>
     (
       await http
-        .post(
-          '/customers',
-          { fullName: name, phones: [`0300${String(1000000 + ++n)}`] },
-          b.token,
-        )
+        .post('/customers', { fullName: name, phones: [`0300${String(1000000 + ++n)}`] }, b.token)
         .expect(201)
     ).body.data.id as string;
   async function order(

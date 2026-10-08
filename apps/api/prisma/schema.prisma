@@ -74,6 +74,12 @@ model Workspace {
   receipts            Receipt[]
   expenseCategories   ExpenseCategory[]
   expenses            Expense[]
+  stockMovements      StockMovement[]
+  stockLevels         StockLevel[]
+  stockReservations   StockReservation[]
+  adjustmentReasons   AdjustmentReason[]
+  stockCounts         StockCount[]
+  stockCountLines     StockCountLine[]
 
   @@map("workspaces")
 }
@@ -555,15 +561,19 @@ model TaxClass {
 }
 
 model InventoryLocation {
-  id            String          @id @default(cuid())
-  workspaceId   String          @map("workspace_id")
-  workspace     Workspace       @relation(fields: [workspaceId], references: [id])
+  id            String             @id @default(cuid())
+  workspaceId   String             @map("workspace_id")
+  workspace     Workspace          @relation(fields: [workspaceId], references: [id])
   name          String
-  type          String          @default("STORE")
-  isDefault     Boolean         @default(false) @map("is_default")
-  active        Boolean         @default(true)
+  type          String             @default("STORE")
+  isDefault     Boolean            @default(false) @map("is_default")
+  active        Boolean            @default(true)
   staffDefaults UserWorkspace[]
   orders        Order[]
+  movements     StockMovement[]
+  levels        StockLevel[]
+  reservations  StockReservation[]
+  counts        StockCount[]
 
   @@unique([workspaceId, name])
   @@map("inventory_locations")
@@ -754,29 +764,33 @@ enum TrackingMode {
 }
 
 model ProductVariant {
-  id               String            @id @default(cuid())
-  workspaceId      String            @map("workspace_id")
-  workspace        Workspace         @relation(fields: [workspaceId], references: [id])
-  productId        String            @map("product_id")
-  product          Product           @relation(fields: [productId], references: [id])
-  sku              String
-  barcode          String?
-  name             String?
-  isDefault        Boolean           @default(false) @map("is_default")
-  priceOverride    Decimal?          @map("price_override") @db.Decimal(18, 4)
-  costOverride     Decimal?          @map("cost_override") @db.Decimal(18, 4)
-  weight           Decimal?          @db.Decimal(18, 4)
-  minStockLevel    Decimal?          @map("min_stock_level") @db.Decimal(18, 4)
-  maxStockLevel    Decimal?          @map("max_stock_level") @db.Decimal(18, 4)
-  status           ProductStatus     @default(ACTIVE)
-  customFields     Json              @default("{}") @map("custom_fields")
-  createdAt        DateTime          @default(now()) @map("created_at")
-  updatedAt        DateTime          @updatedAt @map("updated_at")
-  images           ProductImage[]
-  bundleComponents BundleComponent[] @relation("BundleComponentVariant")
-  priceListItems   PriceListItem[]
-  quotationItems   QuotationItem[]
-  orderItems       OrderItem[]
+  id                String             @id @default(cuid())
+  workspaceId       String             @map("workspace_id")
+  workspace         Workspace          @relation(fields: [workspaceId], references: [id])
+  productId         String             @map("product_id")
+  product           Product            @relation(fields: [productId], references: [id])
+  sku               String
+  barcode           String?
+  name              String?
+  isDefault         Boolean            @default(false) @map("is_default")
+  priceOverride     Decimal?           @map("price_override") @db.Decimal(18, 4)
+  costOverride      Decimal?           @map("cost_override") @db.Decimal(18, 4)
+  weight            Decimal?           @db.Decimal(18, 4)
+  minStockLevel     Decimal?           @map("min_stock_level") @db.Decimal(18, 4)
+  maxStockLevel     Decimal?           @map("max_stock_level") @db.Decimal(18, 4)
+  status            ProductStatus      @default(ACTIVE)
+  customFields      Json               @default("{}") @map("custom_fields")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+  images            ProductImage[]
+  bundleComponents  BundleComponent[]  @relation("BundleComponentVariant")
+  priceListItems    PriceListItem[]
+  quotationItems    QuotationItem[]
+  orderItems        OrderItem[]
+  stockMovements    StockMovement[]
+  stockLevels       StockLevel[]
+  stockReservations StockReservation[]
+  stockCountLines   StockCountLine[]
 
   @@unique([workspaceId, sku])
   @@unique([workspaceId, barcode])
@@ -1155,6 +1169,7 @@ model Order {
   payments         Payment[]
   credits          CustomerCredit[]
   receipts         Receipt[]
+  reservations     StockReservation[]
 
   @@unique([workspaceId, orderNumber])
   @@index([workspaceId, status, orderDate])
@@ -1165,39 +1180,40 @@ model Order {
 }
 
 model OrderItem {
-  id             String          @id @default(cuid())
-  workspaceId    String          @map("workspace_id")
-  workspace      Workspace       @relation(fields: [workspaceId], references: [id])
-  orderId        String          @map("order_id")
-  order          Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  lineNo         Int             @map("line_no")
-  kind           LineKind        @default(CATALOG)
-  productId      String?         @map("product_id")
-  product        Product?        @relation(fields: [productId], references: [id])
-  variantId      String?         @map("variant_id")
-  variant        ProductVariant? @relation(fields: [variantId], references: [id])
+  id             String             @id @default(cuid())
+  workspaceId    String             @map("workspace_id")
+  workspace      Workspace          @relation(fields: [workspaceId], references: [id])
+  orderId        String             @map("order_id")
+  order          Order              @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  lineNo         Int                @map("line_no")
+  kind           LineKind           @default(CATALOG)
+  productId      String?            @map("product_id")
+  product        Product?           @relation(fields: [productId], references: [id])
+  variantId      String?            @map("variant_id")
+  variant        ProductVariant?    @relation(fields: [variantId], references: [id])
   name           String
   sku            String?
   description    String?
-  quantity       Decimal         @db.Decimal(18, 4)
-  returnedQty    Decimal         @default(0) @map("returned_qty") @db.Decimal(18, 4)
-  unitId         String?         @map("unit_id")
-  listPrice      Decimal         @map("list_price") @db.Decimal(18, 4)
-  unitPrice      Decimal         @map("unit_price") @db.Decimal(18, 4)
-  costPrice      Decimal?        @map("cost_price") @db.Decimal(18, 4)
-  discountType   String?         @map("discount_type")
-  discountValue  Decimal         @default(0) @map("discount_value") @db.Decimal(18, 4)
-  discountAmount Decimal         @default(0) @map("discount_amount") @db.Decimal(18, 4)
-  taxClassId     String?         @map("tax_class_id")
-  taxRate        Decimal         @default(0) @map("tax_rate") @db.Decimal(9, 4)
-  taxAmount      Decimal         @default(0) @map("tax_amount") @db.Decimal(18, 4)
-  lineTotal      Decimal         @map("line_total") @db.Decimal(18, 4)
-  stockTracked   Boolean         @default(false) @map("stock_tracked")
+  quantity       Decimal            @db.Decimal(18, 4)
+  returnedQty    Decimal            @default(0) @map("returned_qty") @db.Decimal(18, 4)
+  unitId         String?            @map("unit_id")
+  listPrice      Decimal            @map("list_price") @db.Decimal(18, 4)
+  unitPrice      Decimal            @map("unit_price") @db.Decimal(18, 4)
+  costPrice      Decimal?           @map("cost_price") @db.Decimal(18, 4)
+  discountType   String?            @map("discount_type")
+  discountValue  Decimal            @default(0) @map("discount_value") @db.Decimal(18, 4)
+  discountAmount Decimal            @default(0) @map("discount_amount") @db.Decimal(18, 4)
+  taxClassId     String?            @map("tax_class_id")
+  taxRate        Decimal            @default(0) @map("tax_rate") @db.Decimal(9, 4)
+  taxAmount      Decimal            @default(0) @map("tax_amount") @db.Decimal(18, 4)
+  lineTotal      Decimal            @map("line_total") @db.Decimal(18, 4)
+  stockTracked   Boolean            @default(false) @map("stock_tracked")
   notes          String?
-  customFields   Json            @default("{}") @map("custom_fields")
-  fieldSnapshot  Json            @default("[]") @map("field_snapshot")
+  customFields   Json               @default("{}") @map("custom_fields")
+  fieldSnapshot  Json               @default("[]") @map("field_snapshot")
   productionJobs ProductionJob[]
   returnLines    ReturnLine[]
+  reservations   StockReservation[]
 
   @@unique([workspaceId, orderId, lineNo])
   @@index([workspaceId, orderId])
@@ -1486,4 +1502,143 @@ model Expense {
 
   @@index([workspaceId, expenseDate])
   @@map("expenses")
+}
+
+// ═══ Inventory (task 45) ═════════════════════════════════════════════════
+
+enum MovementType {
+  OPENING_STOCK
+  PURCHASE_RECEIPT
+  ADJUSTMENT_IN
+  TRANSFER_IN
+  RETURN_IN
+  SALE
+  ADJUSTMENT_OUT
+  TRANSFER_OUT
+  RETURN_TO_SUPPLIER
+
+  @@map("movement_type")
+}
+
+enum ReservationStatus {
+  ACTIVE
+  RELEASED
+  FULFILLED
+
+  @@map("reservation_status")
+}
+
+/// The immutable stock ledger: a database trigger refuses UPDATE and DELETE.
+model StockMovement {
+  id            String            @id @default(cuid())
+  workspaceId   String            @map("workspace_id")
+  workspace     Workspace         @relation(fields: [workspaceId], references: [id])
+  variantId     String            @map("variant_id")
+  variant       ProductVariant    @relation(fields: [variantId], references: [id])
+  locationId    String            @map("location_id")
+  location      InventoryLocation @relation(fields: [locationId], references: [id])
+  movementType  MovementType      @map("movement_type")
+  /// Signed, in the base unit.
+  quantityDelta Decimal           @map("quantity_delta") @db.Decimal(18, 4)
+  unitCost      Decimal?          @map("unit_cost") @db.Decimal(18, 4)
+  /// ORDER | PURCHASE | ADJUSTMENT | TRANSFER | RETURN | SUPPLIER_RETURN | COUNT | OPENING
+  referenceType String?           @map("reference_type")
+  referenceId   String?           @map("reference_id")
+  reasonId      String?           @map("reason_id")
+  reason        AdjustmentReason? @relation(fields: [reasonId], references: [id])
+  batchNumber   String?           @map("batch_number")
+  expiryDate    DateTime?         @map("expiry_date")
+  serialNumber  String?           @map("serial_number")
+  note          String?
+  performedById String?           @map("performed_by_id")
+  createdAt     DateTime          @default(now()) @map("created_at")
+
+  @@index([workspaceId, variantId, locationId, createdAt])
+  @@index([workspaceId, referenceType, referenceId])
+  @@map("stock_movements")
+}
+
+/// A projection: always equals the ledger and the active reservations.
+model StockLevel {
+  id          String            @id @default(cuid())
+  workspaceId String            @map("workspace_id")
+  workspace   Workspace         @relation(fields: [workspaceId], references: [id])
+  variantId   String            @map("variant_id")
+  variant     ProductVariant    @relation(fields: [variantId], references: [id])
+  locationId  String            @map("location_id")
+  location    InventoryLocation @relation(fields: [locationId], references: [id])
+  onHand      Decimal           @default(0) @map("on_hand") @db.Decimal(18, 4)
+  reserved    Decimal           @default(0) @db.Decimal(18, 4)
+  avgCost     Decimal           @default(0) @map("avg_cost") @db.Decimal(18, 4)
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+
+  @@unique([workspaceId, variantId, locationId])
+  @@map("stock_levels")
+}
+
+model StockReservation {
+  id          String            @id @default(cuid())
+  workspaceId String            @map("workspace_id")
+  workspace   Workspace         @relation(fields: [workspaceId], references: [id])
+  orderId     String            @map("order_id")
+  order       Order             @relation(fields: [orderId], references: [id])
+  orderItemId String            @map("order_item_id")
+  orderItem   OrderItem         @relation(fields: [orderItemId], references: [id])
+  variantId   String            @map("variant_id")
+  variant     ProductVariant    @relation(fields: [variantId], references: [id])
+  locationId  String            @map("location_id")
+  location    InventoryLocation @relation(fields: [locationId], references: [id])
+  quantity    Decimal           @db.Decimal(18, 4)
+  status      ReservationStatus @default(ACTIVE)
+  createdAt   DateTime          @default(now()) @map("created_at")
+  closedAt    DateTime?         @map("closed_at")
+
+  @@index([workspaceId, orderId])
+  @@index([workspaceId, variantId, locationId, status])
+  @@map("stock_reservations")
+}
+
+model AdjustmentReason {
+  id          String          @id @default(cuid())
+  workspaceId String          @map("workspace_id")
+  workspace   Workspace       @relation(fields: [workspaceId], references: [id])
+  name        String
+  active      Boolean         @default(true)
+  movements   StockMovement[]
+
+  @@unique([workspaceId, name])
+  @@map("adjustment_reasons")
+}
+
+/// Stock counts are a Release 3 feature; the tables exist so that release adds no migration here.
+model StockCount {
+  id          String            @id @default(cuid())
+  workspaceId String            @map("workspace_id")
+  workspace   Workspace         @relation(fields: [workspaceId], references: [id])
+  locationId  String            @map("location_id")
+  location    InventoryLocation @relation(fields: [locationId], references: [id])
+  /// OPEN | POSTED | CANCELLED
+  status      String            @default("OPEN")
+  createdById String?           @map("created_by_id")
+  postedAt    DateTime?         @map("posted_at")
+  createdAt   DateTime          @default(now()) @map("created_at")
+  lines       StockCountLine[]
+
+  @@index([workspaceId, locationId])
+  @@map("stock_counts")
+}
+
+model StockCountLine {
+  id           String         @id @default(cuid())
+  workspaceId  String         @map("workspace_id")
+  workspace    Workspace      @relation(fields: [workspaceId], references: [id])
+  stockCountId String         @map("stock_count_id")
+  stockCount   StockCount     @relation(fields: [stockCountId], references: [id], onDelete: Cascade)
+  variantId    String         @map("variant_id")
+  variant      ProductVariant @relation(fields: [variantId], references: [id])
+  expectedQty  Decimal        @map("expected_qty") @db.Decimal(18, 4)
+  countedQty   Decimal?       @map("counted_qty") @db.Decimal(18, 4)
+
+  @@unique([workspaceId, stockCountId, variantId])
+  @@map("stock_count_lines")
 }

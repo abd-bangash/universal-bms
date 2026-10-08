@@ -358,7 +358,7 @@ How to read this file:
 
 ### Phase 6 — Inventory `[R1 · Day 6]`
 
-- [ ] 45. Schema: inventory
+- [x] 45. Schema: inventory
   - Add `StockMovement`, `StockLevel`, `StockReservation`, `AdjustmentReason`, `StockCount`, `StockCountLine`; migration `inventory` with `rollback.sql`; trigger `stock_movements_append_only`; adjustment reasons registered as workspace defaults
   - _Requirements: 7.1, 7.2, 37.9, 22.1, 22.2_
 
