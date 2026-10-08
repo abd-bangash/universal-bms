@@ -112,7 +112,7 @@ export const NAVIGATION: readonly NavigationEntry[] = [
     label: { message: 'inventory' },
     area: 'inventory',
     permissions: ['inventory:view'],
-    available: false,
+    available: true,
   },
   {
     key: 'suppliers',

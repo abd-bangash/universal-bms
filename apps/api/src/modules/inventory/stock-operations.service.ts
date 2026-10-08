@@ -31,6 +31,8 @@ export interface MovementDto {
   variantId: string;
   locationId: string;
   movementType: string;
+  sku: string | null;
+  productName: string | null;
   quantityDelta: string;
   unitCost: string | null;
   referenceType: string | null;
@@ -73,11 +75,16 @@ export interface ReasonDto {
   active: boolean;
 }
 
-const movementDto = (m: StockMovement): MovementDto => ({
+type MovementRow = StockMovement & {
+  variant?: { sku: string; product: { name: string } } | null;
+};
+const movementDto = (m: MovementRow): MovementDto => ({
   id: m.id,
   variantId: m.variantId,
   locationId: m.locationId,
   movementType: m.movementType,
+  sku: m.variant?.sku ?? null,
+  productName: m.variant?.product.name ?? null,
   quantityDelta: m.quantityDelta.toFixed(),
   unitCost: m.unitCost ? m.unitCost.toFixed() : null,
   referenceType: m.referenceType,
@@ -291,6 +298,7 @@ export class StockOperationsService {
     if (after) filters.push(after as Prisma.StockMovementWhereInput);
     const rows = await this.prisma.scoped.stockMovement.findMany({
       where: { AND: filters },
+      include: { variant: { select: { sku: true, product: { select: { name: true } } } } },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: query.limit + 1,
     });

@@ -66,7 +66,9 @@
     "welcome": "Welcome, {name}",
     "workspace": "You are working in {workspace}.",
     "roles": "Your roles: {roles}",
-    "comingSoon": "Indicators, alerts and your tasks will appear here."
+    "comingSoon": "Indicators, alerts and your tasks will appear here.",
+    "lowStockTitle": "Stock",
+    "lowStock": "{count, plural, =0 {No items are low on stock} one {# item is low on stock} other {# items are low on stock}}"
   },
   "auth": {
     "appName": "Universal BMS",
@@ -1247,6 +1249,104 @@
         "account": "Pays into",
         "requiresReference": "Ask for a reference number",
         "save": "Save"
+      }
+    }
+  },
+  "inventory": {
+    "nav": {
+      "label": "Inventory sections",
+      "stock": "Stock",
+      "movements": "Movements",
+      "adjust": "Adjust stock",
+      "locations": "Locations"
+    },
+    "movementType": {
+      "OPENING_STOCK": "Opening stock",
+      "PURCHASE_RECEIPT": "Purchase received",
+      "ADJUSTMENT_IN": "Adjustment in",
+      "TRANSFER_IN": "Transfer in",
+      "RETURN_IN": "Customer return",
+      "SALE": "Sale",
+      "ADJUSTMENT_OUT": "Adjustment out",
+      "TRANSFER_OUT": "Transfer out",
+      "RETURN_TO_SUPPLIER": "Returned to supplier"
+    },
+    "stock": {
+      "title": "Stock",
+      "caption": "Stock levels",
+      "item": "Item",
+      "onHand": "On hand",
+      "reserved": "Reserved",
+      "available": "Available",
+      "value": "Value",
+      "flags": "Status",
+      "lowBadge": "Low",
+      "overBadge": "Overstock",
+      "filterLow": "Low stock",
+      "filterOver": "Overstock",
+      "lowOnly": "Low only",
+      "overOnly": "Over only",
+      "empty": "No stocked items yet",
+      "emptyDescription": "Enter opening stock to see quantities here."
+    },
+    "movements": {
+      "title": "Stock movements",
+      "caption": "Stock movements",
+      "when": "When",
+      "item": "Item",
+      "type": "Type",
+      "quantity": "Quantity",
+      "location": "Location",
+      "note": "Note",
+      "filterType": "Type",
+      "filterLocation": "Location",
+      "empty": "No movements yet",
+      "emptyDescription": "Every change in stock appears here and cannot be edited."
+    },
+    "adjust": {
+      "adjustTitle": "Adjust stock",
+      "openingTitle": "Opening stock",
+      "openingHint": "Enter what you have on the shelves once, with its cost. After that, change stock with adjustments.",
+      "item": "Item",
+      "searchPlaceholder": "Search by name, code, SKU or barcode",
+      "results": "Matching items",
+      "change": "Change",
+      "direction": "Direction",
+      "out": "Take out",
+      "in": "Put in",
+      "quantity": "Quantity",
+      "reason": "Reason",
+      "unitCost": "Unit cost",
+      "unitCostHint": "Optional. Updates the average cost.",
+      "location": "Location",
+      "defaultLocation": "Default location",
+      "note": "Note",
+      "saving": "Saving…",
+      "post": "Post adjustment",
+      "saved": "Adjustment posted.",
+      "postOpening": "Post opening stock",
+      "openingSaved": "Opening stock posted.",
+      "removeLine": "Remove"
+    },
+    "locations": {
+      "title": "Locations",
+      "add": "Add location",
+      "edit": "Edit",
+      "activate": "Switch on",
+      "deactivate": "Switch off",
+      "default": "Default",
+      "inactive": "Off",
+      "addTitle": "Add a location",
+      "editTitle": "Edit location",
+      "name": "Name",
+      "type": "Type",
+      "makeDefault": "Use as the default location",
+      "save": "Save",
+      "types": {
+        "STORE": "Store",
+        "WAREHOUSE": "Warehouse",
+        "SHOWROOM": "Showroom",
+        "DAMAGED": "Damaged goods"
       }
     }
   }

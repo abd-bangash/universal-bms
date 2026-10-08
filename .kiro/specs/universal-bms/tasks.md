@@ -383,7 +383,7 @@ How to read this file:
   - [x] 47.1 Property test — Property 6 (reservation arithmetic)
     - _Requirements: 7.4, 11.6, 11.7_
 
-- [ ] 48. Inventory screens
+- [x] 48. Inventory screens
   - `/inventory` stock table with low-stock and overstock filters; `/inventory/movements`; `/inventory/adjust` (opening stock and adjustments with reason); `/inventory/locations`
   - Low-stock count on the home page placeholder
   - _Requirements: 7.5, 37.1, 37.2, 37.10_
