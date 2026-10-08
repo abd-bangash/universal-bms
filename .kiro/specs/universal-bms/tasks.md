@@ -504,7 +504,7 @@ How to read this file:
   - Home page with indicator cards, alerts and my tasks; `/reports` catalogue and one generic report page with filters, totals, drill-down and export
   - _Requirements: 19.1, 19.2, 19.4, 49.1_
 
-- [ ] 67. Checkpoint — day 10: core system
+- [x] 67. Checkpoint — day 10: core system
   - Workflows B, C and D run end to end on the testing environment with the demo data
   - Reports match source records; a user without financial permissions sees no money figures anywhere
   - All R1 tests so far pass in CI
