@@ -350,7 +350,7 @@ How to read this file:
   - Order page: payments panel, deposit required, paid, balance, payment status
   - _Requirements: 13.1, 13.3, 13.4, 13.8, 40.3, 40.9_
 
-- [ ] 44. Checkpoint — payments
+- [x] 44. Checkpoint — payments
   - Extend `seed:demo` with payments and 10 expenses
   - Workflow B steps 6 and 10: record a deposit, order moves to Deposit paid, record the balance, order can be completed; voiding a payment restores the balance
   - A user without financial permissions sees no payment or expense data

@@ -43,8 +43,9 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
       { name: 'catalog', created: 30, existing: 0 },
       { name: 'crm', created: 35, existing: 0 },
       { name: 'sales', created: 25, existing: 0 },
+      { name: 'finance', created: 21, existing: 0 },
     ]);
-    expect(logs).toHaveLength(5);
+    expect(logs).toHaveLength(6);
 
     const workspace = await t.db.prisma.workspace.findUniqueOrThrow({
       where: { id: report.workspaceId },
@@ -230,6 +231,7 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
     expect({
       draft: statusCount('draft'),
       confirmed: statusCount('confirmed'),
+      deposit_paid: statusCount('deposit_paid'),
       in_production: statusCount('in_production'),
       ready: statusCount('ready'),
       delivered: statusCount('delivered'),
@@ -238,7 +240,8 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
       cancelled: statusCount('cancelled'),
     }).toEqual({
       draft: 3,
-      confirmed: 3,
+      confirmed: 2,
+      deposit_paid: 1, // o5 reached its required deposit
       in_production: 2,
       ready: 1,
       delivered: 2,
@@ -265,6 +268,43 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
     ]);
   });
 
+  it('seeds payments in every state and ten expenses, with balances that add up (44)', async () => {
+    const workspaceId = (
+      await t.db.prisma.workspace.findUniqueOrThrow({ where: { slug: DEMO_WORKSPACE.slug } })
+    ).id;
+    const payments = await t.db.prisma.payment.findMany({ where: { workspaceId } });
+    const byStatus = (s: string) => payments.filter((p) => p.status === s).length;
+    expect(byStatus('PENDING_VERIFICATION')).toBe(1);
+    expect(byStatus('VOIDED')).toBe(1);
+    expect(byStatus('CONFIRMED')).toBeGreaterThanOrEqual(9);
+    // an advance became credit
+    const credit = await t.db.prisma.customerCredit.aggregate({
+      where: { workspaceId },
+      _sum: { amount: true },
+    });
+    expect(Number(credit._sum.amount)).toBe(25000);
+    // every order's stored balance equals what its confirmed payments say
+    const orders = await t.db.prisma.order.findMany({ where: { workspaceId } });
+    for (const order of orders) {
+      const confirmed = payments.filter(
+        (p) => p.orderId === order.id && p.status === 'CONFIRMED' && p.type !== 'ADVANCE',
+      );
+      const paid = confirmed.reduce((a, p) => a + Number(p.amount), 0);
+      expect(Number(order.paidAmount)).toBeCloseTo(paid, 2);
+      expect(Number(order.balanceDue)).toBeCloseTo(Number(order.totalAmount) - paid, 2);
+    }
+    const paidOff = orders.filter((o) => o.paymentStatus === 'PAID');
+    expect(paidOff.length).toBeGreaterThanOrEqual(3);
+    expect(orders.some((o) => o.paymentStatus === 'DEPOSIT_PAID')).toBe(true);
+    expect(orders.some((o) => o.paymentStatus === 'PARTIALLY_PAID')).toBe(true);
+    expect(await t.db.prisma.receipt.count({ where: { workspaceId } })).toBeGreaterThanOrEqual(9);
+
+    const expenses = await t.db.prisma.expense.findMany({ where: { workspaceId } });
+    expect(expenses).toHaveLength(10);
+    expect(new Set(expenses.map((e) => e.categoryId)).size).toBeGreaterThanOrEqual(6);
+    expect(expenses.every((e) => e.status === 'POSTED' && Number(e.amount) > 0)).toBe(true);
+  });
+
   it('is safe to run again: nothing is duplicated and passwords are untouched', async () => {
     const before = await t.db.prisma.user.findMany({
       where: { email: { endsWith: '@demo.test' } },
@@ -277,6 +317,7 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
       { name: 'catalog', created: 0, existing: 30 },
       { name: 'crm', created: 0, existing: 35 },
       { name: 'sales', created: 0, existing: 25 },
+      { name: 'finance', created: 0, existing: 21 },
     ]);
     expect(await t.db.prisma.customer.count({ where: { isWalkIn: false } })).toBe(22); // 20 + 2 from won leads
     expect(await t.db.prisma.lead.count()).toBe(15);
@@ -361,6 +402,7 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
       'catalog',
       'crm',
       'sales',
+      'finance',
       'probe',
     ]);
   });
