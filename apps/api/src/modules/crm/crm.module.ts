@@ -6,6 +6,11 @@ import { registerLeadRules } from './lead-workflow';
 import { LeadsController } from './leads.controller';
 import { LeadsService } from './leads.service';
 import { WorkflowRegistry } from '../workflows/workflow.registry';
+import { ClsService } from 'nestjs-cls';
+import type { RequestContext } from '../../common/context/request-context';
+import { PrismaService } from '../../common/prisma/prisma.service';
+import { SearchService } from '../search/search.service';
+import { customerSearch, leadSearch } from './crm-search';
 import { EntityLinkRegistry } from './entity-link.registry';
 import { NotesService } from './notes.service';
 import { TaskDueScheduler } from './task-due.scheduler';
@@ -54,6 +59,9 @@ export class CrmModule implements OnModuleInit {
     private readonly links: EntityLinkRegistry,
     private readonly customers: CustomersService,
     private readonly leads: LeadsService,
+    private readonly search: SearchService,
+    private readonly prisma: PrismaService,
+    private readonly cls: ClsService<RequestContext>,
   ) {}
 
   onModuleInit(): void {
@@ -61,6 +69,8 @@ export class CrmModule implements OnModuleInit {
       ensureWalkInCustomer(tx, ctx.workspaceId),
     );
     this.sections.register('lostReasons', applyProfileLostReasons);
+    this.search.register(customerSearch(this.prisma, this.cls));
+    this.search.register(leadSearch(this.prisma, this.cls));
     registerLeadRules(this.workflowRegistry);
     // Orders, quotations and conversations register themselves when their modules exist.
     this.links.register('CUSTOMER', {

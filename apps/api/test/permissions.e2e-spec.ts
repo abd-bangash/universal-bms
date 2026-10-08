@@ -35,6 +35,8 @@ const AUTHENTICATED_ONLY_ROUTES = [
   'GET /api/v1/settings/units',
   'GET /api/v1/settings/tax-classes',
   'GET /api/v1/settings/lost-reasons',
+  // each result group is limited to the entity types the user may view, checked in the service
+  'GET /api/v1/search',
   // notes take the permission of the record they sit on, checked in the service
   'GET /api/v1/notes',
   'POST /api/v1/notes',

@@ -243,11 +243,11 @@ How to read this file:
   - Usable at 360 pixels wide
   - _Requirements: 8.1, 8.4, 8.5, 9.1, 30.3, 49.3_
 
-- [ ] 29. Global search
+- [x] 29. Global search
   - `GET /search?q=` as designed, covering the entity types that exist so far and extended by later phases (orders, quotations, suppliers, conversations)
   - Header search box with grouped results and keyboard navigation
   - _Requirements: 31.1, 31.2, 31.3, 31.4_
-  - [ ] 29.1 Integration test: results never include another workspace's records or entity types the user cannot view
+  - [x] 29.1 Integration test: results never include another workspace's records or entity types the user cannot view
     - _Requirements: 31.3_
 
 - [ ] 30. Checkpoint — CRM

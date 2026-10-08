@@ -37,14 +37,27 @@
   },
   "shell": {
     "skipToContent": "Skip to content",
-    "searchPlaceholder": "Search (coming soon)",
-    "searchLabel": "Search",
     "notifications": "Notifications (coming soon)",
     "userMenu": "Account menu",
     "signedInAs": "Signed in as {name}",
     "workspace": "Workspace",
     "loadFailed": "We could not load your account.",
-    "demoWorkspace": "Demo"
+    "demoWorkspace": "Demo",
+    "search": {
+      "label": "Search",
+      "placeholder": "Search (press / )",
+      "results": "Search results",
+      "searching": "Searching…",
+      "none": "No results for “{query}”",
+      "failed": "Search is not available right now.",
+      "count": "{count} results",
+      "types": {
+        "ORDER": "Orders",
+        "QUOTATION": "Quotations",
+        "SUPPLIER": "Suppliers",
+        "CONVERSATION": "Conversations"
+      }
+    }
   },
   "home": {
     "title": "Home",

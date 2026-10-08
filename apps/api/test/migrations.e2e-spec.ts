@@ -145,6 +145,7 @@ describe('Migrations (real PostgreSQL)', () => {
 
   it('rollback.sql files undo their migrations in reverse order, and the migrations re-apply', async () => {
     // The audit trigger forbids deleting audit rows, so none exist here; other tables are dropped whole.
+    await runScript(db.prisma, migrationFile('0005_search', 'rollback.sql'));
     await runScript(db.prisma, migrationFile('0004_crm', 'rollback.sql'));
     expect(await tables()).toHaveLength(35);
     await runScript(db.prisma, migrationFile('0003_catalog', 'rollback.sql'));
@@ -162,6 +163,7 @@ describe('Migrations (real PostgreSQL)', () => {
     await runScript(db.prisma, migrationFile('0002_core', 'migration.sql'));
     await runScript(db.prisma, migrationFile('0003_catalog', 'migration.sql'));
     await runScript(db.prisma, migrationFile('0004_crm', 'migration.sql'));
+    await runScript(db.prisma, migrationFile('0005_search', 'migration.sql'));
     expect(await tables()).toHaveLength(39);
     expect(await extensions()).toEqual(['citext', 'pg_trgm']);
   });

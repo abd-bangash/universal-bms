@@ -6,8 +6,8 @@ import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { api, browser } from '@/lib/api-client';
+import { GlobalSearch } from './global-search';
 import { NAVIGATION, visibleNavigation, type NavigationEntry } from '@/lib/navigation';
 import { SessionProvider, useMeQuery, useSession } from '@/lib/session';
 import { useTerminology } from '@/lib/terminology';
@@ -59,7 +59,7 @@ function Frame({ children }: { children: ReactNode }) {
       >
         {t('shell.skipToContent')}
       </a>
-      <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-neutral-200 bg-white px-4">
+      <header className="sticky top-0 z-30 flex min-h-14 flex-wrap items-center gap-3 py-2 border-b border-neutral-200 bg-white px-4">
         <Button
           type="button"
           variant="outline"
@@ -74,16 +74,8 @@ function Frame({ children }: { children: ReactNode }) {
         <span className="truncate font-semibold" title={t('shell.workspace')}>
           {workspace.name}
         </span>
-        <div className="mx-auto hidden w-full max-w-md sm:block">
-          <label htmlFor="global-search" className="sr-only">
-            {t('shell.searchLabel')}
-          </label>
-          <Input
-            id="global-search"
-            type="search"
-            disabled
-            placeholder={t('shell.searchPlaceholder')}
-          />
+        <div className="order-last w-full sm:order-none sm:mx-auto sm:max-w-md">
+          <GlobalSearch />
         </div>
         <Button
           type="button"
