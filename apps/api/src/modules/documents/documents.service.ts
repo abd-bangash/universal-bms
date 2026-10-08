@@ -11,6 +11,7 @@ import { json } from '../sales/line-rows';
 import { OrdersService } from '../sales/orders.service';
 import { QuotationsService } from '../sales/quotations.service';
 import { buildQuotationSnapshot } from '../sales/quotation-snapshot';
+import type { ItemWithVariant } from '../purchasing/purchase.support';
 import { SettingsService } from '../settings/settings.service';
 import { DocumentRenderer } from './document-renderer';
 import type {
@@ -20,6 +21,7 @@ import type {
   ReceiptData,
   ReceiptPaper,
 } from './document.types';
+import { buildPurchaseOrderSnapshot } from './purchase-snapshot';
 import { buildOrderSnapshot } from './snapshot.builders';
 import { loadSnapshotSettings } from './snapshot-settings';
 
@@ -201,6 +203,28 @@ export class DocumentsService {
       invoice.data as unknown as DocumentSnapshot,
       invoice.invoiceNumber,
     );
+  }
+
+  async purchaseOrderPdf(id: string): Promise<PdfFile> {
+    const purchase = await this.prisma.scoped.purchaseOrder.findFirst({
+      where: { id },
+      include: {
+        supplier: true,
+        items: {
+          orderBy: { lineNo: 'asc' },
+          include: { variant: { include: { product: { select: { name: true } } } } },
+        },
+      },
+    });
+    if (!purchase) throw new NotFoundAppException();
+    const { supplier, items, ...po } = purchase;
+    const snapshot = buildPurchaseOrderSnapshot({
+      purchase: po,
+      items: items as unknown as ItemWithVariant[],
+      supplier,
+      settings: await loadSnapshotSettings(this.settings, this.prisma),
+    });
+    return this.render('PURCHASE_ORDER', snapshot, po.orderNumber);
   }
 
   /**

@@ -432,14 +432,14 @@ How to read this file:
   - Add `Supplier`, `PurchaseOrder`, `PurchaseOrderItem`, `GoodsReceipt`, `SupplierPayment`, `SupplierReturn`; migration `purchasing` with `rollback.sql`
   - _Requirements: 7.8, 22.1, 22.2_
 
-- [ ] 56. Suppliers and purchasing API
+- [x] 56. Suppliers and purchasing API
   - Suppliers CRUD with archive and `customFields`; supplier purchase history
   - Purchase orders: create, edit draft, status through `WorkflowService`, expected date, per-item cost
   - `POST /purchases/:id/receive` (idempotent, partial or full) creating a `GoodsReceipt` and `PURCHASE_RECEIPT` movements with unit cost; over-receipt rejected
   - `POST /purchases/quick` creating and fully receiving in one transaction
   - Purchase order PDF
   - _Requirements: 7.8, 7.9, 37.7, 27.1, 29.1, 54.1_
-  - [ ] 56.1 Integration tests: partial then final receipt sets Partially received then Received; average cost updates as specified
+  - [x] 56.1 Integration tests: partial then final receipt sets Partially received then Received; average cost updates as specified
     - _Requirements: 7.9, 37.7_
 
 - [ ] 57. Purchasing screens

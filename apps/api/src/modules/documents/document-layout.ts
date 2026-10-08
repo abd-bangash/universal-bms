@@ -79,6 +79,7 @@ const DEFAULT_LABELS: Record<DocumentSnapshot['type'], string> = {
   QUOTATION: 'Quotation',
   ORDER_CONFIRMATION: 'Order confirmation',
   INVOICE: 'Invoice',
+  PURCHASE_ORDER: 'Purchase order',
 };
 
 /**
@@ -117,6 +118,7 @@ export function buildDocument(
       text(styles.meta, `No. ${snapshot.number}`),
       text(styles.meta, `Date: ${date(snapshot.issuedAt)}`),
       snapshot.validUntil ? text(styles.meta, `Valid until: ${date(snapshot.validUntil)}`) : null,
+      snapshot.expectedDate ? text(styles.meta, `Expected: ${date(snapshot.expectedDate)}`) : null,
       snapshot.orderNumber ? text(styles.meta, `Order: ${snapshot.orderNumber}`) : null,
     ),
   );
@@ -138,7 +140,7 @@ export function buildDocument(
     text(styles.cNo, '#'),
     text(styles.cItem, 'Item'),
     text(styles.cQty, 'Qty'),
-    text(styles.cPrice, 'Unit price'),
+    text(styles.cPrice, snapshot.type === 'PURCHASE_ORDER' ? 'Unit cost' : 'Unit price'),
     text(styles.cDisc, 'Discount'),
     text(styles.cTotal, 'Total'),
   );

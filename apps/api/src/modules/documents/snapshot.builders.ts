@@ -13,6 +13,7 @@ const DEFAULT_WORDS: Record<DocumentKind, string> = {
   QUOTATION: 'Quotation',
   ORDER_CONFIRMATION: 'Order confirmation',
   INVOICE: 'Invoice',
+  PURCHASE_ORDER: 'Purchase order',
 };
 
 /** The common parts of every snapshot that come from the workspace settings. */
@@ -20,13 +21,16 @@ export function settingsPart(
   settings: SnapshotSettings,
   kind: DocumentKind,
 ): Pick<DocumentSnapshot, 'business' | 'currency' | 'locale' | 'labels' | 'pricesIncludeTax'> {
-  const term = (key: 'quotation' | 'order' | 'customer') => settings.terminology[key]?.singular;
+  const term = (key: 'quotation' | 'order' | 'customer' | 'supplier' | 'purchaseOrder') =>
+    settings.terminology[key]?.singular;
   const document =
     kind === 'QUOTATION'
       ? (term('quotation') ?? DEFAULT_WORDS.QUOTATION)
       : kind === 'ORDER_CONFIRMATION'
         ? `${term('order') ?? 'Order'} confirmation`
-        : DEFAULT_WORDS.INVOICE;
+        : kind === 'PURCHASE_ORDER'
+          ? (term('purchaseOrder') ?? DEFAULT_WORDS.PURCHASE_ORDER)
+          : DEFAULT_WORDS.INVOICE;
   return {
     business: { ...settings.business, logoFileId: settings.branding.logoFileId },
     currency: { code: settings.locale.currency, decimals: settings.locale.currencyDecimals },
@@ -35,7 +39,13 @@ export function settingsPart(
       dateFormat: settings.locale.dateFormat,
       timezone: settings.locale.timezone,
     },
-    labels: { document, customer: term('customer') ?? 'Customer' },
+    labels: {
+      document,
+      customer:
+        kind === 'PURCHASE_ORDER'
+          ? (term('supplier') ?? 'Supplier')
+          : (term('customer') ?? 'Customer'),
+    },
     pricesIncludeTax: settings.pricesIncludeTax,
   };
 }

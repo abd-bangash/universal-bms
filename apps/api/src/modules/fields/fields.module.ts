@@ -37,7 +37,9 @@ export class FieldsModule implements OnModuleInit {
       | 'order_items'
       | 'quotations'
       | 'quotation_items'
-      | 'expenses',
+      | 'expenses'
+      | 'suppliers'
+      | 'purchase_orders',
   ) {
     return async (key: string): Promise<boolean> => {
       const rows = await this.prisma.scoped.$queryRaw<Array<{ one: number }>>`
@@ -59,5 +61,7 @@ export class FieldsModule implements OnModuleInit {
     this.usage.register('QUOTATION', this.usedIn('quotations'));
     this.usage.register('QUOTATION_ITEM', this.usedIn('quotation_items'));
     this.usage.register('EXPENSE', this.usedIn('expenses'));
+    this.usage.register('SUPPLIER', this.usedIn('suppliers'));
+    this.usage.register('PURCHASE_ORDER', this.usedIn('purchase_orders'));
   }
 }

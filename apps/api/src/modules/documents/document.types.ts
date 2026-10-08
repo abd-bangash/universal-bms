@@ -1,6 +1,11 @@
 import type { LineDto } from '../sales/quotation.support';
 
-export const DOCUMENT_KINDS = ['QUOTATION', 'ORDER_CONFIRMATION', 'INVOICE'] as const;
+export const DOCUMENT_KINDS = [
+  'QUOTATION',
+  'ORDER_CONFIRMATION',
+  'INVOICE',
+  'PURCHASE_ORDER',
+] as const;
 export type DocumentKind = (typeof DOCUMENT_KINDS)[number];
 
 export interface DocumentParty {
@@ -32,6 +37,8 @@ export interface DocumentSnapshot {
   number: string;
   issuedAt: string;
   validUntil?: string | null;
+  /** Purchase orders: when the goods are expected. */
+  expectedDate?: string | null;
   business: {
     legalName: string;
     phone?: string;

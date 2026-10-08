@@ -73,6 +73,13 @@ export class DocumentsController {
     return inline(res, await this.documents.receiptPdf(p.id, q.paper));
   }
 
+  @Get('purchases/:id/pdf')
+  @RequirePermission('purchase:view')
+  @SkipEnvelope()
+  async purchaseOrder(@Param() p: IdParam, @Res({ passthrough: true }) res: Response) {
+    return inline(res, await this.documents.purchaseOrderPdf(p.id));
+  }
+
   @Get('invoices/:id/pdf')
   @RequirePermission('order:view')
   @SkipEnvelope()
