@@ -296,12 +296,12 @@ How to read this file:
   - [x] 35.1 Integration tests: disallowed transition returns 422 with allowed states; order cannot enter production below the required deposit; order with a balance cannot be completed without the override permission
     - _Requirements: 11.2, 39.5, 39.10_
 
-- [ ] 36. Documents module: quotation, order confirmation and invoice PDFs
+- [x] 36. Documents module: quotation, order confirmation and invoice PDFs
   - `DocumentRenderer` interface and `ReactPdfRenderer`; shared A4 layout (logo, business block, customer block, lines with field snapshot, totals, tax breakdown, terms, optional bank details block, footer)
   - `POST /orders/:id/invoice` creating an `Invoice` with number and immutable snapshot; automatic invoice on the configured System_Role
   - PDF endpoints for quotation, order confirmation and invoice; terminology and locale formatting applied
   - _Requirements: 23.2, 23.3, 29.1, 29.2, 29.3, 29.4, 29.5, 29.6, 29.7_
-  - [ ] 36.1 Unit tests: rendering the same snapshot twice produces the same text content; invoice cannot be modified after issue
+  - [x] 36.1 Unit tests: rendering the same snapshot twice produces the same text content; invoice cannot be modified after issue
     - _Requirements: 29.5, 29.6_
 
 - [ ] 37. Sales screens

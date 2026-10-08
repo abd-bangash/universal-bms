@@ -164,6 +164,12 @@ export class FilesService {
     }
   }
 
+  /** The bytes of a file of this workspace, for documents the server renders itself (no user check). */
+  async readBytes(id: string): Promise<Buffer | null> {
+    const file = await this.prisma.scoped.fileAsset.findFirst({ where: { id } });
+    return file ? this.storage.get(file.storageKey) : null;
+  }
+
   /** A signed URL valid for five minutes, after the tenant and permission check (Requirement 34.4). */
   async urlFor(user: AuthUser, id: string): Promise<FileUrlDto> {
     const file = await this.find(id);

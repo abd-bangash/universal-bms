@@ -37,6 +37,7 @@ import type {
 import { json, type LineRow } from './line-rows';
 import { OrderFactory } from './order-factory.service';
 import { toOrderDto, type OrderDto } from './order.support';
+import { loadSnapshotSettings } from '../documents/snapshot-settings';
 import { buildQuotationSnapshot } from './quotation-snapshot';
 import { toQuotationDto, type QuotationDto } from './quotation.support';
 
@@ -540,22 +541,8 @@ export class QuotationsService {
     return { customer, lead };
   }
 
-  private async snapshotSettings() {
-    const [business, branding, currency, decimals, pricesIncludeTax, terms] = await Promise.all([
-      this.settings.get<Record<string, string>>('business'),
-      this.settings.get<{ logoFileId?: string }>('branding'),
-      this.settings.get<string>('locale.currency'),
-      this.settings.get<number>('locale.currencyDecimals'),
-      this.settings.get<boolean>('tax.pricesIncludeTax'),
-      this.settings.get<string | undefined>('documents.quotationTerms'),
-    ]);
-    return {
-      business: business as never,
-      branding,
-      locale: { currency, currencyDecimals: decimals },
-      pricesIncludeTax,
-      defaultTerms: terms,
-    };
+  private snapshotSettings() {
+    return loadSnapshotSettings(this.settings);
   }
 
   /** Prices the lines, writes the quotation and its items, audits overrides. Shared by create and update. */

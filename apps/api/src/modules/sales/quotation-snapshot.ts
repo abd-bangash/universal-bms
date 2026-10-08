@@ -1,40 +1,12 @@
 import type { Customer, Lead, Quotation, QuotationItem } from '@prisma/client';
+import type { DocumentSnapshot } from '../documents/document.types';
+import { settingsPart, taxBreakdown } from '../documents/snapshot.builders';
+import type { SnapshotSettings } from '../documents/snapshot-settings';
 import { toLineDto } from './quotation.support';
 
+export type QuotationSnapshot = DocumentSnapshot & { type: 'QUOTATION' };
+
 /** Everything the quotation PDF needs, frozen at the moment it is sent (design.md Documents). */
-export interface QuotationSnapshot {
-  type: 'QUOTATION';
-  number: string;
-  issuedAt: string;
-  validUntil: string | null;
-  business: {
-    legalName: string;
-    phone?: string;
-    email?: string;
-    address?: string;
-    taxNumber?: string;
-    logoFileId?: string;
-  };
-  customer: { name: string; phone: string | null; email: string | null; address: unknown } | null;
-  contact: { name: string; phone: string | null; email: string | null } | null;
-  currency: { code: string; decimals: number };
-  pricesIncludeTax: boolean;
-  lines: ReturnType<typeof toLineDto>[];
-  totals: { subtotal: string; discountAmount: string; taxAmount: string; totalAmount: string };
-  discount: { type: string | null; value: string };
-  notes: string | null;
-  terms: string | null;
-  bankDetails: unknown;
-}
-
-export interface SnapshotSettings {
-  business: QuotationSnapshot['business'];
-  branding: { logoFileId?: string };
-  locale: { currency: string; currencyDecimals: number };
-  pricesIncludeTax: boolean;
-  defaultTerms?: string;
-}
-
 export function buildQuotationSnapshot(input: {
   quotation: Quotation;
   items: QuotationItem[];
@@ -44,12 +16,13 @@ export function buildQuotationSnapshot(input: {
   at: Date;
 }): QuotationSnapshot {
   const { quotation, items, customer, lead, settings } = input;
+  const lines = [...items].sort((a, b) => a.lineNo - b.lineNo).map(toLineDto);
   return {
     type: 'QUOTATION',
     number: quotation.quotationNumber,
     issuedAt: input.at.toISOString(),
     validUntil: quotation.validUntil ? quotation.validUntil.toISOString() : null,
-    business: { ...settings.business, logoFileId: settings.branding.logoFileId },
+    ...settingsPart(settings, 'QUOTATION'),
     customer: customer
       ? {
           name: customer.fullName,
@@ -59,9 +32,7 @@ export function buildQuotationSnapshot(input: {
         }
       : null,
     contact: lead ? { name: lead.fullName, phone: lead.phone, email: lead.email } : null,
-    currency: { code: settings.locale.currency, decimals: settings.locale.currencyDecimals },
-    pricesIncludeTax: settings.pricesIncludeTax,
-    lines: [...items].sort((a, b) => a.lineNo - b.lineNo).map(toLineDto),
+    lines,
     totals: {
       subtotal: quotation.subtotal.toFixed(),
       discountAmount: quotation.discountAmount.toFixed(),
@@ -69,8 +40,9 @@ export function buildQuotationSnapshot(input: {
       totalAmount: quotation.totalAmount.toFixed(),
     },
     discount: { type: quotation.discountType, value: quotation.discountValue.toFixed() },
+    taxBreakdown: taxBreakdown(lines),
     notes: quotation.notes,
-    terms: quotation.terms ?? settings.defaultTerms ?? null,
+    terms: quotation.terms ?? settings.quotationTerms ?? null,
     bankDetails: null,
   };
 }

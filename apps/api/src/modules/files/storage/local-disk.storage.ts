@@ -41,6 +41,15 @@ export class LocalDiskStorage implements StorageAdapter {
     return `${this.publicBaseUrl}/api/v1/files/local?${query.toString()}`;
   }
 
+  async get(key: string): Promise<Buffer | null> {
+    const path = this.pathOf(key);
+    try {
+      return await readFile(path);
+    } catch {
+      return null;
+    }
+  }
+
   async delete(key: string): Promise<void> {
     await rm(this.pathOf(key), { force: true });
   }
