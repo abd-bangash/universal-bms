@@ -344,7 +344,7 @@ How to read this file:
   - Bank details block on quotation, order confirmation and invoice PDFs from customer-facing accounts; `{{bank_details}}` template variable resolver
   - _Requirements: 13.4, 40.2, 40.11, 29.2_
 
-- [ ] 43. Finance screens
+- [x] 43. Finance screens
   - `/finance/payments` list and record-payment dialog (also embedded in the order page), confirm, reject and void actions gated by permission
   - `/finance/expenses`, `/finance/receivables`, `/finance/accounts` (accounts and payment methods)
   - Order page: payments panel, deposit required, paid, balance, payment status

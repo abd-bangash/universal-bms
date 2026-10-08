@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
+import { PaymentsPanel } from '@/components/finance/payments-panel';
 import { NotesPanel } from '@/components/crm/notes-panel';
 import { TasksPanel } from '@/components/crm/tasks-panel';
 import { TimelinePanel } from '@/components/crm/timeline-panel';
@@ -46,6 +47,7 @@ export function OrderDetail({ orderId }: { orderId: string }) {
   const [editing, setEditing] = useState(false);
   const [cancelling, setCancelling] = useState<string | null>(null);
   const [reason, setReason] = useState('');
+  const [keepAsCredit, setKeepAsCredit] = useState(false);
   const [pending, setPending] = useState(false);
 
   const order = useQuery({
@@ -80,6 +82,7 @@ export function OrderDetail({ orderId }: { orderId: string }) {
   const draft = current?.systemRole === 'DRAFT';
   const closed = current?.category === 'DONE' || current?.category === 'CANCELLED';
   const isCancel = (key: string) => stateOf(key)?.systemRole === 'CANCELLED';
+  const netPaid = Number(o.paidAmount) - Number(o.refundedAmount);
 
   async function refresh() {
     await queryClient.invalidateQueries({ queryKey: ['order'] });
@@ -87,16 +90,18 @@ export function OrderDetail({ orderId }: { orderId: string }) {
     await queryClient.invalidateQueries({ queryKey: ['timeline'] });
   }
 
-  async function move(to: string, cancelReason?: string) {
+  async function move(to: string, cancelReason?: string, paymentDecision?: 'CREDIT') {
     setError(null);
     setPending(true);
     try {
       const res = await api.post<{ pendingApproval: boolean }>(`/orders/${orderId}/status`, {
         status: to,
         ...(cancelReason ? { reason: cancelReason } : {}),
+        ...(paymentDecision ? { paymentDecision } : {}),
       });
       setCancelling(null);
       setReason('');
+      setKeepAsCredit(false);
       await refresh();
       if (res.pendingApproval) setError(t('awaitingApproval'));
     } catch (e) {
@@ -258,12 +263,7 @@ export function OrderDetail({ orderId }: { orderId: string }) {
         ) : null}
       </section>
 
-      <section aria-labelledby="payments-heading">
-        <h2 id="payments-heading" className="font-medium">
-          {t('payments')}
-        </h2>
-        <p className="text-sm text-neutral-600">{t('paymentsSoon')}</p>
-      </section>
+      <PaymentsPanel order={o} />
 
       <section aria-labelledby="history-heading">
         <h2 id="history-heading" className="font-medium">
@@ -298,11 +298,24 @@ export function OrderDetail({ orderId }: { orderId: string }) {
               onChange={(e) => setReason(e.target.value)}
             />
           </Field>
+          {netPaid > 0 ? (
+            <label className="flex items-start gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={keepAsCredit}
+                onChange={(e) => setKeepAsCredit(e.target.checked)}
+              />
+              <span>{t('keepAsCredit', { amount: formatMoney(String(netPaid), locale) })}</span>
+            </label>
+          ) : null}
           <div className="flex justify-end">
             <Button
               type="button"
-              disabled={reason.trim() === '' || pending}
-              onClick={() => cancelling && void move(cancelling, reason.trim())}
+              disabled={reason.trim() === '' || pending || (netPaid > 0 && !keepAsCredit)}
+              onClick={() =>
+                cancelling &&
+                void move(cancelling, reason.trim(), netPaid > 0 ? 'CREDIT' : undefined)
+              }
             >
               {t('confirmCancel')}
             </Button>

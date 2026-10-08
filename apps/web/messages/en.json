@@ -33,7 +33,9 @@
     "label": "Main navigation",
     "open": "Open menu",
     "close": "Close menu",
-    "industry": "Industry"
+    "industry": "Industry",
+    "receivables": "Receivables",
+    "accounts": "Accounts"
   },
   "shell": {
     "skipToContent": "Skip to content",
@@ -1073,12 +1075,178 @@
         "confirmationPdf": "Order confirmation (PDF)",
         "invoicePdf": "Invoice {number} (PDF)",
         "issueInvoice": "Issue an invoice",
-        "payments": "Payments",
-        "paymentsSoon": "Payments are recorded here once the finance screens are available.",
         "statusHistory": "Status history",
         "cancelTitle": "Cancel this order",
         "cancelReason": "Reason",
-        "confirmCancel": "Cancel the order"
+        "confirmCancel": "Cancel the order",
+        "keepAsCredit": "Keep the {amount} already paid as the customer’s credit"
+      }
+    }
+  },
+  "finance": {
+    "nav": {
+      "label": "Finance sections",
+      "payments": "Payments",
+      "expenses": "Expenses",
+      "receivables": "Receivables",
+      "accounts": "Accounts"
+    },
+    "status": {
+      "PENDING_VERIFICATION": "Waiting for confirmation",
+      "CONFIRMED": "Confirmed",
+      "REJECTED": "Rejected",
+      "VOIDED": "Voided"
+    },
+    "type": {
+      "ORDER_PAYMENT": "Payment",
+      "DEPOSIT": "Deposit",
+      "ADVANCE": "Advance",
+      "CREDIT_APPLIED": "Credit applied",
+      "REFUND": "Refund"
+    },
+    "record": {
+      "title": "Record a payment",
+      "pendingNotice": "You can record this payment, but someone who can confirm payments has to confirm it before it counts.",
+      "type": "What is it for?",
+      "DEPOSIT": "Deposit",
+      "ORDER_PAYMENT": "Payment",
+      "forOrder": "For order {number}",
+      "advanceHint": "Money paid before there is an order becomes the customer’s credit.",
+      "method": "Payment method",
+      "amount": "Amount",
+      "reference": "Reference number",
+      "proof": "Attach proof (optional)",
+      "note": "Note",
+      "saving": "Saving…",
+      "submit": "Record payment"
+    },
+    "actions": {
+      "confirm": "Confirm",
+      "reject": "Reject",
+      "void": "Void",
+      "reason": "Reason",
+      "voidTitle": "Void payment {number}",
+      "rejectTitle": "Reject payment {number}",
+      "confirmVoid": "Void the payment",
+      "confirmReject": "Reject the payment"
+    },
+    "panel": {
+      "heading": "Payments",
+      "record": "Record payment",
+      "useCredit": "Use customer credit ({amount})",
+      "overpaymentToCredit": "Move {amount} overpayment to credit",
+      "overpaid": "This order has been overpaid by {amount}.",
+      "none": "No payments yet."
+    },
+    "payments": {
+      "title": "Payments",
+      "hint": "A payment counts towards an order only once it is confirmed.",
+      "recordAdvance": "Record an advance",
+      "caption": "Payments",
+      "number": "Number",
+      "type": "Type",
+      "order": "Order",
+      "openOrder": "Open order",
+      "method": "Method",
+      "amount": "Amount",
+      "date": "Date",
+      "statusLabel": "Status",
+      "actions": "Actions",
+      "filterStatus": "Status",
+      "filterType": "Type",
+      "empty": "No payments yet",
+      "emptyDescription": "Payments are recorded on an order, or here as an advance."
+    },
+    "expenses": {
+      "title": "Expenses",
+      "add": "Add expense",
+      "caption": "Expenses",
+      "date": "Date",
+      "category": "Category",
+      "description": "Description",
+      "amount": "Amount",
+      "statusLabel": "Status",
+      "actions": "Actions",
+      "filterCategory": "Category",
+      "filterStatus": "Status",
+      "empty": "No expenses yet",
+      "emptyDescription": "Record rent, materials, wages and other costs.",
+      "status": {
+        "POSTED": "Posted",
+        "VOIDED": "Voided"
+      },
+      "void": "Void",
+      "voidTitle": "Void this expense",
+      "reason": "Reason",
+      "confirmVoid": "Void the expense",
+      "form": {
+        "title": "Add an expense",
+        "category": "Category",
+        "amount": "Amount",
+        "date": "Date",
+        "method": "Paid with",
+        "description": "Description",
+        "attachment": "Attach the bill (optional)",
+        "saving": "Saving…",
+        "save": "Save expense"
+      }
+    },
+    "receivables": {
+      "title": "Receivables",
+      "invoiced": "Invoiced",
+      "paid": "Paid",
+      "outstanding": "Outstanding",
+      "none": "Nobody owes anything.",
+      "customer": "Customer",
+      "current": "0–30 days",
+      "days31to60": "31–60 days",
+      "days61to90": "61–90 days",
+      "over90": "Over 90 days"
+    },
+    "accounts": {
+      "accounts": "Accounts",
+      "methods": "Payment methods",
+      "addAccount": "Add account",
+      "addMethod": "Add payment method",
+      "edit": "Edit",
+      "activate": "Switch on",
+      "deactivate": "Switch off",
+      "inactive": "Off",
+      "customerFacing": "Shown to customers",
+      "needsReference": "needs a reference number",
+      "accountType": {
+        "CASH": "Cash",
+        "BANK": "Bank",
+        "MOBILE_WALLET": "Mobile wallet",
+        "CARD_TERMINAL": "Card terminal"
+      },
+      "methodType": {
+        "CASH": "Cash",
+        "CARD": "Card",
+        "BANK_TRANSFER": "Bank transfer",
+        "MOBILE_MONEY": "Mobile money",
+        "OTHER": "Other"
+      },
+      "accountForm": {
+        "addTitle": "Add an account",
+        "editTitle": "Edit account",
+        "type": "Type",
+        "name": "Name",
+        "bankName": "Bank",
+        "accountTitle": "Account title",
+        "accountNumber": "Account number or IBAN",
+        "branch": "Branch",
+        "showToCustomers": "Show on documents and in bank-details messages",
+        "save": "Save"
+      },
+      "methodForm": {
+        "addTitle": "Add a payment method",
+        "editTitle": "Edit payment method",
+        "name": "Name",
+        "type": "Type",
+        "account": "Pays into",
+        "requiresReference": "Ask for a reference number",
+        "save": "Save"
       }
     }
   }

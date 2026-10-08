@@ -83,6 +83,7 @@ const order = (over: Partial<OrderView> = {}): OrderView => ({
   totalAmount: '2000',
   depositRequired: '0',
   paidAmount: '0',
+  refundedAmount: '0',
   balanceDue: '2000',
   fulfilmentMethod: null,
   deliveryAddress: null,
@@ -172,6 +173,8 @@ const base = {
   'GET /orders/o1/timeline': () => page([]),
   'GET /orders/o1/status-history': () => [],
   'GET /orders/o1/invoices': () => [],
+  'GET /settings/payment-methods': () => [],
+  'GET /payments': () => page([]),
 };
 
 beforeEach(() => push.mockClear());

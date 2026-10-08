@@ -138,7 +138,15 @@ export const NAVIGATION: readonly NavigationEntry[] = [
     label: { message: 'payments' },
     area: 'finance',
     permissions: ['payment:view'],
-    available: false,
+    available: true,
+  },
+  {
+    key: 'receivables',
+    href: '/finance/receivables',
+    label: { message: 'receivables' },
+    area: 'finance',
+    permissions: ['payment:view'],
+    available: true,
   },
   {
     key: 'expenses',
@@ -146,7 +154,15 @@ export const NAVIGATION: readonly NavigationEntry[] = [
     label: { message: 'expenses' },
     area: 'finance',
     permissions: ['expense:view'],
-    available: false,
+    available: true,
+  },
+  {
+    key: 'accounts',
+    href: '/finance/accounts',
+    label: { message: 'accounts' },
+    area: 'finance',
+    permissions: ['account:view'],
+    available: true,
   },
   {
     key: 'staff',

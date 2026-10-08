@@ -72,6 +72,7 @@ export interface OrderView {
   totalAmount: string;
   depositRequired: string;
   paidAmount: string;
+  refundedAmount: string;
   balanceDue: string;
   fulfilmentMethod: 'PICKUP' | 'DELIVERY' | null;
   deliveryAddress: Record<string, string> | null;
