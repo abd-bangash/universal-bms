@@ -362,16 +362,16 @@ How to read this file:
   - Add `StockMovement`, `StockLevel`, `StockReservation`, `AdjustmentReason`, `StockCount`, `StockCountLine`; migration `inventory` with `rollback.sql`; trigger `stock_movements_append_only`; adjustment reasons registered as workspace defaults
   - _Requirements: 7.1, 7.2, 37.9, 22.1, 22.2_
 
-- [ ] 46. Inventory API
+- [x] 46. Inventory API
   - `InventoryService.post` as the single ledger writer: row locks in fixed order, negative-stock rule, `StockLevel` update, weighted average cost update, `stock.low` event when crossing the minimum level
   - `POST /inventory/opening-stock` and `POST /inventory/movements` (adjustment in or out with reason and note), both idempotent
   - `GET /inventory/stock` (on hand, reserved, available, average cost, low and overstock flags) and `GET /inventory/movements` with all filters
   - Locations CRUD (R1 uses the single default location; the schema and API accept more)
   - Unit conversion to base unit applied on every posting
   - _Requirements: 7.1, 7.2, 7.3, 7.5, 28.5, 28.6, 37.1, 37.2, 37.5, 37.7, 37.9, 37.10, 37.11, 54.1, 54.6, 55.3_
-  - [ ] 46.1 Property test — Property 5 (stock level equals ledger) and Property 4 for `stock_movements`
+  - [x] 46.1 Property test — Property 5 (stock level equals ledger) and Property 4 for `stock_movements`
     - _Requirements: 7.3, 37.9_
-  - [ ] 46.2 Property test — Property 17 (no oversell under concurrency)
+  - [x] 46.2 Property test — Property 17 (no oversell under concurrency)
     - _Requirements: 37.5, 37.6_
 
 - [ ] 47. Reservations wired to the order workflow

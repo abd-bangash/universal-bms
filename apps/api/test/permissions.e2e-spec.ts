@@ -48,6 +48,8 @@ const AUTHENTICATED_ONLY_ROUTES = [
   'GET /api/v1/settings/payment-methods',
   // anyone who views or records expenses picks a category, checked in the controller
   'GET /api/v1/settings/expense-categories',
+  // anyone who works with stock reads the adjustment reasons, checked in the controller
+  'GET /api/v1/settings/adjustment-reasons',
   'DELETE /api/v1/auth/sessions/:id',
 ];
 
