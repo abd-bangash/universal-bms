@@ -1,4 +1,4 @@
-import { MODULE_KEYS, isPermission } from '@bms/types';
+import { DEFAULT_ROLES, MODULE_KEYS, isPermission } from '@bms/types';
 import {
   NAVIGATION,
   NAVIGATION_PERMISSIONS,
@@ -105,5 +105,29 @@ describe('visibleNavigation (Requirement 49.2)', () => {
 
   it('hides screens that do not exist yet', () => {
     expect(keys(['order:view'])).not.toContain('later');
+  });
+});
+
+describe('navigation per default role (checkpoint 16)', () => {
+  const allModules = Object.fromEntries(MODULE_KEYS.map((k) => [k, true]));
+
+  it('shows every role only entries its permissions allow, and Owner the most', () => {
+    const counts = new Map<string, number>();
+    for (const role of DEFAULT_ROLES) {
+      const entries = visibleNavigation(NAVIGATION, {
+        permissions: role.permissions,
+        modules: allModules,
+      });
+      counts.set(role.name, entries.length);
+      for (const entry of entries) {
+        if (entry.permissions.length > 0) {
+          expect(entry.permissions.some((p) => role.permissions.includes(p))).toBe(true);
+        }
+      }
+    }
+    const owner = counts.get('Owner') as number;
+    for (const [name, n] of counts) {
+      if (name !== 'Owner') expect(n).toBeLessThanOrEqual(owner);
+    }
   });
 });

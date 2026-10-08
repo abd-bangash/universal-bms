@@ -152,7 +152,7 @@ How to read this file:
   - `docs/deployment-testing.md`
   - _Requirements: 52.1, 52.3, 50.2, 50.3, 50.5_
 
-- [ ] 16. Checkpoint — foundation
+- [x] 16. Checkpoint — foundation
   - Two workspaces created; each user sees only their own workspace's users, roles, settings and audit log
   - Every default Role can log in on the testing environment and sees only its permitted navigation
   - All tests pass. Stop and ask the user to review before continuing.
