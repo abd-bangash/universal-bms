@@ -232,6 +232,7 @@ export function usePricingPreview(
   lines: LineDraft[],
   orderDiscount: { type: 'AMOUNT' | 'PERCENT'; value: string } | null,
   customerId: string | null,
+  cash = false,
 ) {
   const valid = lines.filter(
     (l) => (l.kind === 'CATALOG' ? !!l.variantId : l.name.trim() !== '') && l.quantity !== '',
@@ -240,6 +241,7 @@ export function usePricingPreview(
     lines: valid.map(toLineInput),
     ...(orderDiscount && orderDiscount.value !== '' ? { orderDiscount } : {}),
     ...(customerId ? { customerId } : {}),
+    ...(cash ? { cash: true } : {}),
   };
   return useQuery({
     queryKey: ['pricing-preview', body],

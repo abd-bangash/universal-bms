@@ -414,7 +414,7 @@ How to read this file:
   - `GET /documents/receipts/:id/pdf?paper=`
   - _Requirements: 12.5, 12.6, 23.1, 23.2, 23.3, 29.8, 48.5, 56.3, 56.4_
 
-- [ ] 53. POS screen
+- [x] 53. POS screen
   - `/pos`: keyboard-first product search and barcode-scanner input, cart with quantity, price, line discount, order discount and tax, customer picker with walk-in default, salesperson picker, payment dialog with tendered amount and change, receipt opened in the browser PDF viewer for printing
   - Blocking notice and retry with the same idempotency key when the API cannot be reached; cart kept on screen
   - `/pos/receipts` history with reprint

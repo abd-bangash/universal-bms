@@ -1349,5 +1349,70 @@
         "DAMAGED": "Damaged goods"
       }
     }
+  },
+  "pos": {
+    "nav": {
+      "label": "Point of sale sections",
+      "sell": "Sell",
+      "receipts": "Receipts"
+    },
+    "screen": {
+      "title": "Point of sale",
+      "cart": "Cart",
+      "search": "Product",
+      "searchHint": "Scan a barcode or type a name or SKU, then press Enter. F2 returns here; F4 takes payment.",
+      "searchPlaceholder": "Scan or search",
+      "notFound": "No product matches.",
+      "results": "Matching products",
+      "emptyCart": "The cart is empty. Scan or search for a product.",
+      "qty": "Qty",
+      "price": "Price",
+      "discount": "Discount",
+      "discountValue": "Value",
+      "remove": "Remove line {n}",
+      "removeShort": "Remove",
+      "walkIn": "Walk-in customer",
+      "salesperson": "Salesperson",
+      "salespersonDefault": "{name} (me)",
+      "orderDiscount": "Sale discount",
+      "pay": "Pay",
+      "saleComplete": "Sale {number} complete, receipt {receipt}.",
+      "changeDue": "Change due",
+      "receiptFailed": "The sale is saved, but the receipt could not be opened. Open it again from here or from the receipt history.",
+      "newSale": "New sale",
+      "openReceipt": "Open receipt"
+    },
+    "pay": {
+      "title": "Take payment",
+      "amountDue": "Amount due",
+      "method": "Payment method",
+      "chooseMethod": "Choose a method",
+      "tendered": "Amount handed over",
+      "reference": "Reference number",
+      "short": "The amount is less than the total.",
+      "change": "Change",
+      "cancel": "Cancel",
+      "complete": "Complete sale",
+      "completing": "Completing…",
+      "unreachableTitle": "The server cannot be reached",
+      "unreachable": "The sale may not have been recorded. Your cart is kept. Retry when the connection is back; retrying never charges twice.",
+      "retry": "Retry"
+    },
+    "history": {
+      "title": "Receipts",
+      "caption": "Sale receipts",
+      "number": "Receipt",
+      "order": "Sale",
+      "customer": "Customer",
+      "walkIn": "Walk-in",
+      "total": "Total",
+      "when": "Date",
+      "reprints": "Reprints",
+      "actions": "Actions",
+      "reprint": "Reprint",
+      "reprintLabel": "Reprint receipt {number}",
+      "empty": "No receipts yet.",
+      "emptyDescription": "Receipts appear here after a sale."
+    }
   }
 }
