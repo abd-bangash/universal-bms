@@ -306,6 +306,57 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
     expect(expenses.every((e) => e.status === 'POSTED' && Number(e.amount) > 0)).toBe(true);
   });
 
+  it('seeds opening stock for every stockable variant, with some low and some over (49)', async () => {
+    const workspaceId = (
+      await t.db.prisma.workspace.findUniqueOrThrow({ where: { slug: DEMO_WORKSPACE.slug } })
+    ).id;
+    const variants = await t.db.prisma.productVariant.count({
+      where: { workspaceId, status: 'ACTIVE', product: { type: 'STOCKABLE', madeToOrder: false } },
+    });
+    const opening = await t.db.prisma.stockMovement.count({
+      where: { workspaceId, movementType: 'OPENING_STOCK' },
+    });
+    expect(opening).toBe(variants);
+    const levels = await t.db.prisma.stockLevel.findMany({
+      where: { workspaceId },
+      include: { variant: true },
+    });
+    // the stored level equals the ledger for every variant (Property 5), reservations equal the active ones
+    for (const level of levels) {
+      const ledger = await t.db.prisma.stockMovement.aggregate({
+        where: { workspaceId, variantId: level.variantId, locationId: level.locationId },
+        _sum: { quantityDelta: true },
+      });
+      expect(level.onHand.toFixed()).toBe(ledger._sum.quantityDelta?.toFixed());
+      const active = await t.db.prisma.stockReservation.aggregate({
+        where: {
+          workspaceId,
+          variantId: level.variantId,
+          locationId: level.locationId,
+          status: 'ACTIVE',
+        },
+        _sum: { quantity: true },
+      });
+      expect(level.reserved.toFixed()).toBe(
+        (active._sum.quantity ?? 0).toString() === '0' ? '0' : active._sum.quantity?.toFixed(),
+      );
+    }
+    const low = levels.filter(
+      (l) => l.variant.minStockLevel && l.onHand.minus(l.reserved).lt(l.variant.minStockLevel),
+    );
+    expect(low.length).toBeGreaterThan(0);
+    expect(
+      levels.some((l) => l.variant.maxStockLevel && l.onHand.gt(l.variant.maxStockLevel)),
+    ).toBe(true);
+    // the seeded orders that were confirmed hold stock, and delivered ones sold it
+    expect(
+      await t.db.prisma.stockReservation.count({ where: { workspaceId, status: 'ACTIVE' } }),
+    ).toBeGreaterThan(0);
+    expect(
+      await t.db.prisma.stockMovement.count({ where: { workspaceId, movementType: 'SALE' } }),
+    ).toBeGreaterThan(0);
+  });
+
   it('is safe to run again: nothing is duplicated and passwords are untouched', async () => {
     const before = await t.db.prisma.user.findMany({
       where: { email: { endsWith: '@demo.test' } },

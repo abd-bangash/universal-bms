@@ -388,7 +388,7 @@ How to read this file:
   - Low-stock count on the home page placeholder
   - _Requirements: 7.5, 37.1, 37.2, 37.10_
 
-- [ ] 49. Checkpoint — inventory
+- [x] 49. Checkpoint — inventory
   - Extend `seed:demo` with opening stock for every stockable variant
   - Enter opening stock, confirm an order (available drops, on hand unchanged), deliver it (on hand drops), cancel another (available restored); an adjustment without a reason is rejected
   - Stop and ask the user to review.
