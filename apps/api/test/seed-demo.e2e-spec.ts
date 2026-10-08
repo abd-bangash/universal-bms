@@ -18,6 +18,7 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
     prisma: t.app.get(PrismaService),
     tenants: t.app.get(TenantsService),
     passwords: t.app.get(PasswordService),
+    get: <T>(token: abstract new (...args: never[]) => T): T => t.app.get(token),
   });
 
   beforeAll(async () => {
@@ -34,8 +35,9 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
     expect(report.steps).toEqual([
       { name: 'workspace', created: 1, existing: 0 },
       { name: 'staff', created: 8, existing: 0 },
+      { name: 'catalog', created: 30, existing: 0 },
     ]);
-    expect(logs).toHaveLength(2);
+    expect(logs).toHaveLength(3);
 
     const workspace = await t.db.prisma.workspace.findUniqueOrThrow({
       where: { id: report.workspaceId },
@@ -69,6 +71,56 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
     ).toEqual(['cashier@demo.test', 'salesperson@demo.test']);
   });
 
+  it('seeds a sample catalog: 6+ categories, 30 products with variants, attributes, aliases and images (21)', async () => {
+    const workspaceId = (
+      await t.db.prisma.workspace.findUniqueOrThrow({ where: { slug: DEMO_WORKSPACE.slug } })
+    ).id;
+    const roots = await t.db.prisma.category.count({ where: { workspaceId, parentId: null } });
+    expect(roots).toBeGreaterThanOrEqual(6);
+
+    const products = await t.db.prisma.product.findMany({
+      where: { workspaceId },
+      include: { variants: true, images: { include: { file: true } }, category: true },
+    });
+    expect(products).toHaveLength(30);
+    for (const p of products) {
+      expect(p.status).toBe('ACTIVE');
+      expect(p.category?.parentId).not.toBeNull();
+      expect(p.variants.length).toBeGreaterThanOrEqual(1);
+      expect(p.variants.filter((v) => v.isDefault)).toHaveLength(1);
+      expect(p.aliases.length).toBeGreaterThanOrEqual(1);
+      expect(p.images).toHaveLength(1);
+      expect(p.images[0]?.isPrimary).toBe(true);
+      expect(p.images[0]?.file.mimeType).toBe('image/png');
+      const fields = p.customFields as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+      expect(fields.width).toMatchObject({ unit: 'cm' });
+      expect(typeof fields.material).toBe('string');
+      expect(Number(p.basePrice)).toBeGreaterThan(Number(p.costPrice));
+    }
+    expect(products.reduce((n, p) => n + p.variants.length, 0)).toBeGreaterThan(30);
+    expect(products.some((p) => p.madeToOrder)).toBe(true);
+    const barcodes = products.flatMap((p) => p.variants.map((v) => v.barcode));
+    expect(new Set(barcodes).size).toBe(barcodes.length);
+
+    // the demo owner sees it all through the real API, and a search by alias finds a product
+    const http = api(t.app);
+    const login = await http
+      .post('/auth/login', { email: 'owner@demo.test', password: 'demo-password-1' })
+      .expect(200);
+    const token = login.body.data.accessToken as string;
+    const hits = await http.get('/catalog/variants/search?q=almari', token).expect(200);
+    expect((hits.body.data as Array<{ productCode: string }>).map((h) => h.productCode)).toContain(
+      'STO-001',
+    );
+    const salesperson = await http
+      .post('/auth/login', { email: 'salesperson@demo.test', password: 'demo-password-1' })
+      .expect(200);
+    const asSales = await http
+      .get('/catalog/products?limit=5', salesperson.body.data.accessToken)
+      .expect(200);
+    expect(JSON.stringify(asSales.body.data)).not.toMatch(/costPrice|costOverride/);
+  });
+
   it('is safe to run again: nothing is duplicated and passwords are untouched', async () => {
     const before = await t.db.prisma.user.findMany({
       where: { email: { endsWith: '@demo.test' } },
@@ -78,7 +130,10 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
     expect(report.steps).toEqual([
       { name: 'workspace', created: 0, existing: 1 },
       { name: 'staff', created: 0, existing: 8 },
+      { name: 'catalog', created: 0, existing: 30 },
     ]);
+    expect(await t.db.prisma.product.count()).toBe(30);
+    expect(await t.db.prisma.productImage.count()).toBe(30);
     const after = await t.db.prisma.user.findMany({
       where: { email: { endsWith: '@demo.test' } },
       orderBy: { email: 'asc' },
@@ -152,7 +207,7 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
       { password: 'x-password-123' },
     );
     expect(seen).toEqual([report.workspaceId]);
-    expect(report.steps.map((s) => s.name)).toEqual(['workspace', 'staff', 'probe']);
+    expect(report.steps.map((s) => s.name)).toEqual(['workspace', 'staff', 'catalog', 'probe']);
   });
 });
 

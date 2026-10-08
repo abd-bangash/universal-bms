@@ -38,6 +38,7 @@ async function main(): Promise<void> {
         prisma: app.get(PrismaService),
         tenants: app.get(TenantsService),
         passwords: app.get(PasswordService),
+        get: (token) => app.get(token),
       },
       DEMO_STEPS,
       {

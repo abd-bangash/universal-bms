@@ -187,7 +187,7 @@ How to read this file:
   - `/products/categories` and `/products/brands`
   - _Requirements: 6.1, 6.2, 6.3, 36.1, 36.4, 36.5, 49.11_
 
-- [ ] 21. Sample catalog seed
+- [x] 21. Sample catalog seed
   - Extend `seed:demo`: at least 6 categories, 30 furniture products with variants, attributes, aliases and placeholder images
   - _Requirements: 50.2, 50.5_
 

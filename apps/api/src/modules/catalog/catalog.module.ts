@@ -1,5 +1,7 @@
-import { Module } from '@nestjs/common';
+import { Module, type OnModuleInit } from '@nestjs/common';
+import { ProfileSectionRegistry } from '../tenants/registries';
 import { BrandsService } from './brands.service';
+import { applyProfileCategories } from './catalog-profile.section';
 import { CatalogController } from './catalog.controller';
 import { CategoriesService } from './categories.service';
 import { ProductImagesService } from './product-images.service';
@@ -15,6 +17,12 @@ import { VariantLookupService } from './variant-lookup.service';
     ProductImagesService,
     VariantLookupService,
   ],
-  exports: [ProductsService, CategoriesService, VariantLookupService],
+  exports: [ProductsService, CategoriesService, VariantLookupService, ProductImagesService],
 })
-export class CatalogModule {}
+export class CatalogModule implements OnModuleInit {
+  constructor(private readonly sections: ProfileSectionRegistry) {}
+
+  onModuleInit(): void {
+    this.sections.register('categories', applyProfileCategories);
+  }
+}

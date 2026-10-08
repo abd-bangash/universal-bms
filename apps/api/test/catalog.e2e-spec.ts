@@ -485,9 +485,9 @@ describe('Catalog API (real PostgreSQL)', () => {
           (await http.post('/catalog/categories', { name, parentId }, b.token).expect(201)).body
             .data as Json
         ).id as string;
-      const living = await cat('Living');
-      const sofas = await cat('Sofas', living);
-      const beds = await cat('Beds');
+      const living = await cat('Lounge');
+      const sofas = await cat('Lounge sofas', living);
+      const beds = await cat('Sleep');
       const brand = (
         (await http.post('/catalog/brands', { name: 'Acme' }, b.token).expect(201)).body
           .data as Json
@@ -575,6 +575,29 @@ describe('Catalog API (real PostgreSQL)', () => {
   });
 
   describe('categories and brands', () => {
+    it('a new furniture workspace starts with the profile categories, and re-applying never duplicates them', async () => {
+      const b = await business();
+      const tree = (await http.get('/catalog/categories', b.token).expect(200)).body.data as Json[];
+      expect(tree.map((c) => c.name)).toEqual([
+        'Sofas',
+        'Beds',
+        'Tables',
+        'Chairs',
+        'Storage',
+        'Office furniture',
+      ]);
+      expect((tree[0] as Json).children.map((c: Json) => c.name)).toEqual([
+        'Sectional sofas',
+        'Sofa sets',
+        'Recliners',
+      ]);
+      await http.post('/settings/apply-profile/furniture', {}, b.token).expect(200);
+      const again = (await http.get('/catalog/categories?includeInactive=true', b.token)).body
+        .data as Json[];
+      expect(again).toHaveLength(6);
+      expect(again.flatMap((c) => c.children)).toHaveLength(17);
+    });
+
     it('manages a tree: no cycles, no duplicate siblings, bounded depth, deactivate instead of delete', async () => {
       const b = await business();
       const mk = async (name: string, parentId?: string) =>
@@ -626,10 +649,14 @@ describe('Catalog API (real PostgreSQL)', () => {
 
     it('a sub-category inherits category-scoped custom fields (6.5)', async () => {
       const b = await business();
-      const sofas = (await http.post('/catalog/categories', { name: 'Sofas' }, b.token)).body
+      const sofas = (await http.post('/catalog/categories', { name: 'Lounge range' }, b.token)).body
         .data as Json;
       const corner = (
-        await http.post('/catalog/categories', { name: 'Corner', parentId: sofas.id }, b.token)
+        await http.post(
+          '/catalog/categories',
+          { name: 'Corner range', parentId: sofas.id },
+          b.token,
+        )
       ).body.data as Json;
       await http
         .post(

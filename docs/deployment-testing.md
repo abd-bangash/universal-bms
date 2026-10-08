@@ -72,7 +72,9 @@ node dist/cli/workspace-create.js --name "Acme Furniture" --owner-email owner@ac
 
 `seed-demo` is safe to run again (it adds only what is missing) and refuses to run when
 `APP_ENV=production` unless `SEED_ALLOW_PRODUCTION=true`. Pass `--reset-passwords` to give the demo users
-a new password. All demo data is synthetic.
+a new password. All demo data is synthetic. It includes a sample catalog: the furniture categories and 30
+products with colour variants, dimensions, material and finish attributes, alternative names and placeholder
+images.
 
 The demo business has these sign-ins (all with the printed password): `owner@demo.test`,
 `manager@demo.test`, `salesperson@demo.test`, `cashier@demo.test`, `inventory@demo.test`,

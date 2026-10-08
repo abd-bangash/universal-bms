@@ -1,3 +1,7 @@
+import { WORKSPACE_PERMISSIONS } from '@bms/types';
+import { ClsService } from 'nestjs-cls';
+import type { AuthUser } from '../common/decorators/current-user.decorator';
+import type { RequestContext } from '../common/context/request-context';
 import type { Env } from '../config/env';
 import type { PrismaService } from '../common/prisma/prisma.service';
 import type { PasswordService } from '../modules/auth/password.service';
@@ -22,6 +26,8 @@ export interface DemoServices {
   prisma: PrismaService;
   tenants: TenantsService;
   passwords: PasswordService;
+  /** Resolves any application service, so a step can use the same code paths as the API. */
+  get<T>(token: abstract new (...args: never[]) => T): T;
 }
 
 export interface DemoContext extends DemoServices {
@@ -31,6 +37,11 @@ export interface DemoContext extends DemoServices {
   /** Filled in by the `workspace` step; every later step works inside this workspace. */
   workspaceId: string;
   log(message: string): void;
+  /**
+   * Runs `work` as the demo Owner inside the workspace, the way an API request would, so services
+   * that use the tenant-scoped client and audit trail can be called from a seed step.
+   */
+  asOwner<T>(work: (owner: AuthUser) => Promise<T>): Promise<T>;
 }
 
 export interface StepResult {
@@ -69,6 +80,24 @@ export async function runDemoSeed(
     resetPasswords: options.resetPasswords ?? false,
     workspaceId: '',
     log: options.log ?? (() => undefined),
+    async asOwner<T>(work: (owner: AuthUser) => Promise<T>): Promise<T> {
+      const membership = await services.prisma.unscoped.userWorkspace.findFirstOrThrow({
+        where: { workspaceId: ctx.workspaceId, user: { email: DEMO_WORKSPACE.ownerEmail } },
+      });
+      const owner: AuthUser = {
+        userId: membership.userId,
+        workspaceId: ctx.workspaceId,
+        membershipId: membership.id,
+        permissions: [...WORKSPACE_PERMISSIONS],
+        permVersion: membership.permVersion,
+        familyId: 'seed',
+      };
+      return services
+        .get(ClsService<RequestContext>)
+        .runWith({ workspaceId: ctx.workspaceId, userId: owner.userId, actorRole: 'Owner' }, () =>
+          work(owner),
+        );
+    },
   };
   const results: DemoReport['steps'] = [];
   for (const step of steps) {
