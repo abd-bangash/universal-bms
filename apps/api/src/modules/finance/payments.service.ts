@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import type { Order, Payment, Prisma } from '@prisma/client';
+import { ClsService } from 'nestjs-cls';
+import type { RequestContext } from '../../common/context/request-context';
+import { Prisma, type Order, type Payment } from '@prisma/client';
 import type { AuthUser } from '../../common/decorators/current-user.decorator';
 import {
   AppException,
@@ -23,7 +25,12 @@ import { NumberingService } from '../numbering/numbering.service';
 import { SettingsService } from '../settings/settings.service';
 import { OrdersService } from '../sales/orders.service';
 import { WorkflowService } from '../workflows/workflow.service';
-import type { ApplyCreditDto, ListPaymentsQuery, RecordPaymentDto } from './dto/payments.dto';
+import type {
+  ApplyCreditDto,
+  ListPaymentsQuery,
+  ReceivablesQuery,
+  RecordPaymentDto,
+} from './dto/payments.dto';
 import { customerCredit, lockCustomer, lockOrder, recalculateOrder } from './order-balance';
 import {
   toCreditDto,
@@ -33,6 +40,19 @@ import {
   type PaymentDto,
   type ReceiptDto,
 } from './payment.support';
+
+export interface ReceivablesSummary {
+  customers: Array<{
+    customerId: string;
+    customerName: string;
+    orders: number;
+    invoiced: string;
+    paid: string;
+    outstanding: string;
+    ageing: { current: string; days31to60: string; days61to90: string; over90: string };
+  }>;
+  totals: { invoiced: string; paid: string; outstanding: string };
+}
 
 const SORTS = ['paidAt', 'createdAt'] as const;
 const refuse = (message: string, details?: Record<string, string[]>) =>
@@ -59,6 +79,7 @@ export class PaymentsService {
     private readonly timeline: TimelineService,
     private readonly events: DomainEventBus,
     private readonly workflows: WorkflowService,
+    private readonly cls: ClsService<RequestContext>,
   ) {}
 
   // ── reads ───────────────────────────────────────────────────────────────────────────────
@@ -117,6 +138,82 @@ export class PaymentsService {
       balance: await customerCredit(this.prisma.scoped as unknown as ScopedTransaction, customerId),
       entries: entries.map(toCreditDto),
     };
+  }
+
+  // ── receivables (Requirement 13.4) ──────────────────────────────────────────────────────
+
+  /**
+   * Per customer: what has been invoiced (the net total of their confirmed, not cancelled orders),
+   * what has been paid (net of refunds) and what is outstanding, with the outstanding balances
+   * aged by order date.
+   */
+  async receivables(query: ReceivablesQuery): Promise<ReceivablesSummary> {
+    const workspaceId = this.requireWorkspace();
+    const workflow = await this.workflows.get('ORDER');
+    const excluded = workflow.states
+      .filter((s) => s.systemRole === 'DRAFT' || s.systemRole === 'CANCELLED')
+      .map((s) => s.key);
+    const rows = await this.prisma.scoped.$queryRaw<
+      Array<{
+        customer_id: string;
+        full_name: string;
+        orders: bigint;
+        invoiced: Prisma.Decimal;
+        paid: Prisma.Decimal;
+        outstanding: Prisma.Decimal;
+        current: Prisma.Decimal;
+        d30: Prisma.Decimal;
+        d60: Prisma.Decimal;
+        d90: Prisma.Decimal;
+      }>
+    >`
+      SELECT o.customer_id, c.full_name,
+             COUNT(*) AS orders,
+             SUM(o.total_amount - o.returned_amount) AS invoiced,
+             SUM(o.paid_amount - o.refunded_amount) AS paid,
+             SUM(GREATEST(o.balance_due, 0)) AS outstanding,
+             SUM(CASE WHEN now() - o.order_date <= interval '30 days' THEN GREATEST(o.balance_due, 0) ELSE 0 END) AS current,
+             SUM(CASE WHEN now() - o.order_date > interval '30 days' AND now() - o.order_date <= interval '60 days' THEN GREATEST(o.balance_due, 0) ELSE 0 END) AS d30,
+             SUM(CASE WHEN now() - o.order_date > interval '60 days' AND now() - o.order_date <= interval '90 days' THEN GREATEST(o.balance_due, 0) ELSE 0 END) AS d60,
+             SUM(CASE WHEN now() - o.order_date > interval '90 days' THEN GREATEST(o.balance_due, 0) ELSE 0 END) AS d90
+      FROM orders o JOIN customers c ON c.id = o.customer_id
+      WHERE o.workspace_id = ${workspaceId}
+        ${excluded.length > 0 ? Prisma.sql`AND o.status NOT IN (${Prisma.join(excluded)})` : Prisma.empty}
+        ${query.customerId ? Prisma.sql`AND o.customer_id = ${query.customerId}` : Prisma.empty}
+      GROUP BY o.customer_id, c.full_name
+      ${query.includeSettled === true ? Prisma.empty : Prisma.sql`HAVING SUM(GREATEST(o.balance_due, 0)) > 0`}
+      ORDER BY outstanding DESC, c.full_name
+      LIMIT ${query.limit ?? 50}`;
+    const customers = rows.map((r) => ({
+      customerId: r.customer_id,
+      customerName: r.full_name,
+      orders: Number(r.orders),
+      invoiced: r.invoiced.toFixed(),
+      paid: r.paid.toFixed(),
+      outstanding: r.outstanding.toFixed(),
+      ageing: {
+        current: r.current.toFixed(),
+        days31to60: r.d30.toFixed(),
+        days61to90: r.d60.toFixed(),
+        over90: r.d90.toFixed(),
+      },
+    }));
+    const sum = (pick: (c: (typeof customers)[number]) => string) =>
+      customers.reduce((a, c) => a.plus(pick(c)), D(0)).toFixed();
+    return {
+      customers,
+      totals: {
+        invoiced: sum((c) => c.invoiced),
+        paid: sum((c) => c.paid),
+        outstanding: sum((c) => c.outstanding),
+      },
+    };
+  }
+
+  private requireWorkspace(): string {
+    const id = this.cls.get('workspaceId');
+    if (!id) throw new Error('No workspace in context');
+    return id;
   }
 
   // ── recording ───────────────────────────────────────────────────────────────────────────

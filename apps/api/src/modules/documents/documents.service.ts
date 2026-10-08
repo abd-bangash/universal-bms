@@ -103,9 +103,8 @@ export class DocumentsService {
       order,
       items,
       customer,
-      settings: await loadSnapshotSettings(this.settings),
-      payments: await this.payments(),
-      bankDetails: await this.bankDetails(),
+      settings: await loadSnapshotSettings(this.settings, this.prisma),
+      payments: await this.payments(tx, orderId),
     });
     const invoice = await tx.invoice.create({
       data: {
@@ -165,7 +164,7 @@ export class DocumentsService {
         items: quotation.items,
         customer,
         lead,
-        settings: await loadSnapshotSettings(this.settings),
+        settings: await loadSnapshotSettings(this.settings, this.prisma),
         at: new Date(),
       });
     }
@@ -182,7 +181,7 @@ export class DocumentsService {
       order: loaded.order,
       items: loaded.items,
       customer: loaded.customer,
-      settings: await loadSnapshotSettings(this.settings),
+      settings: await loadSnapshotSettings(this.settings, this.prisma),
     });
     return this.render('ORDER_CONFIRMATION', snapshot, order.orderNumber);
   }
@@ -231,13 +230,22 @@ export class DocumentsService {
     return state?.systemRole ?? null;
   }
 
-  /** Confirmed payments are listed once the finance module exists (task 40). */
-  private async payments(): Promise<DocumentPayment[]> {
-    return [];
-  }
-
-  /** The customer-facing bank accounts are listed once the finance module exists (task 39). */
-  private async bankDetails(): Promise<unknown> {
-    return null;
+  /** The confirmed payments received for the order, as the invoice lists them. */
+  private async payments(tx: ScopedTransaction, orderId: string): Promise<DocumentPayment[]> {
+    const rows = await tx.payment.findMany({
+      where: {
+        orderId,
+        status: 'CONFIRMED',
+        type: { in: ['ORDER_PAYMENT', 'DEPOSIT', 'CREDIT_APPLIED'] },
+      },
+      include: { paymentMethod: true },
+      orderBy: [{ paidAt: 'asc' }, { id: 'asc' }],
+    });
+    return rows.map((p) => ({
+      date: p.paidAt.toISOString(),
+      method: p.paymentMethod?.name ?? 'Customer credit',
+      amount: p.amount.toFixed(),
+      reference: p.referenceNumber,
+    }));
   }
 }

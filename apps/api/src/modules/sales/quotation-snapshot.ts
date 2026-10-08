@@ -43,6 +43,6 @@ export function buildQuotationSnapshot(input: {
     taxBreakdown: taxBreakdown(lines),
     notes: quotation.notes,
     terms: quotation.terms ?? settings.quotationTerms ?? null,
-    bankDetails: null,
+    bankDetails: settings.showBankDetails ? settings.bankDetails : null,
   };
 }

@@ -1,5 +1,15 @@
-import { Type } from 'class-transformer';
-import { IsDateString, IsIn, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import {
+  IsDateString,
+  IsIn,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+} from 'class-validator';
 import { IsDecimalString } from '../../../common/money';
 import { PageQueryDto } from '../../../common/pagination/pagination';
 
@@ -44,4 +54,13 @@ export class ListPaymentsQuery extends PageQueryDto {
   @IsOptional() @IsString() paymentMethodId?: string;
   @IsOptional() @Type(() => String) @IsDateString() from?: string;
   @IsOptional() @Type(() => String) @IsDateString() to?: string;
+}
+
+export class ReceivablesQuery {
+  @IsOptional() @IsString() customerId?: string;
+  /** Leave out customers who owe nothing (the default). */
+  @IsOptional()
+  @Transform(({ value }) => value !== 'false' && value !== false)
+  includeSettled?: boolean;
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(200) limit?: number;
 }

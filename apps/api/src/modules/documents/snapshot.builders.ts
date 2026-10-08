@@ -91,7 +91,6 @@ export function buildOrderSnapshot(input: {
   customer: Customer;
   settings: SnapshotSettings;
   payments?: DocumentPayment[];
-  bankDetails?: unknown;
 }): DocumentSnapshot {
   const { order, customer, settings } = input;
   const lines = [...input.items].sort((a, b) => a.lineNo - b.lineNo).map(orderLineDto);
@@ -127,6 +126,6 @@ export function buildOrderSnapshot(input: {
       : {}),
     notes: order.notes,
     terms: invoice ? (settings.invoiceTerms ?? null) : (settings.quotationTerms ?? null),
-    bankDetails: settings.showBankDetails ? (input.bankDetails ?? null) : null,
+    bankDetails: settings.showBankDetails ? settings.bankDetails : null,
   };
 }

@@ -542,7 +542,7 @@ export class QuotationsService {
   }
 
   private snapshotSettings() {
-    return loadSnapshotSettings(this.settings);
+    return loadSnapshotSettings(this.settings, this.prisma);
   }
 
   /** Prices the lines, writes the quotation and its items, audits overrides. Shared by create and update. */

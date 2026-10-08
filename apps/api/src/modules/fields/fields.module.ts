@@ -27,7 +27,18 @@ export class FieldsModule implements OnModuleInit {
   }
 
   /** Whether any record of the workspace carries a value for the key. Table names are fixed here. */
-  private usedIn(table: 'products' | 'product_variants' | 'customers' | 'leads') {
+  private usedIn(
+    table:
+      | 'products'
+      | 'product_variants'
+      | 'customers'
+      | 'leads'
+      | 'orders'
+      | 'order_items'
+      | 'quotations'
+      | 'quotation_items'
+      | 'expenses',
+  ) {
     return async (key: string): Promise<boolean> => {
       const rows = await this.prisma.scoped.$queryRaw<Array<{ one: number }>>`
         SELECT 1 AS one FROM ${Prisma.raw(table)}
@@ -43,5 +54,10 @@ export class FieldsModule implements OnModuleInit {
     this.usage.register('VARIANT', this.usedIn('product_variants'));
     this.usage.register('CUSTOMER', this.usedIn('customers'));
     this.usage.register('LEAD', this.usedIn('leads'));
+    this.usage.register('ORDER', this.usedIn('orders'));
+    this.usage.register('ORDER_ITEM', this.usedIn('order_items'));
+    this.usage.register('QUOTATION', this.usedIn('quotations'));
+    this.usage.register('QUOTATION_ITEM', this.usedIn('quotation_items'));
+    this.usage.register('EXPENSE', this.usedIn('expenses'));
   }
 }

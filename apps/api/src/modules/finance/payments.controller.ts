@@ -7,6 +7,7 @@ import { RequirePermission } from '../../common/decorators/require-permission.de
 import {
   ApplyCreditDto,
   ListPaymentsQuery,
+  ReceivablesQuery,
   RecordPaymentDto,
   RejectPaymentDto,
   VoidPaymentDto,
@@ -34,6 +35,13 @@ export class PaymentsController {
   @RequirePermission('payment:create')
   record(@CurrentUser() user: AuthUser, @Body() dto: RecordPaymentDto) {
     return this.payments.record(user, dto);
+  }
+
+  // declared before ':id' so the path is not read as an id
+  @Get('payments/receivables-summary')
+  @RequirePermission('payment:view')
+  receivables(@Query() query: ReceivablesQuery) {
+    return this.payments.receivables(query);
   }
 
   @Get('payments/:id')

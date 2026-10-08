@@ -335,11 +335,11 @@ How to read this file:
   - [x] 40.2 Property test — Property 16 (idempotent creation) on `POST /payments`
     - _Requirements: 54.1_
 
-- [ ] 41. Expenses API
+- [x] 41. Expenses API
   - Expense categories CRUD; `POST /expenses` with category, amount, date, method, account, description and attachment; `POST /expenses/:id/void` with reason; list with date and category filters
   - _Requirements: 13.3, 13.9, 13.10_
 
-- [ ] 42. Receivables and bank details
+- [x] 42. Receivables and bank details
   - `GET /payments/receivables-summary` per customer: invoiced, paid, outstanding
   - Bank details block on quotation, order confirmation and invoice PDFs from customer-facing accounts; `{{bank_details}}` template variable resolver
   - _Requirements: 13.4, 40.2, 40.11, 29.2_

@@ -46,6 +46,8 @@ const AUTHENTICATED_ONLY_ROUTES = [
   // anyone who records money may list the accounts and methods; bank details need account:view, checked in the service
   'GET /api/v1/settings/financial-accounts',
   'GET /api/v1/settings/payment-methods',
+  // anyone who views or records expenses picks a category, checked in the controller
+  'GET /api/v1/settings/expense-categories',
   'DELETE /api/v1/auth/sessions/:id',
 ];
 

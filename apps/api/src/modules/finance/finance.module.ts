@@ -6,6 +6,8 @@ import { ProfileSectionRegistry, WorkspaceDefaultsRegistry } from '../tenants/re
 import { WorkflowRegistry } from '../workflows/workflow.registry';
 import { ValidationFailedException } from '../../common/errors/app.exception';
 import { applyProfileExpenseCategories, ensureFinanceDefaults } from './finance-defaults';
+import { ExpensesController } from './expenses.controller';
+import { ExpensesService } from './expenses.service';
 import { FinanceSettingsController } from './finance-settings.controller';
 import { FinanceSettingsService } from './finance-settings.service';
 import { PaymentsController } from './payments.controller';
@@ -14,9 +16,9 @@ import { PaymentsService } from './payments.service';
 /** Accounts, payment methods, payments, credit and expenses (tasks 39 to 43). */
 @Module({
   imports: [SalesModule, CrmModule],
-  controllers: [FinanceSettingsController, PaymentsController],
-  providers: [FinanceSettingsService, PaymentsService],
-  exports: [PaymentsService, FinanceSettingsService],
+  controllers: [FinanceSettingsController, PaymentsController, ExpensesController],
+  providers: [FinanceSettingsService, PaymentsService, ExpensesService],
+  exports: [PaymentsService, FinanceSettingsService, ExpensesService],
 })
 export class FinanceModule implements OnModuleInit {
   constructor(
