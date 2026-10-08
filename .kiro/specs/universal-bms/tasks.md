@@ -257,7 +257,7 @@ How to read this file:
 
 ### Phase 4 — Quotations and Orders `[R1 · Day 4]`
 
-- [ ] 31. Schema: sales
+- [x] 31. Schema: sales
   - Add `Quotation`, `QuotationItem`, `Order`, `OrderItem`, `OrderSalesperson`, `Invoice`, `ProductionJob`, `Return`, `ReturnLine`; migration `sales` with `rollback.sql`; indexes from `design.md`
   - _Requirements: 10.1, 11.4, 22.1, 22.2_
 

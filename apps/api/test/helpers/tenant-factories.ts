@@ -56,6 +56,49 @@ async function makeVariant(prisma: PrismaClient, workspaceId: string) {
   });
 }
 
+async function makeCustomer(prisma: PrismaClient, workspaceId: string) {
+  return prisma.customer.create({ data: { workspaceId, fullName: `Customer ${rand()}` } });
+}
+
+async function makeQuotation(prisma: PrismaClient, workspaceId: string) {
+  return prisma.quotation.create({
+    data: { workspaceId, quotationNumber: `Q-${rand()}`, subtotal: '10', totalAmount: '10' },
+  });
+}
+
+async function makeOrder(prisma: PrismaClient, workspaceId: string) {
+  const customer = await makeCustomer(prisma, workspaceId);
+  const location = await prisma.inventoryLocation.create({
+    data: { workspaceId, name: `loc_${rand()}` },
+  });
+  return prisma.order.create({
+    data: {
+      workspaceId,
+      orderNumber: `O-${rand()}`,
+      customerId: customer.id,
+      locationId: location.id,
+      subtotal: '10',
+      totalAmount: '10',
+      balanceDue: '10',
+    },
+  });
+}
+
+async function makeReturn(prisma: PrismaClient, workspaceId: string) {
+  const order = await makeOrder(prisma, workspaceId);
+  return prisma.return.create({
+    data: {
+      workspaceId,
+      returnNumber: `R-${rand()}`,
+      orderId: order.id,
+      customerId: order.customerId,
+      reason: 'Test',
+      refundAmount: '0',
+      refundTo: 'NONE',
+    },
+  });
+}
+
 const byId = (row: { id: string }) => ({ where: { id: row.id } });
 
 const factories: Record<string, TenantFactory> = {
@@ -252,6 +295,113 @@ const factories: Record<string, TenantFactory> = {
         data: { workspaceId: ws, type: 'SYSTEM', summary: `Event ${rand()}` },
       }),
     ),
+  Quotation: async (p, ws) => byId(await makeQuotation(p, ws)),
+  QuotationItem: async (p, ws) => {
+    const q = await makeQuotation(p, ws);
+    return byId(
+      await p.quotationItem.create({
+        data: {
+          workspaceId: ws,
+          quotationId: q.id,
+          lineNo: 1,
+          name: 'Line',
+          quantity: '1',
+          listPrice: '10',
+          unitPrice: '10',
+          lineTotal: '10',
+        },
+      }),
+    );
+  },
+  Order: async (p, ws) => byId(await makeOrder(p, ws)),
+  OrderItem: async (p, ws) => {
+    const o = await makeOrder(p, ws);
+    return byId(
+      await p.orderItem.create({
+        data: {
+          workspaceId: ws,
+          orderId: o.id,
+          lineNo: 1,
+          name: 'Line',
+          quantity: '1',
+          listPrice: '10',
+          unitPrice: '10',
+          lineTotal: '10',
+        },
+      }),
+    );
+  },
+  OrderSalesperson: async (p, ws) => {
+    const o = await makeOrder(p, ws);
+    const user = await makeUser(p);
+    return byId(
+      await p.orderSalesperson.create({
+        data: { workspaceId: ws, orderId: o.id, userId: user.id },
+      }),
+    );
+  },
+  ProductionJob: async (p, ws) => {
+    const o = await makeOrder(p, ws);
+    const item = await p.orderItem.create({
+      data: {
+        workspaceId: ws,
+        orderId: o.id,
+        lineNo: 1,
+        name: 'Line',
+        quantity: '1',
+        listPrice: '10',
+        unitPrice: '10',
+        lineTotal: '10',
+      },
+    });
+    return byId(
+      await p.productionJob.create({
+        data: { workspaceId: ws, orderId: o.id, orderItemId: item.id },
+      }),
+    );
+  },
+  Invoice: async (p, ws) => {
+    const o = await makeOrder(p, ws);
+    return byId(
+      await p.invoice.create({
+        data: {
+          workspaceId: ws,
+          invoiceNumber: `INV-${rand()}`,
+          orderId: o.id,
+          customerId: o.customerId,
+          totalAmount: '10',
+          data: {},
+        },
+      }),
+    );
+  },
+  Return: async (p, ws) => byId(await makeReturn(p, ws)),
+  ReturnLine: async (p, ws) => {
+    const r = await makeReturn(p, ws);
+    const item = await p.orderItem.create({
+      data: {
+        workspaceId: ws,
+        orderId: r.orderId,
+        lineNo: 1,
+        name: 'Line',
+        quantity: '1',
+        listPrice: '10',
+        unitPrice: '10',
+        lineTotal: '10',
+      },
+    });
+    return byId(
+      await p.returnLine.create({
+        data: {
+          workspaceId: ws,
+          returnId: r.id,
+          orderItemId: item.id,
+          quantity: '1',
+          amount: '10',
+        },
+      }),
+    );
+  },
 };
 
 export const tenantFactories: Record<string, TenantFactory> = Object.fromEntries(

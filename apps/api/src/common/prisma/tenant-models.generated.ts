@@ -40,6 +40,15 @@ export const ALL_MODEL_NAMES: readonly string[] = [
   'Lead',
   'LostReason',
   'TimelineEntry',
+  'Quotation',
+  'QuotationItem',
+  'Order',
+  'OrderItem',
+  'OrderSalesperson',
+  'ProductionJob',
+  'Invoice',
+  'Return',
+  'ReturnLine',
 ];
 
 export const TENANT_MODEL_NAMES: readonly string[] = [
@@ -75,4 +84,13 @@ export const TENANT_MODEL_NAMES: readonly string[] = [
   'Lead',
   'LostReason',
   'TimelineEntry',
+  'Quotation',
+  'QuotationItem',
+  'Order',
+  'OrderItem',
+  'OrderSalesperson',
+  'ProductionJob',
+  'Invoice',
+  'Return',
+  'ReturnLine',
 ];

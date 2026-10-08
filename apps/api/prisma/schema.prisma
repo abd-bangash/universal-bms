@@ -58,6 +58,15 @@ model Workspace {
   leads               Lead[]
   lostReasons         LostReason[]
   timelineEntries     TimelineEntry[]
+  quotations          Quotation[]
+  quotationItems      QuotationItem[]
+  orders              Order[]
+  orderItems          OrderItem[]
+  orderSalespeople    OrderSalesperson[]
+  invoices            Invoice[]
+  productionJobs      ProductionJob[]
+  returns             Return[]
+  returnLines         ReturnLine[]
 
   @@map("workspaces")
 }
@@ -97,6 +106,11 @@ model User {
   customersAssigned   Customer[]           @relation("CustomerAssignee")
   leadsAssigned       Lead[]               @relation("LeadAssignee")
   leadsCreated        Lead[]               @relation("LeadCreator")
+  quotationsAssigned  Quotation[]          @relation("QuotationAssignee")
+  quotationsCreated   Quotation[]          @relation("QuotationCreator")
+  ordersAssigned      Order[]              @relation("OrderAssignee")
+  ordersCreated       Order[]              @relation("OrderCreator")
+  orderShares         OrderSalesperson[]
 
   @@map("users")
 }
@@ -542,6 +556,7 @@ model InventoryLocation {
   isDefault     Boolean         @default(false) @map("is_default")
   active        Boolean         @default(true)
   staffDefaults UserWorkspace[]
+  orders        Order[]
 
   @@unique([workspaceId, name])
   @@map("inventory_locations")
@@ -698,6 +713,8 @@ model Product {
   images             ProductImage[]
   bundleComponents   BundleComponent[] @relation("BundleOf")
   leads              Lead[]
+  quotationItems     QuotationItem[]
+  orderItems         OrderItem[]
 
   @@unique([workspaceId, code])
   @@index([workspaceId, status, categoryId])
@@ -751,6 +768,8 @@ model ProductVariant {
   images           ProductImage[]
   bundleComponents BundleComponent[] @relation("BundleComponentVariant")
   priceListItems   PriceListItem[]
+  quotationItems   QuotationItem[]
+  orderItems       OrderItem[]
 
   @@unique([workspaceId, sku])
   @@unique([workspaceId, barcode])
@@ -855,6 +874,10 @@ model Customer {
   updatedAt        DateTime        @updatedAt @map("updated_at")
   leads            Lead[]
   timeline         TimelineEntry[]
+  quotations       Quotation[]
+  orders           Order[]
+  invoices         Invoice[]
+  returns          Return[]
 
   @@index([workspaceId, status])
   @@index([workspaceId, assignedToId])
@@ -899,6 +922,8 @@ model Lead {
   createdAt       DateTime        @default(now()) @map("created_at")
   updatedAt       DateTime        @updatedAt @map("updated_at")
   timeline        TimelineEntry[]
+  quotations      Quotation[]
+  orders          Order[]
 
   @@index([workspaceId, stage])
   @@index([workspaceId, phoneNormalized])
@@ -940,4 +965,327 @@ model TimelineEntry {
   @@index([workspaceId, leadId, occurredAt])
   @@index([workspaceId, orderId, occurredAt])
   @@map("timeline_entries")
+}
+
+// ═══ Sales (task 31) ═════════════════════════════════════════════════════
+
+enum QuotationStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+  CONVERTED
+
+  @@map("quotation_status")
+}
+
+enum LineKind {
+  CATALOG
+  CUSTOM
+
+  @@map("line_kind")
+}
+
+enum OrderPaymentStatus {
+  UNPAID
+  DEPOSIT_PAID
+  PARTIALLY_PAID
+  PAID
+  OVERPAID
+  REFUNDED
+
+  @@map("order_payment_status")
+}
+
+model Quotation {
+  id                     String          @id @default(cuid())
+  workspaceId            String          @map("workspace_id")
+  workspace              Workspace       @relation(fields: [workspaceId], references: [id])
+  quotationNumber        String          @map("quotation_number")
+  customerId             String?         @map("customer_id")
+  customer               Customer?       @relation(fields: [customerId], references: [id])
+  leadId                 String?         @map("lead_id")
+  lead                   Lead?           @relation(fields: [leadId], references: [id])
+  status                 QuotationStatus @default(DRAFT)
+  validUntil             DateTime?       @map("valid_until")
+  subtotal               Decimal         @db.Decimal(18, 4)
+  discountType           String?         @map("discount_type")
+  discountValue          Decimal         @default(0) @map("discount_value") @db.Decimal(18, 4)
+  discountAmount         Decimal         @default(0) @map("discount_amount") @db.Decimal(18, 4)
+  taxAmount              Decimal         @default(0) @map("tax_amount") @db.Decimal(18, 4)
+  totalAmount            Decimal         @map("total_amount") @db.Decimal(18, 4)
+  notes                  String?
+  terms                  String?
+  source                 String?
+  channel                String?
+  campaign               String?
+  assignedToId           String?         @map("assigned_to_id")
+  assignedTo             User?           @relation("QuotationAssignee", fields: [assignedToId], references: [id])
+  sentAt                 DateTime?       @map("sent_at")
+  sentVia                String?         @map("sent_via")
+  sentSnapshot           Json?           @map("sent_snapshot")
+  viewedAt               DateTime?       @map("viewed_at")
+  acceptedAt             DateTime?       @map("accepted_at")
+  acceptedVia            String?         @map("accepted_via")
+  acceptanceRecordedById String?         @map("acceptance_recorded_by_id")
+  acceptanceFileId       String?         @map("acceptance_file_id")
+  rejectedReason         String?         @map("rejected_reason")
+  rootId                 String?         @map("root_id")
+  versionNumber          Int             @default(1) @map("version_number")
+  isLatest               Boolean         @default(true) @map("is_latest")
+  customFields           Json            @default("{}") @map("custom_fields")
+  version                Int             @default(1)
+  createdById            String?         @map("created_by_id")
+  createdBy              User?           @relation("QuotationCreator", fields: [createdById], references: [id])
+  createdAt              DateTime        @default(now()) @map("created_at")
+  updatedAt              DateTime        @updatedAt @map("updated_at")
+  items                  QuotationItem[]
+  orders                 Order[]
+
+  @@unique([workspaceId, quotationNumber, versionNumber])
+  @@index([workspaceId, status, createdAt])
+  @@index([workspaceId, customerId])
+  @@index([workspaceId, leadId])
+  @@map("quotations")
+}
+
+model QuotationItem {
+  id             String          @id @default(cuid())
+  workspaceId    String          @map("workspace_id")
+  workspace      Workspace       @relation(fields: [workspaceId], references: [id])
+  quotationId    String          @map("quotation_id")
+  quotation      Quotation       @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  lineNo         Int             @map("line_no")
+  kind           LineKind        @default(CATALOG)
+  productId      String?         @map("product_id")
+  product        Product?        @relation(fields: [productId], references: [id])
+  variantId      String?         @map("variant_id")
+  variant        ProductVariant? @relation(fields: [variantId], references: [id])
+  name           String
+  sku            String?
+  description    String?
+  quantity       Decimal         @db.Decimal(18, 4)
+  unitId         String?         @map("unit_id")
+  listPrice      Decimal         @map("list_price") @db.Decimal(18, 4)
+  unitPrice      Decimal         @map("unit_price") @db.Decimal(18, 4)
+  discountType   String?         @map("discount_type")
+  discountValue  Decimal         @default(0) @map("discount_value") @db.Decimal(18, 4)
+  discountAmount Decimal         @default(0) @map("discount_amount") @db.Decimal(18, 4)
+  taxClassId     String?         @map("tax_class_id")
+  taxRate        Decimal         @default(0) @map("tax_rate") @db.Decimal(9, 4)
+  taxAmount      Decimal         @default(0) @map("tax_amount") @db.Decimal(18, 4)
+  lineTotal      Decimal         @map("line_total") @db.Decimal(18, 4)
+  customFields   Json            @default("{}") @map("custom_fields")
+  fieldSnapshot  Json            @default("[]") @map("field_snapshot")
+
+  @@unique([workspaceId, quotationId, lineNo])
+  @@index([workspaceId, quotationId])
+  @@map("quotation_items")
+}
+
+model Order {
+  id               String             @id @default(cuid())
+  workspaceId      String             @map("workspace_id")
+  workspace        Workspace          @relation(fields: [workspaceId], references: [id])
+  orderNumber      String             @map("order_number")
+  customerId       String             @map("customer_id")
+  customer         Customer           @relation(fields: [customerId], references: [id])
+  leadId           String?            @map("lead_id")
+  lead             Lead?              @relation(fields: [leadId], references: [id])
+  quotationId      String?            @map("quotation_id")
+  quotation        Quotation?         @relation(fields: [quotationId], references: [id])
+  orderType        String             @default("STANDARD") @map("order_type")
+  source           String             @default("MANUAL")
+  channel          String?
+  campaign         String?
+  locationId       String             @map("location_id")
+  location         InventoryLocation  @relation(fields: [locationId], references: [id])
+  status           String             @default("draft")
+  paymentStatus    OrderPaymentStatus @default(UNPAID) @map("payment_status")
+  orderDate        DateTime           @default(now()) @map("order_date")
+  subtotal         Decimal            @db.Decimal(18, 4)
+  discountType     String?            @map("discount_type")
+  discountValue    Decimal            @default(0) @map("discount_value") @db.Decimal(18, 4)
+  discountAmount   Decimal            @default(0) @map("discount_amount") @db.Decimal(18, 4)
+  taxAmount        Decimal            @default(0) @map("tax_amount") @db.Decimal(18, 4)
+  roundingAmount   Decimal            @default(0) @map("rounding_amount") @db.Decimal(18, 4)
+  totalAmount      Decimal            @map("total_amount") @db.Decimal(18, 4)
+  depositRequired  Decimal            @default(0) @map("deposit_required") @db.Decimal(18, 4)
+  paidAmount       Decimal            @default(0) @map("paid_amount") @db.Decimal(18, 4)
+  refundedAmount   Decimal            @default(0) @map("refunded_amount") @db.Decimal(18, 4)
+  returnedAmount   Decimal            @default(0) @map("returned_amount") @db.Decimal(18, 4)
+  balanceDue       Decimal            @map("balance_due") @db.Decimal(18, 4)
+  fulfilmentMethod String?            @map("fulfilment_method")
+  deliveryAddress  Json?              @map("delivery_address")
+  scheduledAt      DateTime?          @map("scheduled_at")
+  deliveredAt      DateTime?          @map("delivered_at")
+  deliveredById    String?            @map("delivered_by_id")
+  receiverName     String?            @map("receiver_name")
+  proofFileId      String?            @map("proof_file_id")
+  notes            String?
+  internalNotes    String?            @map("internal_notes")
+  assignedToId     String?            @map("assigned_to_id")
+  assignedTo       User?              @relation("OrderAssignee", fields: [assignedToId], references: [id])
+  /// The POS session table arrives with task 50, which adds the foreign key.
+  posSessionId     String?            @map("pos_session_id")
+  customFields     Json               @default("{}") @map("custom_fields")
+  cancelledAt      DateTime?          @map("cancelled_at")
+  cancelReason     String?            @map("cancel_reason")
+  closedAt         DateTime?          @map("closed_at")
+  version          Int                @default(1)
+  createdById      String?            @map("created_by_id")
+  createdBy        User?              @relation("OrderCreator", fields: [createdById], references: [id])
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+  items            OrderItem[]
+  salespeople      OrderSalesperson[]
+  invoices         Invoice[]
+  productionJobs   ProductionJob[]
+  returns          Return[]
+
+  @@unique([workspaceId, orderNumber])
+  @@index([workspaceId, status, orderDate])
+  @@index([workspaceId, customerId])
+  @@index([workspaceId, assignedToId])
+  @@index([workspaceId, paymentStatus])
+  @@map("orders")
+}
+
+model OrderItem {
+  id             String          @id @default(cuid())
+  workspaceId    String          @map("workspace_id")
+  workspace      Workspace       @relation(fields: [workspaceId], references: [id])
+  orderId        String          @map("order_id")
+  order          Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  lineNo         Int             @map("line_no")
+  kind           LineKind        @default(CATALOG)
+  productId      String?         @map("product_id")
+  product        Product?        @relation(fields: [productId], references: [id])
+  variantId      String?         @map("variant_id")
+  variant        ProductVariant? @relation(fields: [variantId], references: [id])
+  name           String
+  sku            String?
+  description    String?
+  quantity       Decimal         @db.Decimal(18, 4)
+  returnedQty    Decimal         @default(0) @map("returned_qty") @db.Decimal(18, 4)
+  unitId         String?         @map("unit_id")
+  listPrice      Decimal         @map("list_price") @db.Decimal(18, 4)
+  unitPrice      Decimal         @map("unit_price") @db.Decimal(18, 4)
+  costPrice      Decimal?        @map("cost_price") @db.Decimal(18, 4)
+  discountType   String?         @map("discount_type")
+  discountValue  Decimal         @default(0) @map("discount_value") @db.Decimal(18, 4)
+  discountAmount Decimal         @default(0) @map("discount_amount") @db.Decimal(18, 4)
+  taxClassId     String?         @map("tax_class_id")
+  taxRate        Decimal         @default(0) @map("tax_rate") @db.Decimal(9, 4)
+  taxAmount      Decimal         @default(0) @map("tax_amount") @db.Decimal(18, 4)
+  lineTotal      Decimal         @map("line_total") @db.Decimal(18, 4)
+  stockTracked   Boolean         @default(false) @map("stock_tracked")
+  notes          String?
+  customFields   Json            @default("{}") @map("custom_fields")
+  fieldSnapshot  Json            @default("[]") @map("field_snapshot")
+  productionJobs ProductionJob[]
+  returnLines    ReturnLine[]
+
+  @@unique([workspaceId, orderId, lineNo])
+  @@index([workspaceId, orderId])
+  @@index([workspaceId, variantId])
+  @@map("order_items")
+}
+
+model OrderSalesperson {
+  id           String    @id @default(cuid())
+  workspaceId  String    @map("workspace_id")
+  workspace    Workspace @relation(fields: [workspaceId], references: [id])
+  orderId      String    @map("order_id")
+  order        Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  userId       String    @map("user_id")
+  user         User      @relation(fields: [userId], references: [id])
+  sharePercent Decimal   @default(100) @map("share_percent") @db.Decimal(9, 4)
+
+  @@unique([workspaceId, orderId, userId])
+  @@index([workspaceId, userId])
+  @@map("order_salespeople")
+}
+
+model ProductionJob {
+  id           String    @id @default(cuid())
+  workspaceId  String    @map("workspace_id")
+  workspace    Workspace @relation(fields: [workspaceId], references: [id])
+  orderId      String    @map("order_id")
+  order        Order     @relation(fields: [orderId], references: [id])
+  orderItemId  String    @map("order_item_id")
+  orderItem    OrderItem @relation(fields: [orderItemId], references: [id])
+  status       String    @default("queued")
+  assignedToId String?   @map("assigned_to_id")
+  dueDate      DateTime? @map("due_date")
+  notes        String?
+  startedAt    DateTime? @map("started_at")
+  completedAt  DateTime? @map("completed_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@unique([workspaceId, orderItemId])
+  @@index([workspaceId, status])
+  @@index([workspaceId, orderId])
+  @@map("production_jobs")
+}
+
+model Invoice {
+  id            String    @id @default(cuid())
+  workspaceId   String    @map("workspace_id")
+  workspace     Workspace @relation(fields: [workspaceId], references: [id])
+  invoiceNumber String    @map("invoice_number")
+  orderId       String    @map("order_id")
+  order         Order     @relation(fields: [orderId], references: [id])
+  customerId    String    @map("customer_id")
+  customer      Customer  @relation(fields: [customerId], references: [id])
+  issuedAt      DateTime  @default(now()) @map("issued_at")
+  totalAmount   Decimal   @map("total_amount") @db.Decimal(18, 4)
+  /// The immutable snapshot the PDF is rendered from.
+  data          Json
+  issuedById    String?   @map("issued_by_id")
+
+  @@unique([workspaceId, invoiceNumber])
+  @@index([workspaceId, orderId])
+  @@map("invoices")
+}
+
+model Return {
+  id           String       @id @default(cuid())
+  workspaceId  String       @map("workspace_id")
+  workspace    Workspace    @relation(fields: [workspaceId], references: [id])
+  returnNumber String       @map("return_number")
+  orderId      String       @map("order_id")
+  order        Order        @relation(fields: [orderId], references: [id])
+  customerId   String       @map("customer_id")
+  customer     Customer     @relation(fields: [customerId], references: [id])
+  reason       String
+  refundAmount Decimal      @map("refund_amount") @db.Decimal(18, 4)
+  refundTo     String       @map("refund_to")
+  /// The POS session table arrives with task 50, which adds the foreign key.
+  posSessionId String?      @map("pos_session_id")
+  createdById  String?      @map("created_by_id")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  lines        ReturnLine[]
+
+  @@unique([workspaceId, returnNumber])
+  @@index([workspaceId, orderId])
+  @@map("returns")
+}
+
+model ReturnLine {
+  id          String    @id @default(cuid())
+  workspaceId String    @map("workspace_id")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  returnId    String    @map("return_id")
+  return      Return    @relation(fields: [returnId], references: [id], onDelete: Cascade)
+  orderItemId String    @map("order_item_id")
+  orderItem   OrderItem @relation(fields: [orderItemId], references: [id])
+  quantity    Decimal   @db.Decimal(18, 4)
+  amount      Decimal   @db.Decimal(18, 4)
+  restock     Boolean   @default(true)
+
+  @@index([workspaceId, returnId])
+  @@map("return_lines")
 }

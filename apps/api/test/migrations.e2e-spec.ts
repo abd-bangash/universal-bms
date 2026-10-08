@@ -22,10 +22,10 @@ describe('Migrations (real PostgreSQL)', () => {
         SELECT extname FROM pg_extension WHERE extname IN ('pg_trgm', 'citext') ORDER BY extname`
     ).map((r) => r.extname);
 
-  it('0001 creates the extensions, 0002 the 27 core tables and 0003 the 8 catalog tables and 0004 the 4 CRM tables', async () => {
+  it('0001 creates the extensions, 0002 the 27 core tables and 0003 the 8 catalog tables 0004 the 4 CRM tables and 0006 the 9 sales tables', async () => {
     expect(await extensions()).toEqual(['citext', 'pg_trgm']);
     const names = await tables();
-    expect(names).toHaveLength(39);
+    expect(names).toHaveLength(48);
     expect(names).toEqual(
       expect.arrayContaining([
         'workspaces',
@@ -143,8 +143,68 @@ describe('Migrations (real PostgreSQL)', () => {
     ).toBe(1);
   });
 
+  it('sales: numbers are unique per workspace, one latest quotation, and amounts stay sane', async () => {
+    const customer = await db.prisma.customer.create({
+      data: { workspaceId: 'w1', fullName: 'C' },
+    });
+    const location = await db.prisma.inventoryLocation.create({
+      data: { workspaceId: 'w1', name: 'Showroom' },
+    });
+    const order = (workspaceId: string, orderNumber: string, over: object = {}) =>
+      db.prisma.order.create({
+        data: {
+          workspaceId,
+          orderNumber,
+          customerId: customer.id,
+          locationId: location.id,
+          subtotal: '1',
+          totalAmount: '1',
+          balanceDue: '1',
+          ...over,
+        },
+      });
+    await order('w1', 'ORD-1');
+    await expect(order('w1', 'ORD-1')).rejects.toThrow();
+    await expect(order('w1', 'ORD-2', { totalAmount: '-5' })).rejects.toThrow();
+
+    const quotation = (number: string, over: object = {}) =>
+      db.prisma.quotation.create({
+        data: {
+          workspaceId: 'w1',
+          quotationNumber: number,
+          subtotal: '1',
+          totalAmount: '1',
+          ...over,
+        },
+      });
+    await quotation('Q-1');
+    await expect(quotation('Q-1', { versionNumber: 2 })).rejects.toThrow(); // two latest versions of one quotation
+    await quotation('Q-1', { versionNumber: 2, isLatest: false });
+    const saved = await db.prisma.order.findFirstOrThrow({ where: { orderNumber: 'ORD-1' } });
+    await expect(
+      db.prisma.orderItem.create({
+        data: {
+          workspaceId: 'w1',
+          orderId: saved.id,
+          lineNo: 1,
+          name: 'x',
+          quantity: '0',
+          listPrice: '1',
+          unitPrice: '1',
+          lineTotal: '0',
+        },
+      }),
+    ).rejects.toThrow();
+    const indexes = await db.prisma.$queryRaw<Array<{ indexname: string }>>`
+      SELECT indexname FROM pg_indexes WHERE schemaname = 'public' AND indexname IN
+        ('orders_order_number_trgm', 'quotations_quotation_number_trgm', 'orders_custom_fields_gin', 'quotations_custom_fields_gin')`;
+    expect(indexes).toHaveLength(4);
+  });
+
   it('rollback.sql files undo their migrations in reverse order, and the migrations re-apply', async () => {
     // The audit trigger forbids deleting audit rows, so none exist here; other tables are dropped whole.
+    await runScript(db.prisma, migrationFile('0006_sales', 'rollback.sql'));
+    expect(await tables()).toHaveLength(39);
     await runScript(db.prisma, migrationFile('0005_search', 'rollback.sql'));
     await runScript(db.prisma, migrationFile('0004_crm', 'rollback.sql'));
     expect(await tables()).toHaveLength(35);
@@ -164,7 +224,8 @@ describe('Migrations (real PostgreSQL)', () => {
     await runScript(db.prisma, migrationFile('0003_catalog', 'migration.sql'));
     await runScript(db.prisma, migrationFile('0004_crm', 'migration.sql'));
     await runScript(db.prisma, migrationFile('0005_search', 'migration.sql'));
-    expect(await tables()).toHaveLength(39);
+    await runScript(db.prisma, migrationFile('0006_sales', 'migration.sql'));
+    expect(await tables()).toHaveLength(48);
     expect(await extensions()).toEqual(['citext', 'pg_trgm']);
   });
 });
