@@ -128,7 +128,7 @@ How to read this file:
   - [x] 12.1 Integration tests: wrong content type rejected despite a valid extension; oversized file rejected; another workspace's file returns 404
     - _Requirements: 34.2, 34.3, 34.4_
 
-- [ ] 13. Web application shell
+- [x] 13. Web application shell
   - `(auth)` pages: `/login`, `/select-workspace`, `/invite/[token]`, `/reset-password`
   - BFF route `app/api/bff/[...path]/route.ts`: HTTP-only cookies, Bearer forwarding, silent refresh on `TOKEN_EXPIRED` and `TOKEN_STALE`, origin check on mutating requests; `middleware.ts` redirecting unauthenticated users and preserving the return URL
   - `(app)` layout: sidebar from the navigation registry (`lib/navigation.ts`) filtered by permission and module, header with workspace name, global search box placeholder, notification bell placeholder, user menu

@@ -8,14 +8,18 @@
     "build": "tsc -p tsconfig.json",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "echo \"no tests yet in @bms/calc\""
+    "test": "jest"
   },
   "dependencies": {
     "decimal.js": "10.6.0"
   },
   "devDependencies": {
     "@bms/config": "workspace:*",
+    "@types/jest": "30.0.0",
     "@types/node": "22.20.5",
+    "fast-check": "4.10.2",
+    "jest": "30.5.2",
+    "ts-jest": "29.4.14",
     "typescript": "5.9.3"
   }
 }

@@ -1,1 +1,151 @@
-{ "home": { "title": "Universal BMS" } }
+{
+  "common": {
+    "loading": "Loading…",
+    "retry": "Try again",
+    "cancel": "Cancel",
+    "save": "Save",
+    "confirm": "Confirm",
+    "close": "Close",
+    "search": "Search",
+    "signOut": "Sign out",
+    "optional": "optional",
+    "required": "required",
+    "back": "Back",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "nav": {
+    "home": "Home",
+    "conversations": "Conversations",
+    "tasks": "Tasks",
+    "pos": "Point of sale",
+    "inventory": "Inventory",
+    "payments": "Payments",
+    "expenses": "Expenses",
+    "staff": "Staff",
+    "roles": "Roles",
+    "commissions": "Commissions",
+    "automation": "Automation",
+    "integrations": "Integrations",
+    "reports": "Reports",
+    "settings": "Settings",
+    "audit": "Audit log",
+    "label": "Main navigation",
+    "open": "Open menu",
+    "close": "Close menu"
+  },
+  "shell": {
+    "skipToContent": "Skip to content",
+    "searchPlaceholder": "Search (coming soon)",
+    "searchLabel": "Search",
+    "notifications": "Notifications (coming soon)",
+    "userMenu": "Account menu",
+    "signedInAs": "Signed in as {name}",
+    "workspace": "Workspace",
+    "loadFailed": "We could not load your account.",
+    "demoWorkspace": "Demo"
+  },
+  "home": {
+    "title": "Home",
+    "welcome": "Welcome, {name}",
+    "workspace": "You are working in {workspace}.",
+    "roles": "Your roles: {roles}",
+    "comingSoon": "Indicators, alerts and your tasks will appear here."
+  },
+  "auth": {
+    "appName": "Universal BMS",
+    "email": "Email address",
+    "password": "Password",
+    "newPassword": "New password",
+    "passwordHint": "At least 10 characters, and not your email address.",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "login": {
+      "title": "Sign in",
+      "subtitle": "Use the account your administrator gave you.",
+      "submit": "Sign in",
+      "forgot": "Forgot your password? Ask an administrator for a reset link.",
+      "emailInvalid": "Enter a valid email address.",
+      "passwordRequired": "Enter your password."
+    },
+    "selectWorkspace": {
+      "title": "Choose a workspace",
+      "subtitle": "Your account belongs to more than one business.",
+      "expired": "Your sign-in expired. Please sign in again.",
+      "backToLogin": "Back to sign in",
+      "none": "No workspaces are available for this sign-in."
+    },
+    "invite": {
+      "title": "Accept your invitation",
+      "subtitle": "Choose a password to finish setting up your account. If you already have an account, enter its password.",
+      "submit": "Join workspace",
+      "success": "You have joined the workspace. You can sign in now.",
+      "signIn": "Go to sign in"
+    },
+    "reset": {
+      "title": "Reset your password",
+      "subtitle": "Choose a new password for your account.",
+      "submit": "Set new password",
+      "success": "Your password was changed. You can sign in now.",
+      "noToken": "This page needs a reset link. Ask an administrator to create one for you.",
+      "signIn": "Go to sign in"
+    }
+  },
+  "errors": {
+    "VALIDATION_FAILED": "Please check the highlighted fields.",
+    "UNAUTHENTICATED": "Please sign in again.",
+    "INVALID_CREDENTIALS": "The email or password is incorrect.",
+    "ACCOUNT_LOCKED": "Too many failed attempts. Try again in 15 minutes.",
+    "PERMISSION_DENIED": "You do not have permission to do this.",
+    "NOT_FOUND": "We could not find that.",
+    "RATE_LIMITED": "Too many requests. Please wait a moment and try again.",
+    "NETWORK_ERROR": "The server could not be reached. Check your connection and try again.",
+    "EXTERNAL_SERVICE_FAILED": "The server is not reachable right now. Please try again shortly.",
+    "FILE_TOO_LARGE": "That file is too large.",
+    "STALE_VERSION": "Someone else changed this. Reload and try again.",
+    "INTERNAL_ERROR": "Something went wrong on our side. Please try again.",
+    "unknown": "Something went wrong. Please try again."
+  },
+  "table": {
+    "searchLabel": "Search the list",
+    "searchPlaceholder": "Search…",
+    "loadingLabel": "Loading rows",
+    "emptyTitle": "Nothing here yet",
+    "noResultsTitle": "No results",
+    "noResultsDescription": "Try a different search or clear the filters.",
+    "errorTitle": "We could not load this list.",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {page}",
+    "total": "{total} in total",
+    "filterAll": "All",
+    "clearFilters": "Clear filters",
+    "sortBy": "Sort by {column}",
+    "pagination": "Pagination"
+  },
+  "form": {
+    "unsavedChanges": "You have unsaved changes. Leave without saving?",
+    "saving": "Saving…",
+    "submit": "Save",
+    "serverError": "The change could not be saved."
+  },
+  "fields": {
+    "choose": "Choose…",
+    "unit": "Unit",
+    "value": "Value",
+    "yes": "Yes",
+    "no": "No",
+    "referenceId": "Identifier"
+  },
+  "upload": {
+    "choose": "Choose a file",
+    "uploading": "Uploading…",
+    "uploaded": "Uploaded: {name}",
+    "failed": "The upload failed.",
+    "remove": "Remove",
+    "tooLarge": "The file is larger than {max} MB."
+  },
+  "confirm": {
+    "title": "Are you sure?"
+  }
+}
