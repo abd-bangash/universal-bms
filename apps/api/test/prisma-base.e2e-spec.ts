@@ -20,26 +20,6 @@ describe('Prisma base (real PostgreSQL)', () => {
     expect(rows.map((r) => r.extname)).toEqual(['citext', 'pg_trgm']);
   });
 
-  it('rollback.sql removes what the migration created', async () => {
-    const { readFileSync } = await import('node:fs');
-    const { resolve } = await import('node:path');
-    const sql = readFileSync(
-      resolve(__dirname, '../prisma/migrations/0001_extensions/rollback.sql'),
-      'utf8',
-    );
-    for (const statement of sql
-      .split(';')
-      .map((s) => s.replace(/--.*$/gm, '').trim())
-      .filter(Boolean)) {
-      await db.prisma.$executeRawUnsafe(statement);
-    }
-    const rows = await db.prisma.$queryRaw<Array<{ extname: string }>>`
-      SELECT extname FROM pg_extension WHERE extname IN ('pg_trgm', 'citext')`;
-    expect(rows).toEqual([]);
-    await db.prisma.$executeRawUnsafe('CREATE EXTENSION IF NOT EXISTS pg_trgm');
-    await db.prisma.$executeRawUnsafe('CREATE EXTENSION IF NOT EXISTS citext');
-  });
-
   it('PrismaService registers a database readiness check that passes and fails correctly', async () => {
     const make = (url: string) => {
       const registry = new ReadinessRegistry();

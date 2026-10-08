@@ -10,3 +10,598 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Workspace {
+  id                  String               @id @default(cuid())
+  name                String
+  slug                String               @unique
+  industryProfile     String               @map("industry_profile")
+  config              Json                 @default("{}")
+  configVersion       Int                  @default(1) @map("config_version")
+  status              WorkspaceStatus      @default(ACTIVE)
+  isDemo              Boolean              @default(false) @map("is_demo")
+  deletedAt           DateTime?            @map("deleted_at")
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime             @updatedAt @map("updated_at")
+  userWorkspaces      UserWorkspace[]
+  roles               Role[]
+  userWorkspaceRoles  UserWorkspaceRole[]
+  invitations         Invitation[]
+  auditEvents         AuditEvent[]
+  idempotencyKeys     IdempotencyKey[]
+  documentSequences   DocumentSequence[]
+  fileAssets          FileAsset[]
+  fieldDefinitions    FieldDefinition[]
+  workflows           Workflow[]
+  workflowStates      WorkflowState[]
+  workflowTransitions WorkflowTransition[]
+  statusHistories     StatusHistory[]
+  approvalRequests    ApprovalRequest[]
+  units               Unit[]
+  taxClasses          TaxClass[]
+  inventoryLocations  InventoryLocation[]
+  tasks               Task[]
+  notes               Note[]
+  notifications       Notification[]
+  userSessions        UserSession[]
+
+  @@map("workspaces")
+}
+
+enum WorkspaceStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+
+  @@map("workspace_status")
+}
+
+model User {
+  id                  String               @id @default(cuid())
+  email               String               @unique @db.Citext
+  passwordHash        String?              @map("password_hash")
+  firstName           String               @map("first_name")
+  lastName            String               @map("last_name")
+  status              UserStatus           @default(PENDING)
+  isPlatformAdmin     Boolean              @default(false) @map("is_platform_admin")
+  lockedUntil         DateTime?            @map("locked_until")
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime             @updatedAt @map("updated_at")
+  sessions            UserSession[]
+  passwordResetTokens PasswordResetToken[]
+  memberships         UserWorkspace[]
+  invitationsSent     Invitation[]         @relation("InvitationInvitedBy")
+  uploadedFiles       FileAsset[]
+  statusChanges       StatusHistory[]
+  approvalsRequested  ApprovalRequest[]    @relation("ApprovalRequestedBy")
+  approvalsDecided    ApprovalRequest[]    @relation("ApprovalDecidedBy")
+  tasksAssigned       Task[]               @relation("TaskAssignee")
+  tasksCreated        Task[]               @relation("TaskCreator")
+  tasksCompleted      Task[]               @relation("TaskCompleter")
+  notesCreated        Note[]
+  notifications       Notification[]
+
+  @@map("users")
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+
+  @@map("user_status")
+}
+
+model UserSession {
+  id               String     @id @default(cuid())
+  userId           String     @map("user_id")
+  user             User       @relation(fields: [userId], references: [id])
+  workspaceId      String?    @map("workspace_id")
+  workspace        Workspace? @relation(fields: [workspaceId], references: [id])
+  familyId         String     @map("family_id")
+  refreshTokenHash String     @unique @map("refresh_token_hash")
+  expiresAt        DateTime   @map("expires_at")
+  rotatedAt        DateTime?  @map("rotated_at")
+  revokedAt        DateTime?  @map("revoked_at")
+  ipAddress        String?    @map("ip_address")
+  userAgent        String?    @map("user_agent")
+  createdAt        DateTime   @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([familyId])
+  @@map("user_sessions")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  user      User      @relation(fields: [userId], references: [id])
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  email     String   @db.Citext
+  ipAddress String?  @map("ip_address")
+  success   Boolean
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([email, createdAt])
+  @@map("login_attempts")
+}
+
+model IndustryProfile {
+  key        String  @id
+  name       String
+  definition Json
+  active     Boolean @default(true)
+
+  @@map("industry_profiles")
+}
+
+model PlatformSetting {
+  key   String @id
+  value Json
+
+  @@map("platform_settings")
+}
+
+model UserWorkspace {
+  id                String              @id @default(cuid())
+  workspaceId       String              @map("workspace_id")
+  workspace         Workspace           @relation(fields: [workspaceId], references: [id])
+  userId            String              @map("user_id")
+  user              User                @relation(fields: [userId], references: [id])
+  status            UserStatus          @default(ACTIVE)
+  permVersion       Int                 @default(1) @map("perm_version")
+  phone             String?
+  jobTitle          String?             @map("job_title")
+  employeeCode      String?             @map("employee_code")
+  joinDate          DateTime?           @map("join_date")
+  isSalesperson     Boolean             @default(false) @map("is_salesperson")
+  defaultLocationId String?             @map("default_location_id")
+  defaultLocation   InventoryLocation?  @relation(fields: [defaultLocationId], references: [id])
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+  roles             UserWorkspaceRole[]
+
+  @@unique([workspaceId, userId])
+  @@map("user_workspaces")
+}
+
+model Role {
+  id                 String              @id @default(cuid())
+  workspaceId        String              @map("workspace_id")
+  workspace          Workspace           @relation(fields: [workspaceId], references: [id])
+  name               String
+  isSystem           Boolean             @default(false) @map("is_system")
+  isOwner            Boolean             @default(false) @map("is_owner")
+  permissions        String[]
+  maxDiscountPercent Decimal             @default(0) @map("max_discount_percent") @db.Decimal(9, 4)
+  viewerModules      String[]            @map("viewer_modules")
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
+  members            UserWorkspaceRole[]
+
+  @@unique([workspaceId, name])
+  @@map("roles")
+}
+
+model UserWorkspaceRole {
+  workspaceId     String        @map("workspace_id")
+  workspace       Workspace     @relation(fields: [workspaceId], references: [id])
+  userWorkspaceId String        @map("user_workspace_id")
+  userWorkspace   UserWorkspace @relation(fields: [userWorkspaceId], references: [id], onDelete: Cascade)
+  roleId          String        @map("role_id")
+  role            Role          @relation(fields: [roleId], references: [id])
+
+  @@id([userWorkspaceId, roleId])
+  @@index([roleId])
+  @@index([workspaceId])
+  @@map("user_workspace_roles")
+}
+
+model Invitation {
+  id          String    @id @default(cuid())
+  workspaceId String    @map("workspace_id")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  email       String    @db.Citext
+  roleIds     String[]  @map("role_ids")
+  tokenHash   String    @unique @map("token_hash")
+  expiresAt   DateTime  @map("expires_at")
+  acceptedAt  DateTime? @map("accepted_at")
+  invitedById String    @map("invited_by_id")
+  invitedBy   User      @relation("InvitationInvitedBy", fields: [invitedById], references: [id])
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@index([workspaceId, email])
+  @@map("invitations")
+}
+
+model AuditEvent {
+  id            String    @id @default(cuid())
+  workspaceId   String    @map("workspace_id")
+  workspace     Workspace @relation(fields: [workspaceId], references: [id])
+  actorUserId   String?   @map("actor_user_id")
+  actorType     String    @default("USER") @map("actor_type")
+  actorRole     String?   @map("actor_role")
+  action        String
+  entityType    String    @map("entity_type")
+  entityId      String    @map("entity_id")
+  previousState Json?     @map("previous_state")
+  newState      Json?     @map("new_state")
+  metadata      Json?
+  ipAddress     String?   @map("ip_address")
+  userAgent     String?   @map("user_agent")
+  requestId     String?   @map("request_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@index([workspaceId, createdAt])
+  @@index([workspaceId, entityType, entityId])
+  @@index([workspaceId, actorUserId, createdAt])
+  @@map("audit_events")
+}
+
+model IdempotencyKey {
+  id           String    @id @default(cuid())
+  workspaceId  String    @map("workspace_id")
+  workspace    Workspace @relation(fields: [workspaceId], references: [id])
+  key          String
+  route        String
+  requestHash  String    @map("request_hash")
+  responseBody Json?     @map("response_body")
+  statusCode   Int?      @map("status_code")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  @@unique([workspaceId, key, route])
+  @@index([createdAt])
+  @@map("idempotency_keys")
+}
+
+model DocumentSequence {
+  id          String       @id @default(cuid())
+  workspaceId String       @map("workspace_id")
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id])
+  docType     DocumentType @map("doc_type")
+  year        Int          @default(0)
+  nextValue   Int          @default(1) @map("next_value")
+
+  @@unique([workspaceId, docType, year])
+  @@map("document_sequences")
+}
+
+enum DocumentType {
+  QUOTATION
+  ORDER
+  INVOICE
+  RECEIPT
+  REFUND_RECEIPT
+  PURCHASE_ORDER
+  GOODS_RECEIPT
+  RETURN
+  PAYMENT
+
+  @@map("document_type")
+}
+
+model FileAsset {
+  id           String    @id @default(cuid())
+  workspaceId  String    @map("workspace_id")
+  workspace    Workspace @relation(fields: [workspaceId], references: [id])
+  storageKey   String    @map("storage_key")
+  thumbnailKey String?   @map("thumbnail_key")
+  originalName String    @map("original_name")
+  mimeType     String    @map("mime_type")
+  sizeBytes    Int       @map("size_bytes")
+  entityType   String?   @map("entity_type")
+  entityId     String?   @map("entity_id")
+  purpose      String?
+  uploadedById String?   @map("uploaded_by_id")
+  uploadedBy   User?     @relation(fields: [uploadedById], references: [id])
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  @@index([workspaceId, entityType, entityId])
+  @@map("file_assets")
+}
+
+model FieldDefinition {
+  id            String      @id @default(cuid())
+  workspaceId   String      @map("workspace_id")
+  workspace     Workspace   @relation(fields: [workspaceId], references: [id])
+  entityType    FieldEntity @map("entity_type")
+  key           String
+  label         String
+  type          FieldType
+  unitDimension String?     @map("unit_dimension")
+  defaultUnit   String?     @map("default_unit")
+  options       Json        @default("[]")
+  required      Boolean     @default(false)
+  defaultValue  Json?       @map("default_value")
+  categoryId    String?     @map("category_id")
+  visibleWhen   Json?       @map("visible_when")
+  isVariantAxis Boolean     @default(false) @map("is_variant_axis")
+  sortOrder     Int         @default(0) @map("sort_order")
+  active        Boolean     @default(true)
+  isSystem      Boolean     @default(false) @map("is_system")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  @@unique([workspaceId, entityType, key])
+  @@map("field_definitions")
+}
+
+enum FieldEntity {
+  PRODUCT
+  VARIANT
+  ORDER_ITEM
+  QUOTATION_ITEM
+  CUSTOMER
+  LEAD
+  ORDER
+  QUOTATION
+  SUPPLIER
+  PURCHASE_ORDER
+  EXPENSE
+
+  @@map("field_entity")
+}
+
+enum FieldType {
+  TEXT
+  NUMBER
+  DATE
+  BOOLEAN
+  DROPDOWN
+  MULTI_SELECT
+  MEASUREMENT
+  CURRENCY
+  IMAGE
+  REFERENCE
+
+  @@map("field_type")
+}
+
+model Workflow {
+  id          String               @id @default(cuid())
+  workspaceId String               @map("workspace_id")
+  workspace   Workspace            @relation(fields: [workspaceId], references: [id])
+  entityType  WorkflowEntity       @map("entity_type")
+  name        String
+  states      WorkflowState[]
+  transitions WorkflowTransition[]
+
+  @@unique([workspaceId, entityType])
+  @@map("workflows")
+}
+
+enum WorkflowEntity {
+  LEAD
+  ORDER
+  PURCHASE_ORDER
+  PRODUCTION_JOB
+
+  @@map("workflow_entity")
+}
+
+model WorkflowState {
+  id              String               @id @default(cuid())
+  workspaceId     String               @map("workspace_id")
+  workspace       Workspace            @relation(fields: [workspaceId], references: [id])
+  workflowId      String               @map("workflow_id")
+  workflow        Workflow             @relation(fields: [workflowId], references: [id])
+  key             String
+  label           String
+  color           String               @default("#64748b")
+  category        StateCategory
+  systemRole      String?              @map("system_role")
+  isInitial       Boolean              @default(false) @map("is_initial")
+  sortOrder       Int                  @default(0) @map("sort_order")
+  active          Boolean              @default(true)
+  transitionsFrom WorkflowTransition[] @relation("TransitionFrom")
+  transitionsTo   WorkflowTransition[] @relation("TransitionTo")
+
+  @@unique([workspaceId, workflowId, key])
+  @@map("workflow_states")
+}
+
+enum StateCategory {
+  OPEN
+  IN_PROGRESS
+  DONE
+  CANCELLED
+
+  @@map("state_category")
+}
+
+model WorkflowTransition {
+  id                 String        @id @default(cuid())
+  workspaceId        String        @map("workspace_id")
+  workspace          Workspace     @relation(fields: [workspaceId], references: [id])
+  workflowId         String        @map("workflow_id")
+  workflow           Workflow      @relation(fields: [workflowId], references: [id])
+  fromStateId        String        @map("from_state_id")
+  fromState          WorkflowState @relation("TransitionFrom", fields: [fromStateId], references: [id])
+  toStateId          String        @map("to_state_id")
+  toState            WorkflowState @relation("TransitionTo", fields: [toStateId], references: [id])
+  requiredPermission String?       @map("required_permission")
+  requiredFields     String[]      @map("required_fields")
+  requiresApproval   Boolean       @default(false) @map("requires_approval")
+
+  @@unique([workspaceId, workflowId, fromStateId, toStateId])
+  @@map("workflow_transitions")
+}
+
+model StatusHistory {
+  id          String    @id @default(cuid())
+  workspaceId String    @map("workspace_id")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  entityType  String    @map("entity_type")
+  entityId    String    @map("entity_id")
+  fromKey     String?   @map("from_key")
+  toKey       String    @map("to_key")
+  changedById String?   @map("changed_by_id")
+  changedBy   User?     @relation(fields: [changedById], references: [id])
+  actorType   String    @default("USER") @map("actor_type")
+  note        String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@index([workspaceId, entityType, entityId, createdAt])
+  @@map("status_history")
+}
+
+model ApprovalRequest {
+  id            String         @id @default(cuid())
+  workspaceId   String         @map("workspace_id")
+  workspace     Workspace      @relation(fields: [workspaceId], references: [id])
+  type          String
+  entityType    String         @map("entity_type")
+  entityId      String         @map("entity_id")
+  payload       Json
+  status        ApprovalStatus @default(PENDING)
+  requestedById String         @map("requested_by_id")
+  requestedBy   User           @relation("ApprovalRequestedBy", fields: [requestedById], references: [id])
+  decidedById   String?        @map("decided_by_id")
+  decidedBy     User?          @relation("ApprovalDecidedBy", fields: [decidedById], references: [id])
+  decidedAt     DateTime?      @map("decided_at")
+  decisionNote  String?        @map("decision_note")
+  createdAt     DateTime       @default(now()) @map("created_at")
+
+  @@index([workspaceId, status, createdAt])
+  @@index([workspaceId, entityType, entityId])
+  @@map("approval_requests")
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+
+  @@map("approval_status")
+}
+
+model Unit {
+  id          String    @id @default(cuid())
+  workspaceId String    @map("workspace_id")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  name        String
+  symbol      String
+  dimension   String
+  toBase      Decimal   @map("to_base") @db.Decimal(18, 8)
+
+  @@unique([workspaceId, symbol])
+  @@map("units")
+}
+
+model TaxClass {
+  id          String    @id @default(cuid())
+  workspaceId String    @map("workspace_id")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  name        String
+  rate        Decimal   @db.Decimal(9, 4)
+  active      Boolean   @default(true)
+
+  @@unique([workspaceId, name])
+  @@map("tax_classes")
+}
+
+model InventoryLocation {
+  id            String          @id @default(cuid())
+  workspaceId   String          @map("workspace_id")
+  workspace     Workspace       @relation(fields: [workspaceId], references: [id])
+  name          String
+  type          String          @default("STORE")
+  isDefault     Boolean         @default(false) @map("is_default")
+  active        Boolean         @default(true)
+  staffDefaults UserWorkspace[]
+
+  @@unique([workspaceId, name])
+  @@map("inventory_locations")
+}
+
+model Task {
+  id            String     @id @default(cuid())
+  workspaceId   String     @map("workspace_id")
+  workspace     Workspace  @relation(fields: [workspaceId], references: [id])
+  type          TaskType
+  title         String
+  description   String?
+  dueAt         DateTime?  @map("due_at")
+  status        TaskStatus @default(OPEN)
+  assignedToId  String?    @map("assigned_to_id")
+  assignedTo    User?      @relation("TaskAssignee", fields: [assignedToId], references: [id])
+  entityType    String?    @map("entity_type")
+  entityId      String?    @map("entity_id")
+  createdById   String?    @map("created_by_id")
+  createdBy     User?      @relation("TaskCreator", fields: [createdById], references: [id])
+  completedById String?    @map("completed_by_id")
+  completedBy   User?      @relation("TaskCompleter", fields: [completedById], references: [id])
+  completedAt   DateTime?  @map("completed_at")
+  dueNotifiedAt DateTime?  @map("due_notified_at")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+
+  @@index([workspaceId, assignedToId, status, dueAt])
+  @@index([workspaceId, entityType, entityId])
+  @@map("tasks")
+}
+
+enum TaskType {
+  CALL
+  FOLLOW_UP
+  MEETING
+  REMINDER
+  TODO
+
+  @@map("task_type")
+}
+
+enum TaskStatus {
+  OPEN
+  DONE
+  CANCELLED
+
+  @@map("task_status")
+}
+
+model Note {
+  id            String    @id @default(cuid())
+  workspaceId   String    @map("workspace_id")
+  workspace     Workspace @relation(fields: [workspaceId], references: [id])
+  entityType    String    @map("entity_type")
+  entityId      String    @map("entity_id")
+  kind          String    @default("NOTE")
+  body          String
+  callDirection String?   @map("call_direction")
+  callOutcome   String?   @map("call_outcome")
+  createdById   String?   @map("created_by_id")
+  createdBy     User?     @relation(fields: [createdById], references: [id])
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@index([workspaceId, entityType, entityId])
+  @@map("notes")
+}
+
+model Notification {
+  id          String    @id @default(cuid())
+  workspaceId String    @map("workspace_id")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  userId      String    @map("user_id")
+  user        User      @relation(fields: [userId], references: [id])
+  type        String
+  title       String
+  body        String?
+  entityType  String?   @map("entity_type")
+  entityId    String?   @map("entity_id")
+  readAt      DateTime? @map("read_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@index([workspaceId, userId, readAt, createdAt])
+  @@map("notifications")
+}

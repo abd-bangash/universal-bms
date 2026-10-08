@@ -27,10 +27,15 @@ function parseModels(source) {
   return models;
 }
 
+/** Tenant-scoped means a REQUIRED workspaceId; UserSession's optional one is only a pointer. */
+function isTenantModel(model) {
+  return model.fields.some(
+    (f) => f.name === 'workspaceId' && /^workspaceId\s+String(\s|$)/.test(f.line),
+  );
+}
+
 function render(models) {
-  const tenant = models
-    .filter((m) => m.fields.some((f) => f.name === 'workspaceId'))
-    .map((m) => m.name);
+  const tenant = models.filter(isTenantModel).map((m) => m.name);
   const all = models.map((m) => m.name);
   const list = (names) =>
     names.length ? `[\n${names.map((n) => `  '${n}',`).join('\n')}\n]` : '[]';
@@ -48,7 +53,7 @@ function generate() {
   return render(parseModels(fs.readFileSync(SCHEMA, 'utf8')));
 }
 
-module.exports = { parseModels, render, generate, SCHEMA, OUTPUT };
+module.exports = { parseModels, isTenantModel, render, generate, SCHEMA, OUTPUT };
 
 if (require.main === module) {
   fs.writeFileSync(OUTPUT, generate());

@@ -3,6 +3,7 @@ import { GLOBAL_MODELS, TENANT_MODELS } from '../tenant-models';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports -- CommonJS script shared with the CLI
 const generator = require('../../../../scripts/generate-tenant-models.cjs') as {
+  isTenantModel(model: { fields: Array<{ name: string; line: string }> }): boolean;
   parseModels(source: string): Array<{
     name: string;
     fields: Array<{ name: string; line: string }>;
@@ -14,8 +15,7 @@ const generator = require('../../../../scripts/generate-tenant-models.cjs') as {
 };
 
 const models = generator.parseModels(readFileSync(generator.SCHEMA, 'utf8'));
-const hasWorkspaceId = (m: (typeof models)[number]) =>
-  m.fields.some((f) => f.name === 'workspaceId');
+const hasWorkspaceId = (m: (typeof models)[number]) => generator.isTenantModel(m);
 
 describe('schema rules', () => {
   it('parses a sample schema', () => {
@@ -55,14 +55,34 @@ describe('schema rules', () => {
     expect(offenders.map((m) => m.name)).toEqual([]);
   });
 
-  it('tenant models are unique per workspace only (design D3)', () => {
+  it('tenant models are unique per workspace only (design D3); only random token hashes are global', () => {
     const offenders = models
       .filter(hasWorkspaceId)
       .filter(
         (m) =>
-          m.fields.some((f) => /\s@unique\b/.test(f.line)) ||
+          m.fields.some((f) => /\s@unique\b/.test(f.line) && !/Hash\b/.test(f.name)) ||
           m.attributes.some((a) => a.startsWith('@@unique') && !a.includes('workspaceId')),
       );
     expect(offenders.map((m) => m.name)).toEqual([]);
+  });
+
+  it('every tenant model has a workspace relation and an index starting with workspaceId', () => {
+    const offenders = models.filter(hasWorkspaceId).filter((m) => {
+      const relation = m.fields.some(
+        (f) => f.name === 'workspace' && f.line.includes('fields: [workspaceId]'),
+      );
+      const indexed = m.attributes.some((a) => /^@@(index|unique)\(\[workspaceId\b/.test(a));
+      return !relation || !indexed;
+    });
+    expect(offenders.map((m) => m.name)).toEqual([]);
+  });
+
+  it('every table is mapped to snake_case', () => {
+    const source = readFileSync(generator.SCHEMA, 'utf8');
+    const offenders = models.filter(
+      (m) => !m.attributes.some((a) => /^@@map\("[a-z][a-z0-9_]*"\)$/.test(a)),
+    );
+    expect(offenders.map((m) => m.name)).toEqual([]);
+    expect(source).not.toMatch(/@@map\("[^"]*[A-Z]/);
   });
 });

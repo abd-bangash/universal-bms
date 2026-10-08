@@ -4,7 +4,7 @@ import type { RequestContext } from '../src/common/context/request-context';
 import { createScopedClient } from '../src/common/prisma/prisma.service';
 import { TENANT_MODELS } from '../src/common/prisma/tenant-models';
 import { createTestDatabase, type TestDatabase } from './helpers/test-db';
-import { tenantFactories } from './helpers/tenant-factories';
+import { ensureWorkspace, tenantFactories } from './helpers/tenant-factories';
 
 type Delegate = Record<string, (args?: unknown) => Promise<unknown>>;
 
@@ -46,23 +46,22 @@ describe('Property 1 — tenant isolation', () => {
         return fn.call(delegate, args);
       };
 
-      const row = await factory(db.prisma, 'ws_a');
+      const wsA = `ws_a_${model}`;
+      const wsB = `ws_b_${model}`;
+      const { where } = await factory(db.prisma, wsA);
+      await ensureWorkspace(db.prisma, wsB);
 
-      expect(await inWorkspace('ws_b', () => call('findMany'))).toEqual([]);
-      expect(
-        await inWorkspace('ws_b', () => call('findFirst', { where: { id: row.id } })),
-      ).toBeNull();
-      expect(await inWorkspace('ws_b', () => call('count'))).toBe(0);
-      expect(
-        await inWorkspace('ws_b', () => call('updateMany', { where: { id: row.id }, data: {} })),
-      ).toEqual({ count: 0 });
-      expect(
-        await inWorkspace('ws_b', () => call('deleteMany', { where: { id: row.id } })),
-      ).toEqual({
+      expect(await inWorkspace(wsB, () => call('findMany'))).toEqual([]);
+      expect(await inWorkspace(wsB, () => call('findFirst', { where }))).toBeNull();
+      expect(await inWorkspace(wsB, () => call('count'))).toBe(0);
+      expect(await inWorkspace(wsB, () => call('updateMany', { where, data: {} }))).toEqual({
+        count: 0,
+      });
+      expect(await inWorkspace(wsB, () => call('deleteMany', { where }))).toEqual({
         count: 0,
       });
 
-      const visibleToOwner = await inWorkspace('ws_a', () => call('findMany'));
+      const visibleToOwner = await inWorkspace(wsA, () => call('findMany'));
       expect(visibleToOwner).toHaveLength(1);
     });
   }

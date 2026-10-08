@@ -61,11 +61,11 @@ How to read this file:
 
 ### Phase 1 — Foundation `[R1 · Day 1]`
 
-- [ ] 6. Schema: platform, identity and cross-cutting models
+- [x] 6. Schema: platform, identity and cross-cutting models
   - Add to `schema.prisma`: `Workspace`, `User`, `UserSession`, `PasswordResetToken`, `LoginAttempt`, `IndustryProfile`, `PlatformSetting`, `UserWorkspace`, `Role`, `UserWorkspaceRole`, `Invitation`, `AuditEvent`, `IdempotencyKey`, `DocumentSequence`, `FileAsset`, `FieldDefinition`, `Workflow`, `WorkflowState`, `WorkflowTransition`, `StatusHistory`, `ApprovalRequest`, `Unit`, `TaxClass`, `InventoryLocation`, `Task`, `Note`, `Notification`
   - Migration `core` with `rollback.sql`; raw SQL trigger `audit_events_append_only`; partial unique index for one default location per workspace
   - _Requirements: 1.2, 4.2, 4.3, 22.1, 22.2_
-  - [ ] 6.1 Property test — Property 4 (audit append-only)
+  - [x] 6.1 Property test — Property 4 (audit append-only)
     - _Requirements: 4.3_
 
 - [ ] 7. Audit module
