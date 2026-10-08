@@ -1,9 +1,12 @@
+import { Readable } from 'node:stream';
 import { Injectable } from '@nestjs/common';
 import Decimal from 'decimal.js';
 import type { AuthUser } from '../../common/decorators/current-user.decorator';
 import { AppException, NotFoundAppException } from '../../common/errors/app.exception';
 import { PrismaService } from '../../common/prisma/prisma.service';
+import { AuditService } from '../audit/audit.service';
 import { SettingsService } from '../settings/settings.service';
+import { csvLine } from './csv';
 import { addDays, localDay, localDayStart, resolveRange } from './report-dates';
 import { ReportRegistry } from './report.registry';
 import type {
@@ -17,6 +20,8 @@ import type {
 } from './reporting.types';
 
 export const DEFAULT_ROW_LIMIT = 1000;
+/** Larger exports will run as background jobs (task 68); until then they are refused. */
+export const MAX_EXPORT_ROWS = 5000;
 
 export interface ReportSummary {
   key: string;
@@ -33,6 +38,7 @@ export class ReportingService {
     private readonly prisma: PrismaService,
     private readonly settings: SettingsService,
     private readonly registry: ReportRegistry,
+    private readonly audit: AuditService,
   ) {}
 
   /** The reports this person may run (Requirement 19.8): without `report:financial` the money reports are not listed. */
@@ -84,6 +90,56 @@ export class ReportingService {
       columns,
       rows: this.strip(truncated ? result.rows.slice(0, ctx.limit) : result.rows, columns),
       truncated,
+    };
+  }
+
+  /**
+   * The report as a CSV file, with the same columns and filters as on screen and a totals line.
+   * Every export is an Audit_Event with who, which report, the filters and the time (Requirement 19.7).
+   */
+  async exportCsv(
+    user: AuthUser,
+    key: string,
+    query: ReportQuery,
+  ): Promise<{ filename: string; stream: Readable }> {
+    const def = this.definition(user, key);
+    const ctx = await this.context(user, { ...query, limit: MAX_EXPORT_ROWS });
+    const rows = await def.query(ctx);
+    if (rows.length > MAX_EXPORT_ROWS) {
+      throw new AppException(
+        'VALIDATION_FAILED',
+        422,
+        `This report has more than ${MAX_EXPORT_ROWS} rows; narrow the dates or filters to export it`,
+      );
+    }
+    const columns = this.visibleColumns(user, def.columns);
+    const totals = this.stripTotals(this.totals(def, rows, ctx), columns);
+    await this.prisma.scoped.$transaction((tx) =>
+      this.audit.record(tx, {
+        action: 'report.export',
+        entityType: 'Report',
+        entityId: def.key,
+        after: { rows: rows.length },
+        metadata: {
+          format: 'csv',
+          report: def.key,
+          filters: { ...query, from: ctx.range.from, to: ctx.range.to },
+          exportedAt: new Date().toISOString(),
+          userId: user.userId,
+        },
+      }),
+    );
+    function* lines(): Generator<string> {
+      yield '\uFEFF'; // a byte-order mark so spreadsheets read accented and non-Latin names correctly
+      yield csvLine(columns.map((c) => c.label));
+      for (const row of rows) yield csvLine(columns.map((c) => row[c.key]));
+      if (Object.keys(totals).length > 0) {
+        yield csvLine(columns.map((c, i) => (i === 0 ? 'Total' : (totals[c.key] ?? ''))));
+      }
+    }
+    return {
+      filename: `${def.key}_${ctx.range.from}_${ctx.range.to}.csv`,
+      stream: Readable.from(lines()),
     };
   }
 

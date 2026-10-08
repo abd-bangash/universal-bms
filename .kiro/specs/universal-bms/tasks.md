@@ -496,7 +496,7 @@ How to read this file:
   - `GET /reports/dashboard` returning indicators filtered by permission: sales today, this week and this month; open orders by status; lead funnel; low-stock count; outstanding balances; pending commissions; my tasks due
   - _Requirements: 19.1, 44.5_
 
-- [ ] 65. Exports
+- [x] 65. Exports
   - `POST /reports/:key/export` as streamed CSV, requiring `report:export`, with an Audit_Event recording user, report, filters and time
   - _Requirements: 19.6, 19.7_
 

@@ -480,4 +480,123 @@ describe('Reports (real PostgreSQL)', () => {
       if (token) expect((await dashboard(token)).salesMonth.orders).toBe(0);
     });
   });
+
+  describe('65 CSV export (19.6, 19.7)', () => {
+    const exportCsv = (
+      token: string,
+      key: string,
+      body: object = { from: '2000-01-01', to: '2100-01-01' },
+    ) =>
+      request(t.app.getHttpServer())
+        .post(`/api/v1/reports/${key}/export`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(body)
+        .buffer(true)
+        .parse((res, cb) => {
+          const chunks: Buffer[] = [];
+          res.on('data', (c: Buffer) => chunks.push(c));
+          res.on('end', () => cb(null, Buffer.concat(chunks)));
+        });
+
+    it('streams the report as CSV with the on-screen columns and a totals line', async () => {
+      const res = await exportCsv(owner, 'sales-by-date').expect(200);
+      expect(res.headers['content-type']).toMatch(/text\/csv/);
+      expect(res.headers['content-disposition']).toBe(
+        'attachment; filename="sales-by-date_2000-01-01_2100-01-01.csv"',
+      );
+      const text = (res.body as Buffer).toString('utf8');
+      expect(text.charCodeAt(0)).toBe(0xfeff);
+      const lines = text.slice(1).trimEnd().split('\r\n');
+      const report = await run(owner, 'sales-by-date');
+      expect(lines[0]).toBe(report.columns.map((c: Json) => c.label).join(','));
+      expect(lines).toHaveLength(report.rows.length + 2); // header, rows, totals
+      expect(lines.at(-1)).toMatch(/^Total,/);
+      expect(lines.at(-1)?.split(',')).toContain(report.totals.total);
+      expect(lines[1]?.split(',')[0]).toBe(report.rows[0].date);
+    });
+
+    it('records who exported which report with which filters and when (19.7)', async () => {
+      await exportCsv(owner, 'orders-by-status', { range: 'today' }).expect(200);
+      const events = await t.db.prisma.auditEvent.findMany({
+        where: { workspaceId, action: 'report.export', entityId: 'orders-by-status' },
+      });
+      expect(events).toHaveLength(1);
+      const owner_ = await t.db.prisma.user.findUniqueOrThrow({
+        where: { email: 'owner@demo.test' },
+      });
+      expect(events[0]).toMatchObject({ actorUserId: owner_.id, entityType: 'Report' });
+      expect(events[0]?.metadata).toMatchObject({
+        format: 'csv',
+        report: 'orders-by-status',
+        userId: owner_.id,
+        filters: expect.objectContaining({ range: 'today' }),
+        exportedAt: expect.any(String),
+      });
+    });
+
+    it('needs report:export as well as the report permissions', async () => {
+      await exportCsv(salesperson, 'orders-by-status').expect(403); // may view, may not export
+      await exportCsv('garbage', 'orders-by-status').expect(401);
+      await exportCsv(owner, 'nope').expect(404);
+    });
+
+    it('does not export what the person may not see, and strips the same money columns (19.8)', async () => {
+      const role = (
+        await http
+          .post(
+            '/roles',
+            {
+              name: 'Exporter',
+              permissions: [
+                'report:view',
+                'report:export',
+                'lead:view',
+                'lead:view_all',
+                'order:view',
+              ],
+            },
+            owner,
+          )
+          .expect(201)
+      ).body.data;
+      const email = 'exporter@demo.test';
+      const invite = await http
+        .post('/users/invite', { email, roleIds: [role.id] }, owner)
+        .expect(201);
+      await http
+        .post('/auth/invite/accept', {
+          token: invite.body.data.token,
+          password: 'exporter-pass-1',
+          firstName: 'Ex',
+          lastName: 'Porter',
+        })
+        .expect(200);
+      const token = await login(email, 'exporter-pass-1');
+      await exportCsv(token, 'sales-by-date').expect(403);
+      const res = await exportCsv(token, 'lead-pipeline').expect(200);
+      const header = (res.body as Buffer).toString('utf8').slice(1).split('\r\n')[0];
+      expect(header).toBe('Stage,Leads');
+    });
+
+    it('an export is only for the exporter: another workspace gets its own, empty, file', async () => {
+      await t.app.get(TenantsService).createWorkspace({
+        name: 'Export Other Co',
+        industryProfile: 'furniture',
+        owner: {
+          email: 'owner@exportother.test',
+          firstName: 'E',
+          lastName: 'O',
+          password: 'owner-password-1',
+        },
+        country: 'PK',
+      });
+      const token = await login('owner@exportother.test', 'owner-password-1');
+      const res = await exportCsv(token, 'sales-by-date').expect(200);
+      const lines = (res.body as Buffer).toString('utf8').slice(1).trimEnd().split('\r\n');
+      expect(lines).toEqual([
+        'Date,Orders,Subtotal,Discounts,Tax,Total',
+        'Total,0,0.00,0.00,0.00,0.00', // nothing of ours in it
+      ]);
+    });
+  });
 });
