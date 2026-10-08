@@ -421,7 +421,7 @@ How to read this file:
   - Usable at 768 pixels and above
   - _Requirements: 12.4, 12.11, 12.12, 49.3, 49.8, 49.9, 56.1, 56.2, 56.4, 56.5_
 
-- [ ] 54. Checkpoint — POS
+- [x] 54. Checkpoint — POS
   - Workflow C steps 2 to 9: walk-in sale, stock deducted, payment recorded, receipt printed at 80mm and A4, reprint marked
   - Double-clicking Pay creates one sale
   - Stop and ask the user to review.
