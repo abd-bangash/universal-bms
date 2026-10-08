@@ -423,7 +423,7 @@ const factories: Record<string, TenantFactory> = {
         data: {
           workspaceId: ws,
           receiptNumber: `RCP-${rand()}`,
-          orderId: payment.orderId as string,
+          orderId: payment.orderId,
           paymentId: payment.id,
           type: 'PAYMENT',
           data: {},

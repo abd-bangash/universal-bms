@@ -321,7 +321,7 @@ How to read this file:
   - Workspace creation now creates a cash account and default payment methods (cash, bank transfer, card, mobile money)
   - _Requirements: 13.1, 13.3, 40.1, 40.3, 22.1, 22.2_
 
-- [ ] 40. Payments API
+- [x] 40. Payments API
   - Financial accounts and payment methods CRUD (`account:configure`); customer-facing flag
   - `POST /payments` (idempotent): order payment, deposit or advance; created `CONFIRMED` when the user has `payment:confirm`, otherwise `PENDING_VERIFICATION`; reference number required when the method demands it
   - `confirm`, `reject`, `void` (reason required, `payment:void`); no edit endpoint for confirmed payments
@@ -330,9 +330,9 @@ How to read this file:
   - Payment receipt (`Receipt` type `PAYMENT`) with number and snapshot
   - Payment timeline per customer and per order; all changes audited with old and new values
   - _Requirements: 11.5, 13.1, 13.4, 13.6, 13.7, 13.8, 13.10, 27.9, 40.1, 40.2, 40.3, 40.4, 40.5, 40.7, 40.8, 40.9, 54.1, 54.6_
-  - [ ] 40.1 Property test — Property 7 (balance consistency over random sequences of record, confirm, void and credit operations)
+  - [x] 40.1 Property test — Property 7 (balance consistency over random sequences of record, confirm, void and credit operations)
     - _Requirements: 11.5, 13.6, 40.5_
-  - [ ] 40.2 Property test — Property 16 (idempotent creation) on `POST /payments`
+  - [x] 40.2 Property test — Property 16 (idempotent creation) on `POST /payments`
     - _Requirements: 54.1_
 
 - [ ] 41. Expenses API

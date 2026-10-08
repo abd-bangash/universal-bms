@@ -1435,8 +1435,8 @@ model Receipt {
   workspaceId   String    @map("workspace_id")
   workspace     Workspace @relation(fields: [workspaceId], references: [id])
   receiptNumber String    @map("receipt_number")
-  orderId       String    @map("order_id")
-  order         Order     @relation(fields: [orderId], references: [id])
+  orderId       String?   @map("order_id")
+  order         Order?    @relation(fields: [orderId], references: [id])
   paymentId     String?   @map("payment_id")
   payment       Payment?  @relation(fields: [paymentId], references: [id])
   /// SALE | PAYMENT | REFUND

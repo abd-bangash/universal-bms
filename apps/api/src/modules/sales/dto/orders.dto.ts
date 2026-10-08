@@ -72,6 +72,8 @@ export class ChangeOrderStatusDto {
   @IsOptional() @IsString() @MaxLength(1000) note?: string;
   /** Required when cancelling. */
   @IsOptional() @IsString() @MaxLength(1000) reason?: string;
+  /** When cancelling an order that has been paid: what happens to the money (CREDIT keeps it as the customer's credit). */
+  @IsOptional() @IsIn(['CREDIT']) paymentDecision?: 'CREDIT';
 }
 
 export class ListOrdersQuery extends PageQueryDto {

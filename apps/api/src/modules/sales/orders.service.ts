@@ -391,7 +391,7 @@ export class OrdersService {
     const before = await this.row(user, id);
     const result = await this.workflows.transition('ORDER', id, dto.status, {
       note: dto.note,
-      data: { reason: dto.reason },
+      data: { reason: dto.reason, paymentDecision: dto.paymentDecision },
       actor: { userId: user.userId, permissions: user.permissions },
     });
     if (!result.pendingApproval) {

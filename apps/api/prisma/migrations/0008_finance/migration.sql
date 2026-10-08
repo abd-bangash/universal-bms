@@ -85,7 +85,7 @@ CREATE TABLE "receipts" (
     "id" TEXT NOT NULL,
     "workspace_id" TEXT NOT NULL,
     "receipt_number" TEXT NOT NULL,
-    "order_id" TEXT NOT NULL,
+    "order_id" TEXT,
     "payment_id" TEXT,
     "type" TEXT NOT NULL DEFAULT 'SALE',
     "issued_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -201,7 +201,7 @@ ALTER TABLE "customer_credits" ADD CONSTRAINT "customer_credits_order_id_fkey" F
 ALTER TABLE "receipts" ADD CONSTRAINT "receipts_workspace_id_fkey" FOREIGN KEY ("workspace_id") REFERENCES "workspaces"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "receipts" ADD CONSTRAINT "receipts_order_id_fkey" FOREIGN KEY ("order_id") REFERENCES "orders"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "receipts" ADD CONSTRAINT "receipts_order_id_fkey" FOREIGN KEY ("order_id") REFERENCES "orders"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "receipts" ADD CONSTRAINT "receipts_payment_id_fkey" FOREIGN KEY ("payment_id") REFERENCES "payments"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -225,8 +225,9 @@ ALTER TABLE "expenses" ADD CONSTRAINT "expenses_account_id_fkey" FOREIGN KEY ("a
 ALTER TABLE "payments" ADD CONSTRAINT "payments_amount_positive" CHECK ("amount" > 0);
 ALTER TABLE "expenses" ADD CONSTRAINT "expenses_amount_positive" CHECK ("amount" > 0);
 ALTER TABLE "expenses" ADD CONSTRAINT "expenses_status_valid" CHECK ("status" IN ('POSTED', 'VOIDED'));
--- A payment that moves money names its method and account; applied credit moves none.
+-- A payment that moves money names its method and account. Applied credit moves none, and neither
+-- does a refund to credit (a REFUND without a method); a refund paid out in cash or by transfer has one.
 ALTER TABLE "payments" ADD CONSTRAINT "payments_method_unless_credit"
-  CHECK ("type" = 'CREDIT_APPLIED' OR ("payment_method_id" IS NOT NULL AND "account_id" IS NOT NULL));
+  CHECK ("type" IN ('CREDIT_APPLIED', 'REFUND') OR ("payment_method_id" IS NOT NULL AND "account_id" IS NOT NULL));
 -- Every payment belongs to an order or a customer (an advance has only the customer).
 ALTER TABLE "payments" ADD CONSTRAINT "payments_has_subject" CHECK ("order_id" IS NOT NULL OR "customer_id" IS NOT NULL);
