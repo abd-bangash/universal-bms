@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
+import { ActivityPanel } from '@/components/audit/activity-panel';
 import { PaymentsPanel } from '@/components/finance/payments-panel';
 import { NotesPanel } from '@/components/crm/notes-panel';
 import { TasksPanel } from '@/components/crm/tasks-panel';
@@ -284,6 +285,7 @@ export function OrderDetail({ orderId }: { orderId: string }) {
       <NotesPanel entityType="ORDER" entityId={o.id} canWrite={canEdit} />
       <TasksPanel entityType="ORDER" entityId={o.id} />
       <TimelinePanel path={`/orders/${o.id}/timeline`} queryKey={['order', o.id]} />
+      <ActivityPanel entityType="Order" entityId={o.id} />
 
       <Modal
         open={cancelling !== null}

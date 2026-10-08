@@ -389,7 +389,9 @@ describe('ExpenseList', () => {
     await userEvent.type(within(dialog).getByLabelText(/^Amount/), '1200');
     await within(dialog).findByRole('option', { name: 'Cash', hidden: true });
     await userEvent.selectOptions(within(dialog).getByLabelText(/Paid with/), 'm-cash');
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Save expense', hidden: true }));
+    await userEvent.click(
+      within(dialog).getByRole('button', { name: 'Save expense', hidden: true }),
+    );
     await waitFor(() =>
       expect(calls.find((c) => c.method === 'POST' && c.path === '/expenses')?.body).toMatchObject({
         categoryId: 'cat1',

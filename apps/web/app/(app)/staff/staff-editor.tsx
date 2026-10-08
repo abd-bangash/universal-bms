@@ -16,6 +16,7 @@ import { api } from '@/lib/api-client';
 import { useErrorMessage } from '@/lib/error-message';
 import { useRolesQuery } from '@/lib/hooks/use-roles';
 import { usePermission } from '@/lib/session';
+import { CommissionPercent } from '@/components/staff/commission-percent';
 import type { StaffMember } from './staff-list';
 
 interface ProfileForm {
@@ -198,6 +199,8 @@ function EditorBody({
           </fieldset>
         ) : null}
       </FormShell>
+
+      {current.isSalesperson ? <CommissionPercent userId={member.id} /> : null}
 
       <div className="flex flex-wrap gap-2 border-t border-neutral-200 pt-4">
         {canDeactivate ? (

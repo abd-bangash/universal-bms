@@ -35,7 +35,8 @@
     "close": "Close menu",
     "industry": "Industry",
     "receivables": "Receivables",
-    "accounts": "Accounts"
+    "accounts": "Accounts",
+    "performance": "Performance"
   },
   "shell": {
     "skipToContent": "Skip to content",
@@ -466,7 +467,65 @@
     "inviteReady": "Invitation created",
     "inviteLinkHint": "Send this link to {email}. It expires in 72 hours and works once.",
     "inviteNoRoles": "Choose at least one role.",
-    "owner": "Owner"
+    "owner": "Owner",
+    "commission": {
+      "heading": "Commission",
+      "hint": "A percentage of net sales this person earns on the orders credited to them. Leave empty or 0 to switch it off.",
+      "percent": "Commission (%)",
+      "save": "Save commission",
+      "saved": "Commission set to {percent}% of net sales.",
+      "switchedOff": "Commission switched off."
+    },
+    "statement": {
+      "title": "Commissions",
+      "caption": "Commission statement",
+      "onlyMine": "You see your own commissions.",
+      "order": "Order",
+      "salesperson": "Salesperson",
+      "rule": "Rule",
+      "base": "Sales base",
+      "amount": "Commission",
+      "statusLabel": "Status",
+      "filterStatus": "Status",
+      "date": "Date",
+      "actions": "Actions",
+      "approve": "Approve",
+      "reject": "Reject",
+      "markPaid": "Mark paid",
+      "approveLabel": "Approve commission on {order}",
+      "rejectLabel": "Reject commission on {order}",
+      "payLabel": "Mark the commission on {order} as paid",
+      "empty": "No commissions yet.",
+      "emptyDescription": "Commissions appear when orders reach the status that earns them.",
+      "payTitle": "Pay commission",
+      "payFor": "Pay {amount} to {person}.",
+      "method": "How it was paid",
+      "paidOn": "Paid on (today if empty)",
+      "cancel": "Cancel",
+      "confirmPaid": "Mark as paid",
+      "status": {
+        "PENDING": "Pending",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected",
+        "PAID": "Paid",
+        "REVERSED": "Reversed"
+      }
+    },
+    "performance": {
+      "title": "Performance",
+      "person": "Person",
+      "from": "From",
+      "to": "To",
+      "leadsAssigned": "Leads assigned",
+      "leadsWon": "Leads won",
+      "conversion": "Conversion rate",
+      "orders": "Orders",
+      "salesValue": "Sales value",
+      "averageOrder": "Average order value",
+      "pending": "Commission pending",
+      "approved": "Commission approved",
+      "paid": "Commission paid"
+    }
   },
   "roles": {
     "title": "Roles and permissions",
@@ -1528,5 +1587,15 @@
       "cancel": "Cancel",
       "confirm": "Receive"
     }
+  },
+  "activity": {
+    "title": "Activity",
+    "loading": "Loading…",
+    "empty": "Nothing recorded yet.",
+    "aPerson": "A team member",
+    "system": "The system",
+    "loadMore": "Show older activity",
+    "openFor": "Activity for {name}",
+    "button": "Activity"
   }
 }

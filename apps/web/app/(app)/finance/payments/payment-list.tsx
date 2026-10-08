@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { ActivityButton } from '@/components/audit/activity-button';
 import { DataTable, type Column, type FilterDefinition } from '@/components/data-table/data-table';
 import { PaymentActions } from '@/components/finance/payment-actions';
 import { PAYMENT_STATUS_COLORS } from '@/components/finance/payments-panel';
@@ -71,7 +72,16 @@ export function PaymentList() {
       header: t('statusLabel'),
       cell: (p) => <StatusBadge label={ts(p.status)} color={PAYMENT_STATUS_COLORS[p.status]} />,
     },
-    { key: 'actions', header: t('actions'), cell: (p) => <PaymentActions payment={p} /> },
+    {
+      key: 'actions',
+      header: t('actions'),
+      cell: (p) => (
+        <div className="flex items-center gap-1">
+          <PaymentActions payment={p} />
+          <ActivityButton entityType="Payment" entityId={p.id} name={p.paymentNumber} />
+        </div>
+      ),
+    },
   ];
   const filters: FilterDefinition[] = [
     {

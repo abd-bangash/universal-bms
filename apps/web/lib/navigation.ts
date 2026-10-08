@@ -187,7 +187,16 @@ export const NAVIGATION: readonly NavigationEntry[] = [
     area: 'staff',
     permissions: ['commission:view'],
     module: 'commissions',
-    available: false,
+    available: true,
+  },
+  {
+    key: 'performance',
+    href: '/staff/performance',
+    label: { message: 'performance' },
+    area: 'staff',
+    permissions: ['commission:view'],
+    module: 'commissions',
+    available: true,
   },
   {
     key: 'automation',

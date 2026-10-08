@@ -471,7 +471,7 @@ How to read this file:
   - [x] 60.2 Integration tests: completing an order creates pending commissions; cancelling reverses them; a salesperson cannot see another's commissions
     - _Requirements: 14.2, 14.6, 41.7_
 
-- [ ] 61. Commission, performance and activity screens
+- [x] 61. Commission, performance and activity screens
   - `/staff/commissions` (statement, approve, reject, mark paid), commission percent on the staff profile, `/staff/performance`
   - Activity tab on order, payment and product pages showing that record's Audit_Events
   - _Requirements: 14.4, 14.5, 14.7, 41.6, 4.4_
