@@ -6,6 +6,8 @@ import { resolveRequestId } from '../middleware/request-id.middleware';
 export interface RequestContext extends ClsStore {
   workspaceId?: string;
   userId?: string;
+  /** Names of the acting user's roles, set by the auth guard; recorded on audit events. */
+  actorRole?: string;
   requestId?: string;
   ip?: string;
   userAgent?: string;

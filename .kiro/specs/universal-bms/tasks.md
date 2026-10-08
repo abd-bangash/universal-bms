@@ -68,11 +68,11 @@ How to read this file:
   - [x] 6.1 Property test — Property 4 (audit append-only)
     - _Requirements: 4.3_
 
-- [ ] 7. Audit module
+- [x] 7. Audit module
   - `AuditService.record(tx, …)` (transactional, before/after diff with redaction) and `recordAsync` (retry 3 times, then error log with alert tag)
   - `GET /audit/events` with filters (entity, actor, action, date range), cursor pagination, permission `audit:view`
   - _Requirements: 4.1, 4.2, 4.4, 4.5, 4.6, 4.7_
-  - [ ] 7.1 Property test — Property 3 (audit completeness, including rollback leaves no event)
+  - [x] 7.1 Property test — Property 3 (audit completeness, including rollback leaves no event)
     - _Requirements: 4.1, 4.6_
 
 - [ ] 8. Authentication module

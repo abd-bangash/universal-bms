@@ -5,6 +5,7 @@ import { EventsModule } from './common/events/events.module';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { SchedulingModule } from './common/scheduling/scheduling.module';
 import { ConfigModule } from './config/config.module';
+import { AuditModule } from './modules/audit/audit.module';
 import { HealthModule } from './modules/health/health.module';
 
 @Module({
@@ -16,6 +17,7 @@ import { HealthModule } from './modules/health/health.module';
     SchedulingModule,
     HealthModule,
     PrismaModule,
+    AuditModule,
   ],
 })
 export class AppModule {}

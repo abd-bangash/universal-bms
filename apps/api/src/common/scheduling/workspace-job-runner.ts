@@ -7,7 +7,8 @@ import { LOGGER } from '../logging/app-logger';
 /**
  * Scheduled jobs and queue processors have no request, so nothing sets the workspace for them.
  * They act on one workspace at a time through this runner, which sets the context that
- * `prisma.scoped` reads.
+ * `prisma.scoped` reads. Prisma queries are lazy, so a job must `await` its queries inside the
+ * callback (an async function), not return the un-awaited query.
  */
 @Injectable()
 export class WorkspaceJobRunner {

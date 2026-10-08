@@ -34,6 +34,11 @@ export class Page<T> {
     readonly nextCursor?: string,
     readonly total?: number,
   ) {}
+
+  /** Maps rows (for example to response DTOs) and keeps the cursor and total. */
+  map<U>(fn: (item: T) => U): Page<U> {
+    return new Page(this.items.map(fn), this.nextCursor, this.total);
+  }
 }
 
 export type CursorPayload = Record<string, string | number | null>;
