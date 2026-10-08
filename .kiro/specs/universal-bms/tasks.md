@@ -309,7 +309,7 @@ How to read this file:
   - `/orders` list with status and payment-status filters; `/orders/[id]` with status control showing only allowed transitions, status timeline, lines, fulfilment panel, payments panel (wired in task 43), documents, notes and tasks
   - _Requirements: 10.1, 11.1, 11.3, 39.2, 39.9, 49.4, 49.5_
 
-- [ ] 38. Checkpoint — quotations and orders
+- [x] 38. Checkpoint — quotations and orders
   - Extend `seed:demo` with 10 quotations and 15 orders across statuses
   - Workflow D steps 1 to 5 and workflow B steps 1 to 5 and 7: lead → quotation with custom sofa line → acceptance recorded → order → confirmed; PDFs open
   - Stop and ask the user to review.

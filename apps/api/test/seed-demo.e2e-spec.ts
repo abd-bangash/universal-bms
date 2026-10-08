@@ -42,8 +42,9 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
       { name: 'staff', created: 8, existing: 0 },
       { name: 'catalog', created: 30, existing: 0 },
       { name: 'crm', created: 35, existing: 0 },
+      { name: 'sales', created: 25, existing: 0 },
     ]);
-    expect(logs).toHaveLength(4);
+    expect(logs).toHaveLength(5);
 
     const workspace = await t.db.prisma.workspace.findUniqueOrThrow({
       where: { id: report.workspaceId },
@@ -195,6 +196,75 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
     expect(open).toBe(DEMO_LEADS_WITH_FOLLOW_UP);
   });
 
+  it('seeds 10 quotations and 15 orders across every status, with genuine history (38)', async () => {
+    const workspaceId = (
+      await t.db.prisma.workspace.findUniqueOrThrow({ where: { slug: DEMO_WORKSPACE.slug } })
+    ).id;
+    const quotations = await t.db.prisma.quotation.findMany({
+      where: { workspaceId },
+      include: { items: true },
+    });
+    const count = (status: string) => quotations.filter((q) => q.status === status).length;
+    expect(quotations).toHaveLength(10);
+    expect({
+      DRAFT: count('DRAFT'),
+      SENT: count('SENT'),
+      ACCEPTED: count('ACCEPTED'),
+      REJECTED: count('REJECTED'),
+      EXPIRED: count('EXPIRED'),
+      CONVERTED: count('CONVERTED'),
+    }).toEqual({ DRAFT: 3, SENT: 2, ACCEPTED: 1, REJECTED: 1, EXPIRED: 1, CONVERTED: 2 });
+    expect(quotations.every((q) => q.items.length > 0 && Number(q.totalAmount) > 0)).toBe(true);
+    // a custom sofa line carries its measurements
+    expect(
+      quotations
+        .flatMap((q) => q.items)
+        .some((i) => i.kind === 'CUSTOM' && (i.fieldSnapshot as unknown[]).length >= 3),
+    ).toBe(true);
+
+    // the 15 seeded orders plus the 2 made by converting quotations
+    const orders = await t.db.prisma.order.findMany({ where: { workspaceId } });
+    expect(orders).toHaveLength(17);
+    const seeded = orders.filter((o) => o.campaign?.startsWith('demo-seed-o'));
+    const statusCount = (status: string) => seeded.filter((o) => o.status === status).length;
+    expect({
+      draft: statusCount('draft'),
+      confirmed: statusCount('confirmed'),
+      in_production: statusCount('in_production'),
+      ready: statusCount('ready'),
+      delivered: statusCount('delivered'),
+      completed: statusCount('completed'),
+      on_hold: statusCount('on_hold'),
+      cancelled: statusCount('cancelled'),
+    }).toEqual({
+      draft: 3,
+      confirmed: 3,
+      in_production: 2,
+      ready: 1,
+      delivered: 2,
+      completed: 2,
+      on_hold: 1,
+      cancelled: 1,
+    });
+    expect(seeded.filter((o) => o.status === 'cancelled').every((o) => o.cancelReason)).toBe(true);
+    expect(seeded.filter((o) => o.status === 'completed').every((o) => o.closedAt)).toBe(true);
+    // delivered orders raised their invoice automatically
+    expect(await t.db.prisma.invoice.count({ where: { workspaceId } })).toBeGreaterThanOrEqual(4);
+    const history = await t.db.prisma.statusHistory.findMany({
+      where: { workspaceId, entityId: seeded.find((o) => o.status === 'completed')?.id },
+      orderBy: { createdAt: 'asc' },
+    });
+    expect(history.map((h) => h.toKey)).toEqual([
+      'draft',
+      'confirmed',
+      'in_production',
+      'ready',
+      'out_for_delivery',
+      'delivered',
+      'completed',
+    ]);
+  });
+
   it('is safe to run again: nothing is duplicated and passwords are untouched', async () => {
     const before = await t.db.prisma.user.findMany({
       where: { email: { endsWith: '@demo.test' } },
@@ -206,6 +276,7 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
       { name: 'staff', created: 0, existing: 8 },
       { name: 'catalog', created: 0, existing: 30 },
       { name: 'crm', created: 0, existing: 35 },
+      { name: 'sales', created: 0, existing: 25 },
     ]);
     expect(await t.db.prisma.customer.count({ where: { isWalkIn: false } })).toBe(22); // 20 + 2 from won leads
     expect(await t.db.prisma.lead.count()).toBe(15);
@@ -289,6 +360,7 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
       'staff',
       'catalog',
       'crm',
+      'sales',
       'probe',
     ]);
   });
