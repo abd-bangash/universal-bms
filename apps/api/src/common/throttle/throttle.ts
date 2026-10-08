@@ -1,4 +1,4 @@
-import { type ExecutionContext, SetMetadata } from '@nestjs/common';
+import { type ExecutionContext, Inject, Optional, SetMetadata } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import {
   ThrottlerException,
@@ -17,6 +17,8 @@ export const AuthThrottle = (): MethodDecorator & ClassDecorator =>
 /** Webhook endpoints: 600 per minute per provider. */
 export const WebhookThrottle = (): MethodDecorator & ClassDecorator =>
   SetMetadata(PROFILE_KEY, 'webhook' satisfies ThrottleProfile);
+
+export const THROTTLE_USER_RESOLVER = Symbol('THROTTLE_USER_RESOLVER');
 
 const reflector = new Reflector();
 const profileOf = (ctx: ExecutionContext): ThrottleProfile | undefined =>
@@ -52,14 +54,17 @@ export const throttlerOptions: ThrottlerModuleOptions = {
   ],
 };
 
-/**
- * Tracks per user once a user is attached to the request, otherwise per IP.
- * (The per-user tracker becomes effective when the JWT guard runs ahead of this one, task 8.)
- */
+/** Tracks per authenticated user (verified token) so one busy user cannot exhaust others; otherwise per IP. */
 export class AppThrottlerGuard extends ThrottlerGuard {
+  /** Returns the user id of a valid Bearer token (provided by the auth module), else undefined. */
+  @Optional()
+  @Inject(THROTTLE_USER_RESOLVER)
+  private readonly resolveUser?: (authorization: string | undefined) => string | undefined;
+
   protected override async getTracker(req: Record<string, unknown>): Promise<string> {
-    const user = req.user as { userId?: string } | undefined;
-    return user?.userId ? `user:${user.userId}` : String(req.ip ?? 'unknown');
+    const headers = req.headers as Record<string, string | undefined> | undefined;
+    const userId = this.resolveUser?.(headers?.authorization);
+    return userId ? `user:${userId}` : String(req.ip ?? 'unknown');
   }
 
   protected override async throwThrottlingException(

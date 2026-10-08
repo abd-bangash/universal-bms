@@ -75,7 +75,7 @@ How to read this file:
   - [x] 7.1 Property test — Property 3 (audit completeness, including rollback leaves no event)
     - _Requirements: 4.1, 4.6_
 
-- [ ] 8. Authentication module
+- [x] 8. Authentication module
   - Permission catalogue in `packages/types/src/permissions.ts` exactly as in `design.md`
   - `POST /auth/login`, `/auth/select-workspace`, `/auth/switch-workspace`, `/auth/refresh`, `/auth/logout`, `GET /auth/me`, `GET|DELETE /auth/sessions`, `POST /auth/password/change`
   - RS256 access token (15 min) with payload from `design.md`; opaque refresh token hashed in `UserSession`, rotation with family revocation on reuse
@@ -85,9 +85,9 @@ How to read this file:
   - No two-factor authentication in this version
   - Password reset: `POST /auth/password/forgot` and `/auth/password/reset` with single-use 60-minute token; when no email adapter is configured the token is delivered only through task 10's admin reset link
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 45.1, 45.2, 45.4, 45.5, 45.6, 45.7, 45.8, 45.9_
-  - [ ] 8.1 Integration tests: login, refresh rotation, reuse detection, expired and revoked refresh, lockout, stale permission version
+  - [x] 8.1 Integration tests: login, refresh rotation, reuse detection, expired and revoked refresh, lockout, stale permission version
     - _Requirements: 2.1, 2.2, 2.3, 45.4, 45.7_
-  - [ ] 8.2 Property test — Property 2 (permission enforcement) and the route scan that fails when a non-public route has no `@RequirePermission`
+  - [x] 8.2 Property test — Property 2 (permission enforcement) and the route scan that fails when a non-public route has no `@RequirePermission`
     - _Requirements: 2.5, 2.6, 53.3_
 
 - [ ] 9. Workspace creation, system defaults and the furniture industry profile
