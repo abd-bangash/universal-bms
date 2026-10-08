@@ -1,5 +1,5 @@
 import { generateKeyPairSync, randomBytes } from 'node:crypto';
-import type { INestApplication } from '@nestjs/common';
+import type { INestApplication, Type } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import type { PrismaClient } from '@prisma/client';
 import request from 'supertest';
@@ -46,10 +46,16 @@ export interface TestApp {
 }
 
 /** Boots the real AppModule against a fresh database. */
-export async function createTestApp(envOverrides: Partial<Env> = {}): Promise<TestApp> {
+export async function createTestApp(
+  envOverrides: Partial<Env> = {},
+  extra: { controllers?: Type<unknown>[] } = {},
+): Promise<TestApp> {
   const db = await createTestDatabase();
   process.env.DATABASE_URL = db.url;
-  const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+  const moduleRef = await Test.createTestingModule({
+    imports: [AppModule],
+    controllers: extra.controllers,
+  })
     .overrideProvider(ENV)
     .useValue({ ...testEnv(), ...envOverrides })
     .compile();

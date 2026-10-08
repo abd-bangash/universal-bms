@@ -9,6 +9,8 @@ export interface RequestContext extends ClsStore {
   /** Names of the acting user's roles, set by the auth guard; recorded on audit events. */
   actorRole?: string;
   requestId?: string;
+  /** Per-request cache of the workspace configuration (see SettingsService). */
+  settingsCache?: { workspaceId: string; configVersion: number; config: unknown };
   ip?: string;
   userAgent?: string;
 }

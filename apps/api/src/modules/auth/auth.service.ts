@@ -407,6 +407,7 @@ export class AuthService {
     const config = (membership.workspace.config ?? {}) as {
       terminology?: unknown;
       modules?: unknown;
+      locale?: unknown;
     };
     return {
       user: {
@@ -419,6 +420,7 @@ export class AuthService {
         id: membership.workspace.id,
         name: membership.workspace.name,
         industryProfile: membership.workspace.industryProfile,
+        locale: config.locale ?? {},
       },
       roles: membership.roles.map((r) => r.role.name),
       permissions: user.permissions,

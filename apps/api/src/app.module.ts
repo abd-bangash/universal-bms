@@ -6,6 +6,7 @@ import { PrismaModule } from './common/prisma/prisma.module';
 import { SchedulingModule } from './common/scheduling/scheduling.module';
 import { ConfigModule } from './config/config.module';
 import { RolesModule } from './modules/roles/roles.module';
+import { SettingsModule } from './modules/settings/settings.module';
 import { UsersModule } from './modules/users/users.module';
 import { TenantsModule } from './modules/tenants/tenants.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -26,6 +27,7 @@ import { HealthModule } from './modules/health/health.module';
     TenantsModule,
     UsersModule,
     RolesModule,
+    SettingsModule,
   ],
 })
 export class AppModule {}

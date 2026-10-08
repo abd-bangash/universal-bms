@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DEFAULT_ROLES, DOCUMENT_TYPES, type WorkspaceConfig } from '@bms/types';
+import { workspaceConfigSchema, zodIssuesToDetails } from '@bms/validators';
 import { ClsService } from 'nestjs-cls';
 import type { RequestContext } from '../../common/context/request-context';
 import { AppException, ValidationFailedException } from '../../common/errors/app.exception';
@@ -74,7 +75,7 @@ export class TenantsService {
     const created = await this.prisma.unscoped.$transaction(
       async (tx) => {
         const slug = await this.uniqueSlug(tx, input.name);
-        const config: WorkspaceConfig = mergeConfig(
+        const merged = mergeConfig(
           createDefaultConfig({
             legalName: input.name,
             currency: input.currency,
@@ -82,6 +83,10 @@ export class TenantsService {
           }),
           profile.configDefaults,
         );
+        const checked = workspaceConfigSchema.safeParse(merged);
+        if (!checked.success)
+          throw new ValidationFailedException(zodIssuesToDetails(checked.error));
+        const config = checked.data as unknown as WorkspaceConfig;
 
         const workspace = await tx.workspace.create({
           data: {

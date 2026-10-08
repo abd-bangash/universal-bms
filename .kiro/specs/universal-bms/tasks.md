@@ -108,14 +108,14 @@ How to read this file:
   - [x] 10.1 Integration tests: role deletion reassigns to fallback; last Owner protected; deactivation invalidates sessions; permission change takes effect on the next request
     - _Requirements: 3.4, 3.6, 3.7, 45.7_
 
-- [ ] 11. Settings module
+- [x] 11. Settings module
   - `WorkspaceConfigSchema` (Zod) in `packages/validators` covering every key of `WorkspaceConfig` in `design.md`, with defaults
   - `SettingsService.get(path)` with per-request cache; `GET /settings`, `PATCH /settings` (validates the whole object, bumps `configVersion`, audits changed paths)
   - `ModuleEnabledGuard` with `@RequireModule('pos')` returning 403 `MODULE_DISABLED`
   - CRUD endpoints for units, tax classes, lost reasons, adjustment reasons, expense categories
   - `GET /settings/industry-profiles`, `POST /settings/apply-profile/:key`
   - _Requirements: 1.7, 5.1, 5.2, 5.3, 5.4, 28.1, 28.4, 55.2_
-  - [ ] 11.1 Unit tests: invalid config rejected with field paths; a module toggle takes effect on the next request
+  - [x] 11.1 Unit tests: invalid config rejected with field paths; a module toggle takes effect on the next request
     - _Requirements: 5.3, 5.4_
 
 - [ ] 12. File storage module

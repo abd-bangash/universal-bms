@@ -28,6 +28,8 @@ const AUTHENTICATED_ONLY_ROUTES = [
   'POST /api/v1/auth/password/change',
   'GET /api/v1/auth/me',
   'GET /api/v1/auth/sessions',
+  'GET /api/v1/settings/units',
+  'GET /api/v1/settings/tax-classes',
   'DELETE /api/v1/auth/sessions/:id',
 ];
 
