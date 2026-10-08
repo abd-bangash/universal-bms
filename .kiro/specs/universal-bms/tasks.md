@@ -34,7 +34,7 @@ How to read this file:
   - CI workflow: install, lint, typecheck, unit and integration tests against a PostgreSQL service; secret scanning with `gitleaks`
   - _Requirements: 25.5, 52.1, 52.2, 52.8, 53.8, 20.7_
 
-- [ ] 3. API common layer
+- [x] 3. API common layer
   - Global prefix `/api/v1`; `ResponseEnvelopeInterceptor`; `AllExceptionsFilter` producing the error envelope with `requestId` and no stack traces
   - Request id middleware; `pino` logger with redaction of passwords, tokens, secrets and authorization headers
   - Global `ValidationPipe` (whitelist, forbid unknown properties, transform); cursor pagination helper; decimal helpers in `common/money`
