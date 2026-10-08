@@ -9,6 +9,7 @@ import { RolesModule } from './modules/roles/roles.module';
 import { CatalogModule } from './modules/catalog/catalog.module';
 import { CrmModule } from './modules/crm/crm.module';
 import { FieldsModule } from './modules/fields/fields.module';
+import { WorkflowsModule } from './modules/workflows/workflows.module';
 import { FilesModule } from './modules/files/files.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { UsersModule } from './modules/users/users.module';
@@ -34,6 +35,7 @@ import { HealthModule } from './modules/health/health.module';
     SettingsModule,
     FilesModule,
     FieldsModule,
+    WorkflowsModule,
     CatalogModule,
     CrmModule,
   ],

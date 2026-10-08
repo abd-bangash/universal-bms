@@ -212,11 +212,11 @@ How to read this file:
   - [x] 24.1 Integration tests: same phone in different formats is detected as a duplicate; walk-in Customer cannot be edited or listed
     - _Requirements: 8.2, 12.10_
 
-- [ ] 25. Workflow engine
+- [x] 25. Workflow engine
   - `WorkflowService`: load workflow, `allowedTransitions`, `transition()` implementing the six steps in `design.md`, registration of pre-conditions and side effects per `(entityType, systemRole)`, `StatusHistory` writes
   - `GET /workflows/:entityType`; validation that required System_Roles exist (used by the R4 editor)
   - _Requirements: 27.1, 27.2, 27.3, 27.4, 27.5, 27.6, 27.10, 9.1, 11.2_
-  - [ ] 25.1 Property test — Property 18 (workflow integrity)
+  - [x] 25.1 Property test — Property 18 (workflow integrity)
     - _Requirements: 27.6, 27.10_
 
 - [ ] 26. Leads API
