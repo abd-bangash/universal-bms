@@ -503,7 +503,7 @@ describe('Leads API (real PostgreSQL)', () => {
           'Customer record created',
         ]),
       );
-      await http.post(`/leads/${lead.id}/convert`, { target: 'ORDER' }, b.token).expect(400); // wired in task 35
+      await http.post(`/leads/${lead.id}/convert`, { target: 'INVOICE' }, b.token).expect(400);
     });
 
     it('links an existing customer with the same phone or email instead of duplicating it', async () => {

@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import type { Lead } from '@prisma/client';
+import { D } from '../../common/money';
+import type { LineInputDto } from '../pricing/pricing.dto';
 import type { AuthUser } from '../../common/decorators/current-user.decorator';
-import type { ScopedTransaction } from '../../common/prisma/prisma.service';
+import { ValidationFailedException } from '../../common/errors/app.exception';
+import { PrismaService, type ScopedTransaction } from '../../common/prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { FieldsService } from '../fields/fields.service';
 import type { PricedDocument } from '../pricing/pricing.service';
@@ -12,6 +16,7 @@ export type LineEntity = 'QUOTATION_ITEM' | 'ORDER_ITEM';
 @Injectable()
 export class DocumentLinesService {
   constructor(
+    private readonly prisma: PrismaService,
     private readonly fields: FieldsService,
     private readonly audit: AuditService,
   ) {}
@@ -65,6 +70,57 @@ export class DocumentLinesService {
       });
     }
     return rows;
+  }
+
+  /** A line pre-filled from what a lead asked for, for the quotation or order made from it. */
+  async lineFromLead(entity: LineEntity, lead: Lead): Promise<LineInputDto> {
+    const quantity = lead.quantity ? lead.quantity.toFixed() : '1';
+    const definitions = await this.fields.definitions(entity);
+    const known = new Set(definitions.filter((d) => d.active).map((d) => d.key));
+    const customFields = Object.fromEntries(
+      Object.entries(lead.customFields as Record<string, unknown>).filter(([key]) =>
+        known.has(key),
+      ),
+    );
+    if (lead.productId) {
+      const variant = await this.prisma.scoped.productVariant.findFirst({
+        where: { productId: lead.productId, status: 'ACTIVE' },
+        orderBy: [{ isDefault: 'desc' }, { sku: 'asc' }],
+      });
+      if (variant)
+        return {
+          kind: 'CATALOG',
+          variantId: variant.id,
+          quantity,
+          customFields,
+          description: lead.requirements,
+        } as LineInputDto;
+    }
+    const each =
+      lead.estimatedValue && D(quantity).gt(0)
+        ? D(lead.estimatedValue.toFixed()).div(quantity).toDecimalPlaces(4).toFixed()
+        : '0';
+    return {
+      kind: 'CUSTOM',
+      name: lead.interest?.trim() || 'Requested item',
+      description: lead.requirements,
+      quantity,
+      unitPrice: each,
+      customFields,
+    } as LineInputDto;
+  }
+
+  /** The person a document is assigned to must work in this workspace. */
+  async assertAssignee(userId: string | null | undefined): Promise<void> {
+    if (!userId) return;
+    const member = await this.prisma.scoped.userWorkspace.findFirst({
+      where: { userId, status: 'ACTIVE' },
+    });
+    if (!member) {
+      throw new ValidationFailedException({
+        assignedToId: ['must be an active member of this workspace'],
+      });
+    }
   }
 
   totals(priced: PricedDocument): DocumentTotals {

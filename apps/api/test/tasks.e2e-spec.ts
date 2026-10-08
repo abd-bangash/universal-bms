@@ -113,7 +113,9 @@ describe('Tasks and notes (real PostgreSQL)', () => {
       await createTask(b, { dueAt: 'tomorrow-ish' }).expect(400);
       await createTask(b, { entityType: 'CUSTOMER' }).expect(400); // needs an id
       await createTask(b, { entityType: 'CUSTOMER', entityId: foreign.id }).expect(404); // another workspace
-      const notYet = await createTask(b, { entityType: 'ORDER', entityId: 'o1' }).expect(400);
+      const notYet = await createTask(b, { entityType: 'CONVERSATION', entityId: 'o1' }).expect(
+        400,
+      );
       expect(notYet.body.details.entityType[0]).toMatch(/cannot be linked yet/);
       await createTask(b, { assignedToId: 'nobody' }).expect(400);
     });
@@ -404,7 +406,7 @@ describe('Tasks and notes (real PostgreSQL)', () => {
       await note({ kind: 'CALL', callDirection: 'SIDEWAYS', callOutcome: 'ANSWERED' }).expect(400);
       await note({ callDirection: 'INBOUND', callOutcome: 'ANSWERED' }).expect(400); // only for call logs
       await note({ body: '' }).expect(400);
-      await note({ entityType: 'ORDER', entityId: 'o1' }).expect(400);
+      await note({ entityType: 'CONVERSATION', entityId: 'o1' }).expect(400);
       await note({ entityId: 'missing' }).expect(404);
       await http.get('/notes?entityType=CUSTOMER', b.token).expect(400);
     });

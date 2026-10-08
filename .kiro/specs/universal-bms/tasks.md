@@ -285,7 +285,7 @@ How to read this file:
   - [x] 34.1 Integration tests: conversion preserves lines, prices, custom fields and attachments; an expired quotation cannot be converted
     - _Requirements: 10.4, 10.5_
 
-- [ ] 35. Orders API
+- [x] 35. Orders API
   - Create and edit (draft only for lines) with catalog and custom lines, order type, source, location, salesperson (`OrderSalesperson` 100 percent), fulfilment fields, notes, `customFields`, `version`; idempotency key on create
   - `POST /orders/:id/status` through `WorkflowService` with the pre-conditions of `design.md`: line and customer required for `CONFIRMED`; deposit rule before `IN_PRODUCTION`; zero balance or override before `COMPLETED`; cancel reason for `CANCELLED`
   - `depositRequired` computed from `sales.requiredDepositPercent` at confirmation
@@ -293,7 +293,7 @@ How to read this file:
   - `GET /orders/:id/timeline`; "only mine" unless `order:view_all`; Lead conversion target `ORDER`; linked Lead moves to `WON` when the Order is confirmed
   - `PATCH /orders/:id/fulfilment`
   - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.8, 39.1, 39.2, 39.3, 39.5, 39.9, 39.10, 41.2, 41.3, 54.1, 54.2_
-  - [ ] 35.1 Integration tests: disallowed transition returns 422 with allowed states; order cannot enter production below the required deposit; order with a balance cannot be completed without the override permission
+  - [x] 35.1 Integration tests: disallowed transition returns 422 with allowed states; order cannot enter production below the required deposit; order with a balance cannot be completed without the override permission
     - _Requirements: 11.2, 39.5, 39.10_
 
 - [ ] 36. Documents module: quotation, order confirmation and invoice PDFs

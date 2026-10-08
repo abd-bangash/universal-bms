@@ -78,7 +78,7 @@ export class TimelineService {
 
   /** Newest first; for a customer it includes the entries of that customer's leads. */
   async listFor(
-    subject: { customerId: string } | { leadId: string },
+    subject: { customerId: string } | { leadId: string } | { orderId: string },
     query: { limit?: number; cursor?: string },
   ): Promise<Page<TimelineEntryDto>> {
     const limit = query.limit ?? DEFAULT_PAGE_LIMIT;
@@ -91,6 +91,8 @@ export class TimelineService {
       scope = {
         OR: [{ customerId: subject.customerId }, { leadId: { in: leads.map((l) => l.id) } }],
       };
+    } else if ('orderId' in subject) {
+      scope = { orderId: subject.orderId };
     } else {
       scope = { leadId: subject.leadId };
     }

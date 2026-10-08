@@ -7,7 +7,6 @@ import {
   ValidationFailedException,
 } from '../../common/errors/app.exception';
 import { DomainEventBus } from '../../common/events/domain-event-bus';
-import { D } from '../../common/money';
 import {
   keysetCursor,
   keysetWhere,
@@ -23,7 +22,7 @@ import { LeadsService } from '../crm/leads.service';
 import { TimelineService } from '../crm/timeline.service';
 import { FilesService } from '../files/files.service';
 import { NumberingService } from '../numbering/numbering.service';
-import type { DiscountDto, LineInputDto } from '../pricing/pricing.dto';
+import type { DiscountDto } from '../pricing/pricing.dto';
 import { PricingService } from '../pricing/pricing.service';
 import { SettingsService } from '../settings/settings.service';
 import { DocumentLinesService } from './document-lines.service';
@@ -93,9 +92,9 @@ export class QuotationsService {
       orderBy: [{ [sort.field]: sort.direction }, { id: sort.direction }],
       take: query.limit + 1,
     });
-    return toPage(rows, query.limit, (last) =>
-      keysetCursor(last.createdAt, last.id),
-    ).map((q) => toQuotationDto(q));
+    return toPage(rows, query.limit, (last) => keysetCursor(last.createdAt, last.id)).map((q) =>
+      toQuotationDto(q),
+    );
   }
 
   async get(id: string): Promise<QuotationDto> {
@@ -112,6 +111,7 @@ export class QuotationsService {
 
   async create(user: AuthUser, dto: CreateQuotationDto): Promise<QuotationDto> {
     const { customer, lead } = await this.parties(user, dto.customerId, dto.leadId);
+    await this.lines.assertAssignee(dto.assignedToId);
     const created = await this.write(user, {
       customerId: customer?.id ?? lead?.customerId ?? null,
       leadId: lead?.id ?? null,
@@ -142,7 +142,7 @@ export class QuotationsService {
     lead: Lead,
     customer: Customer,
   ): Promise<{ id: string; number: string }> {
-    const lineInput = await this.leadLine(lead);
+    const lineInput = await this.lines.lineFromLead('QUOTATION_ITEM', lead);
     const quotation = await this.create(user, {
       customerId: customer.id,
       leadId: lead.id,
@@ -171,6 +171,7 @@ export class QuotationsService {
       });
     }
     if (dto.customerId !== undefined) await this.parties(user, dto.customerId, undefined);
+    await this.lines.assertAssignee(dto.assignedToId);
 
     const before = toQuotationDto(existing, existingItems);
     const updated = await this.write(user, {
@@ -537,43 +538,6 @@ export class QuotationsService {
     const lead = leadId ? await this.leads.row(user, leadId).catch(() => null) : null;
     if (leadId && !lead) throw new ValidationFailedException({ leadId: ['does not exist'] });
     return { customer, lead };
-  }
-
-  private async leadLine(lead: Lead): Promise<LineInputDto> {
-    const quantity = lead.quantity ? lead.quantity.toFixed() : '1';
-    const definitions = await this.fields.definitions('QUOTATION_ITEM');
-    const known = new Set(definitions.filter((d) => d.active).map((d) => d.key));
-    const customFields = Object.fromEntries(
-      Object.entries(lead.customFields as Record<string, unknown>).filter(([key]) =>
-        known.has(key),
-      ),
-    );
-    if (lead.productId) {
-      const variant = await this.prisma.scoped.productVariant.findFirst({
-        where: { productId: lead.productId, status: 'ACTIVE' },
-        orderBy: [{ isDefault: 'desc' }, { sku: 'asc' }],
-      });
-      if (variant)
-        return {
-          kind: 'CATALOG',
-          variantId: variant.id,
-          quantity,
-          customFields,
-          description: lead.requirements,
-        } as LineInputDto;
-    }
-    const each =
-      lead.estimatedValue && D(quantity).gt(0)
-        ? D(lead.estimatedValue.toFixed()).div(quantity).toDecimalPlaces(4).toFixed()
-        : '0';
-    return {
-      kind: 'CUSTOM',
-      name: lead.interest?.trim() || 'Requested item',
-      description: lead.requirements,
-      quantity,
-      unitPrice: each,
-      customFields,
-    } as LineInputDto;
   }
 
   private async snapshotSettings() {

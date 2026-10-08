@@ -56,6 +56,15 @@ describe('Workflow engine (real PostgreSQL)', () => {
     registry = app.get(WorkflowRegistry);
     registry.registerAdapter(leads.adapter('LEAD', 'lead.status_changed'));
     registry.registerAdapter(orders.adapter('ORDER', 'order.status_changed'));
+    // These tests exercise the engine with an in-memory Order; the real Order rules (task 35) read
+    // database rows that do not exist here and are tested in orders.e2e-spec.ts.
+    for (const map of ['preconditions', 'sideEffects']) {
+      const rules = (registry as unknown as Record<string, Map<string, unknown>>)[map] as Map<
+        string,
+        unknown
+      >;
+      for (const key of [...rules.keys()]) if (key.startsWith('ORDER:')) rules.delete(key);
+    }
     // Production jobs have no module yet and no business rules, so the stub's event is only a probe
     registry.registerAdapter(jobs.adapter('PRODUCTION_JOB', 'order.status_changed'));
   }, 90_000);

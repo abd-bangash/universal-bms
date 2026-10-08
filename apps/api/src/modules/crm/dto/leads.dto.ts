@@ -69,8 +69,7 @@ export class AssignLeadDto {
   @IsOptional() @IsString() assignedToId?: string | null;
 }
 
-// The Order target is wired in task 35.
-export const CONVERT_TARGETS = ['CUSTOMER', 'QUOTATION'] as const;
+export const CONVERT_TARGETS = ['CUSTOMER', 'QUOTATION', 'ORDER'] as const;
 
 export class ConvertLeadDto {
   @IsIn(CONVERT_TARGETS) target!: (typeof CONVERT_TARGETS)[number];
