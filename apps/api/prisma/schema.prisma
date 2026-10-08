@@ -88,6 +88,8 @@ model Workspace {
   goodsReceipts       GoodsReceipt[]
   supplierPayments    SupplierPayment[]
   supplierReturns     SupplierReturn[]
+  commissionRules     CommissionRule[]
+  commissions         Commission[]
 
   @@map("workspaces")
 }
@@ -133,6 +135,9 @@ model User {
   ordersCreated       Order[]              @relation("OrderCreator")
   orderShares         OrderSalesperson[]
   posSessions         PosSession[]         @relation("PosCashier")
+  commissionRules     CommissionRule[]     @relation("CommissionRuleSalesperson")
+  commissionsEarned   Commission[]         @relation("CommissionSalesperson")
+  commissionsApproved Commission[]         @relation("CommissionApprover")
 
   @@map("users")
 }
@@ -1175,6 +1180,7 @@ model Order {
   updatedAt        DateTime           @updatedAt @map("updated_at")
   items            OrderItem[]
   salespeople      OrderSalesperson[]
+  commissions      Commission[]
   invoices         Invoice[]
   productionJobs   ProductionJob[]
   returns          Return[]
@@ -1226,6 +1232,7 @@ model OrderItem {
   productionJobs ProductionJob[]
   returnLines    ReturnLine[]
   reservations   StockReservation[]
+  commissions    Commission[]
 
   @@unique([workspaceId, orderId, lineNo])
   @@index([workspaceId, orderId])
@@ -1848,4 +1855,94 @@ model SupplierReturn {
   @@unique([workspaceId, returnNumber])
   @@index([workspaceId, supplierId])
   @@map("supplier_returns")
+}
+
+// ═══ Commissions (task 59) ═══════════════════════════════════════════════
+
+enum CommissionCalcType {
+  PERCENTAGE
+  FIXED_PER_ORDER
+  FIXED_PER_UNIT
+
+  @@map("commission_calc_type")
+}
+
+enum CommissionBase {
+  NET_SALES
+  GROSS_SALES
+  GROSS_PROFIT
+
+  @@map("commission_base")
+}
+
+enum CommissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PAID
+  REVERSED
+
+  @@map("commission_status")
+}
+
+model CommissionRule {
+  id            String             @id @default(cuid())
+  workspaceId   String             @map("workspace_id")
+  workspace     Workspace          @relation(fields: [workspaceId], references: [id])
+  name          String
+  calcType      CommissionCalcType @map("calc_type")
+  /// A percentage (12.5 = 12.5%) or an amount, by calcType.
+  rate          Decimal            @db.Decimal(18, 4)
+  baseType      CommissionBase     @default(NET_SALES) @map("base_type")
+  /// ALL | CATEGORY | PRODUCT | ORDER_TYPE
+  scope         String             @default("ALL")
+  /// A category id, a product id or an order type; null for ALL.
+  scopeId       String?            @map("scope_id")
+  /// Null applies to every salesperson.
+  salespersonId String?            @map("salesperson_id")
+  salesperson   User?              @relation("CommissionRuleSalesperson", fields: [salespersonId], references: [id])
+  priority      Int                @default(0)
+  active        Boolean            @default(true)
+  createdAt     DateTime           @default(now()) @map("created_at")
+  commissions   Commission[]
+
+  @@index([workspaceId, active, salespersonId])
+  @@map("commission_rules")
+}
+
+model Commission {
+  id              String           @id @default(cuid())
+  workspaceId     String           @map("workspace_id")
+  workspace       Workspace        @relation(fields: [workspaceId], references: [id])
+  orderId         String           @map("order_id")
+  order           Order            @relation(fields: [orderId], references: [id])
+  /// Null for a per-order rule, which is not tied to one line.
+  orderItemId     String?          @map("order_item_id")
+  orderItem       OrderItem?       @relation(fields: [orderItemId], references: [id])
+  salespersonId   String           @map("salesperson_id")
+  salesperson     User             @relation("CommissionSalesperson", fields: [salespersonId], references: [id])
+  ruleId          String?          @map("rule_id")
+  rule            CommissionRule?  @relation(fields: [ruleId], references: [id])
+  /// The rule's values at calculation time, so later edits do not rewrite history.
+  ruleSnapshot    Json             @map("rule_snapshot")
+  calculationBase Decimal          @map("calculation_base") @db.Decimal(18, 4)
+  sharePercent    Decimal          @default(100) @map("share_percent") @db.Decimal(9, 4)
+  /// Negative on a reversal row.
+  amount          Decimal          @db.Decimal(18, 4)
+  status          CommissionStatus @default(PENDING)
+  reversalOfId    String?          @map("reversal_of_id")
+  reversalOf      Commission?      @relation("CommissionReversal", fields: [reversalOfId], references: [id])
+  reversals       Commission[]     @relation("CommissionReversal")
+  approvedById    String?          @map("approved_by_id")
+  approvedBy      User?            @relation("CommissionApprover", fields: [approvedById], references: [id])
+  approvedAt      DateTime?        @map("approved_at")
+  paidAt          DateTime?        @map("paid_at")
+  paidMethod      String?          @map("paid_method")
+  note            String?
+  createdAt       DateTime         @default(now()) @map("created_at")
+
+  @@index([workspaceId, salespersonId, status])
+  @@index([workspaceId, orderId])
+  @@index([workspaceId, createdAt])
+  @@map("commissions")
 }

@@ -454,7 +454,7 @@ How to read this file:
 
 ### Phase 9 — Commissions and Activity Log `[R1 · Day 9]`
 
-- [ ] 59. Schema: commissions
+- [x] 59. Schema: commissions
   - Add `CommissionRule`, `Commission`; migration `commissions` with `rollback.sql`
   - _Requirements: 14.3, 22.1, 22.2_
 

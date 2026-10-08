@@ -164,6 +164,27 @@ async function makePurchaseOrder(prisma: PrismaClient, workspaceId: string) {
   });
 }
 
+async function makeCommissionRule(prisma: PrismaClient, workspaceId: string) {
+  return prisma.commissionRule.create({
+    data: { workspaceId, name: `Rule ${rand()}`, calcType: 'PERCENTAGE', rate: '5' },
+  });
+}
+
+async function makeCommission(prisma: PrismaClient, workspaceId: string) {
+  const order = await makeOrder(prisma, workspaceId);
+  const member = await makeMembership(prisma, workspaceId);
+  return prisma.commission.create({
+    data: {
+      workspaceId,
+      orderId: order.id,
+      salespersonId: member.userId,
+      ruleSnapshot: {},
+      calculationBase: '100',
+      amount: '5',
+    },
+  });
+}
+
 const byId = (row: { id: string }) => ({ where: { id: row.id } });
 
 const factories: Record<string, TenantFactory> = {
@@ -554,6 +575,8 @@ const factories: Record<string, TenantFactory> = {
       }),
     );
   },
+  CommissionRule: async (p, ws) => byId(await makeCommissionRule(p, ws)),
+  Commission: async (p, ws) => byId(await makeCommission(p, ws)),
   Supplier: async (p, ws) => byId(await makeSupplier(p, ws)),
   PurchaseOrder: async (p, ws) => byId(await makePurchaseOrder(p, ws)),
   PurchaseOrderItem: async (p, ws) => {
