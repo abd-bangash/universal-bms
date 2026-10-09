@@ -628,7 +628,7 @@ How to read this file:
   - Complete `seed:demo` to the full dataset of Requirement 50.2; `demo:reset` command; `workspace:clear-demo` command
   - _Requirements: 50.2, 50.3, 50.4, 50.5, 50.6_
 
-- [ ] 84. End-to-end workflow tests
+- [x] 84. End-to-end workflow tests
   - Automated tests for workflows A, B, C and D of the source specification (A against the fake channel and AI adapters)
   - _Requirements: 53.1, 53.2_
 
