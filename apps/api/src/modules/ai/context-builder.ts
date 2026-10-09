@@ -62,6 +62,17 @@ interface PackInput {
 }
 
 const stem = (w: string): string => (w.length > 4 ? w.replace(/(ing|ed|es|s)$/, '') : w);
+/** "Applies when the other field equals this", the only kind of dependency the assistant reasons about. */
+const dependency = (rule: unknown): { key: string; value: string } | undefined => {
+  const r = rule as { source?: string; key?: string; op?: string; value?: unknown } | null;
+  return r &&
+    r.source === 'field' &&
+    r.op === 'eq' &&
+    typeof r.key === 'string' &&
+    typeof r.value === 'string'
+    ? { key: r.key, value: r.value }
+    : undefined;
+};
 const optionKeys = (options: unknown): string[] =>
   Array.isArray(options)
     ? (options as Array<{ key?: unknown }>)
@@ -189,6 +200,7 @@ export class ContextBuilder {
         required: d.required,
         ...(optionKeys(d.options).length ? { options: optionKeys(d.options) } : {}),
         ...(d.type === 'MEASUREMENT' && d.defaultUnit ? { defaultUnit: d.defaultUnit } : {}),
+        ...(dependency(d.visibleWhen) ? { dependsOn: dependency(d.visibleWhen) } : {}),
       })),
     ];
   }

@@ -603,7 +603,7 @@ How to read this file:
   - `docs/ai-data-handling.md` listing every field sent to the provider
   - _Requirements: 43.16, 47.5, 50.2, 53.1_
 
-- [ ] 80. Checkpoint — AI
+- [x] 80. Checkpoint — AI
   - The example from the source specification ("one L-shaped sofa, about 8 feet, brown leather, same design as this picture") yields product, quantity, length, material, colour and "reference image attached", with missing fields listed; approving it fills the lead
   - Turning AI off stops all provider calls
   - Workflow A complete

@@ -545,9 +545,26 @@ export class AiService {
     }));
 
     const known = new Set([...Object.keys(pack.known), ...fields.map((f) => f.key)]);
+    // a measurement only makes sense for a custom size: giving one settles the size, and a custom
+    // piece needs all its measurements, so the ones not given yet are still wanted
+    const groups = new Map<string, string[]>();
+    for (const f of pack.fields) {
+      if (!f.dependsOn) continue;
+      const group = groups.get(`${f.dependsOn.key}=${f.dependsOn.value}`) ?? [];
+      group.push(f.key);
+      groups.set(`${f.dependsOn.key}=${f.dependsOn.value}`, group);
+    }
+    const groupmates: string[] = [];
+    for (const [group, keys] of groups) {
+      if (keys.some((k) => known.has(k))) {
+        known.add(group.split('=')[0] as string);
+        groupmates.push(...keys);
+      }
+    }
     const wanted = [
       ...pack.questionFlow.map((q) => q.fieldKey),
       ...pack.fields.filter((f) => f.required).map((f) => f.key),
+      ...groupmates,
     ];
     const missing = [...new Set(wanted)]
       .filter((key) => !known.has(key))
@@ -831,7 +848,36 @@ export class AiService {
         if (coerced !== undefined) custom[key] = coerced;
       }
     }
-    if (typeof payload['productId'] === 'string') dto['productId'] = payload['productId'];
+    // a measurement is only kept for a custom size, so approving one settles the size too
+    const existing = conversation?.leadId ? await this.leads.get(user, conversation.leadId) : null;
+    for (const key of Object.keys(custom)) {
+      const rule = byKey.get(key)?.visibleWhen as {
+        source?: string;
+        key?: string;
+        op?: string;
+        value?: unknown;
+      } | null;
+      if (
+        rule?.source === 'field' &&
+        rule.op === 'eq' &&
+        typeof rule.key === 'string' &&
+        typeof rule.value === 'string'
+      ) {
+        const set = custom[rule.key] ?? existing?.customFields[rule.key];
+        if (set === undefined || set === null || set === '') custom[rule.key] = rule.value;
+      }
+    }
+    // the product the person chose; or the only one the assistant found
+    const candidates = Array.isArray(payload['productCandidates'])
+      ? (payload['productCandidates'] as Array<{ productId?: string }>)
+      : [];
+    const productId =
+      typeof payload['productId'] === 'string'
+        ? payload['productId']
+        : candidates.length === 1
+          ? candidates[0]?.productId
+          : undefined;
+    if (productId) dto['productId'] = productId;
     await this.applyToLead(user, conversation, dto, custom);
   }
 

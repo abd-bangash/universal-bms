@@ -24,6 +24,8 @@ export interface PackField {
   options?: string[];
   /** The unit a measurement is given in when the customer names none. */
   defaultUnit?: string;
+  /** This detail only applies when another has this value (a measurement applies to a custom size). */
+  dependsOn?: { key: string; value: string };
 }
 
 /**
