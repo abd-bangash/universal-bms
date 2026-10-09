@@ -597,7 +597,7 @@ How to read this file:
   - `/automation/templates`; AI log viewer; per-conversation AI toggle and "needs human" indicator in the inbox
   - _Requirements: 18.5, 18.6, 18.8, 43.7, 43.8, 43.9, 47.5_
 
-- [ ] 79. AI evaluation set and data-handling document
+- [x] 79. AI evaluation set and data-handling document
   - At least 20 synthetic furniture conversations with expected extraction in `apps/api/test/ai-eval/`; test runs against the fake adapter in CI and against the live provider on demand, reporting field accuracy against the threshold
   - 10 of these conversations loaded by `seed:demo`
   - `docs/ai-data-handling.md` listing every field sent to the provider

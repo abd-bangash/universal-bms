@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import type { Conversation } from '@prisma/client';
 import Decimal from 'decimal.js';
+import { ClsService } from 'nestjs-cls';
+import type { RequestContext } from '../../common/context/request-context';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { amountsIn } from './grounding';
 import { customerFacingAccounts } from '../finance/bank-details';
@@ -59,12 +61,21 @@ interface PackInput {
   leadCategoryIds?: string[];
 }
 
+const stem = (w: string): string => (w.length > 4 ? w.replace(/(ing|ed|es|s)$/, '') : w);
+const optionKeys = (options: unknown): string[] =>
+  Array.isArray(options)
+    ? (options as Array<{ key?: unknown }>)
+        .map((o) => o.key)
+        .filter((k): k is string => typeof k === 'string')
+    : [];
+
 /** Builds the context pack for a conversation from the database and the workspace's settings. */
 @Injectable()
 export class ContextBuilder {
   constructor(
     private readonly prisma: PrismaService,
     private readonly settings: SettingsService,
+    private readonly cls: ClsService<RequestContext>,
   ) {}
 
   async build({ conversation, known }: PackInput): Promise<ContextPack> {
@@ -93,7 +104,16 @@ export class ContextBuilder {
           ? 'ASSISTANT'
           : 'STAFF') as 'CUSTOMER' | 'STAFF' | 'ASSISTANT',
       // text only: a picture or a file is named, never sent, unless image understanding is switched on
-      text: m.body?.trim() || `[${m.type.toLowerCase()}]`,
+      text: [
+        m.body?.trim(),
+        m.attachments && (m.attachments as unknown[]).length > 0
+          ? `[${m.type.toLowerCase()} attached]`
+          : m.body?.trim()
+            ? ''
+            : `[${m.type.toLowerCase()}]`,
+      ]
+        .filter(Boolean)
+        .join(' '),
     }));
     const customerText = messages
       .filter((m) => m.from === 'CUSTOMER')
@@ -162,7 +182,14 @@ export class ContextBuilder {
     });
     return [
       ...CORE_FIELDS,
-      ...defs.map((d) => ({ key: d.key, label: d.label, type: d.type, required: d.required })),
+      ...defs.map((d) => ({
+        key: d.key,
+        label: d.label,
+        type: d.type,
+        required: d.required,
+        ...(optionKeys(d.options).length ? { options: optionKeys(d.options) } : {}),
+        ...(d.type === 'MEASUREMENT' && d.defaultUnit ? { defaultUnit: d.defaultUnit } : {}),
+      })),
     ];
   }
 
@@ -190,34 +217,32 @@ export class ContextBuilder {
    * by the words the customer used, each with its current price and what is in stock (Requirement 43.4).
    */
   private async candidates(customerText: string): Promise<PackProduct[]> {
-    const terms = [
-      ...new Set(
-        customerText
-          .toLowerCase()
-          .split(/[^\p{L}\p{N}]+/u)
-          .filter((w) => w.length >= 3 && !STOPWORDS.has(w) && !/^\d+$/.test(w)),
-      ),
-    ].slice(0, 30);
+    const words = customerText
+      .toLowerCase()
+      .split(/[^\p{L}\p{N}]+/u)
+      .filter((w) => w.length >= 3 && !STOPWORDS.has(w) && !/^\d+$/.test(w));
+    // "shaped" should find "shape": each word also searches by its stem
+    const terms = [...new Set(words.flatMap((w) => [w, stem(w)]))].slice(0, 40);
     if (terms.length === 0) return [];
+    // names, codes, aliases and tags that contain any of the words (an alias is a phrase, so it needs a pattern match)
+    const patterns = terms.map((t) => `%${t.replace(/[\\%_]/g, '\\$&')}%`);
+    const workspaceId = this.cls.get('workspaceId');
+    const ids = await this.prisma.scoped.$queryRaw<Array<{ id: string }>>`
+      SELECT p.id FROM products p
+      WHERE p.workspace_id = ${workspaceId} AND p.visible_to_ai AND p.status = 'ACTIVE'
+        AND (p.name ILIKE ANY(${patterns}) OR p.code ILIKE ANY(${patterns})
+          OR EXISTS (SELECT 1 FROM unnest(p.aliases) a WHERE a ILIKE ANY(${patterns}))
+          OR EXISTS (SELECT 1 FROM unnest(p.tags) g WHERE g ILIKE ANY(${patterns})))
+      LIMIT 60`;
     const rows = await this.prisma.scoped.product.findMany({
-      where: {
-        visibleToAi: true,
-        status: 'ACTIVE',
-        OR: terms.flatMap((t) => [
-          { name: { contains: t, mode: 'insensitive' as const } },
-          { code: { equals: t, mode: 'insensitive' as const } },
-          { aliases: { has: t } },
-          { tags: { has: t } },
-        ]),
-      },
+      where: { id: { in: ids.map((r) => r.id) } },
       include: { variants: { select: { id: true } } },
-      take: 40,
     });
     const scored = rows
       .map((p) => {
         const haystack = [p.name, p.code, ...p.aliases, ...p.tags].join(' ').toLowerCase();
         const hits = terms.filter((t) => haystack.includes(t)).length;
-        return { p, score: Math.min(1, hits / Math.max(1, Math.min(terms.length, 4))) };
+        return { p, score: Math.min(1, hits / Math.max(1, Math.min(words.length, 4))) };
       })
       .sort((a, b) => b.score - a.score || a.p.name.localeCompare(b.p.name))
       .slice(0, MAX_CANDIDATES);

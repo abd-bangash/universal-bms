@@ -47,8 +47,9 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
       { name: 'finance', created: 21, existing: 0 },
       { name: 'purchasing', created: 10, existing: 0 },
       { name: 'commissions', created: 2, existing: 0 },
+      { name: 'ai', created: 10, existing: 0 },
     ]);
-    expect(logs).toHaveLength(9);
+    expect(logs).toHaveLength(10);
 
     const workspace = await t.db.prisma.workspace.findUniqueOrThrow({
       where: { id: report.workspaceId },
@@ -401,9 +402,18 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
       { name: 'finance', created: 0, existing: 21 },
       { name: 'purchasing', created: 0, existing: 10 },
       { name: 'commissions', created: 0, existing: 1 },
+      { name: 'ai', created: 0, existing: 10 },
     ]);
     expect(await t.db.prisma.customer.count({ where: { isWalkIn: false } })).toBe(22); // 20 + 2 from won leads
     expect(await t.db.prisma.lead.count()).toBe(15);
+    // ten conversations to read, on a WhatsApp line that is not connected to anything
+    expect(await t.db.prisma.conversation.count()).toBe(10);
+    expect(
+      await t.db.prisma.message.count({ where: { direction: 'INBOUND' } }),
+    ).toBeGreaterThanOrEqual(10);
+    expect(
+      await t.db.prisma.integrationConnection.findFirstOrThrow({ where: { provider: 'WHATSAPP' } }),
+    ).toMatchObject({ status: 'DISCONNECTED' });
     expect(await t.db.prisma.product.count()).toBe(30);
     expect(await t.db.prisma.productImage.count()).toBe(30);
     const after = await t.db.prisma.user.findMany({
@@ -489,6 +499,7 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
       'finance',
       'purchasing',
       'commissions',
+      'ai',
       'probe',
     ]);
   });

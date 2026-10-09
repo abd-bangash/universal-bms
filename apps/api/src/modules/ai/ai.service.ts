@@ -806,20 +806,91 @@ export class AiService {
     const values = new Map(entries.map((f) => [String(f['key']), String(f['value'] ?? '').trim()]));
     const dto: Record<string, unknown> = {};
     const custom: Record<string, unknown> = {};
+    const [definitions, units] = await Promise.all([
+      this.prisma.scoped.fieldDefinition.findMany({ where: { entityType: 'LEAD', active: true } }),
+      this.prisma.scoped.unit.findMany({ select: { symbol: true } }),
+    ]);
+    const byKey = new Map(definitions.map((d) => [d.key, d]));
     for (const [key, value] of values) {
       if (value === '') continue;
-      if (key === 'fullName' || key === 'email' || key === 'interest' || key === 'requirements')
+      if (key === 'fullName' || key === 'email' || key === 'interest' || key === 'requirements') {
         dto[key] = value;
-      else if (key === 'quantity' || key === 'budget') {
+      } else if (key === 'quantity' || key === 'budget') {
         const number = toDecimalString(value);
-        if (number === null) {
-          throw new ValidationFailedException({ [key]: ['must be a number'] });
-        }
+        if (number === null) throw new ValidationFailedException({ [key]: ['must be a number'] });
         dto[key === 'budget' ? 'estimatedValue' : 'quantity'] = number;
-      } else custom[key] = value;
+      } else {
+        const definition = byKey.get(key);
+        if (!definition) continue; // not a detail this workspace records
+        const coerced = await this.coerce(
+          definition,
+          value,
+          conversation,
+          new Set(units.map((u) => u.symbol)),
+        );
+        if (coerced !== undefined) custom[key] = coerced;
+      }
     }
     if (typeof payload['productId'] === 'string') dto['productId'] = payload['productId'];
     await this.applyToLead(user, conversation, dto, custom);
+  }
+
+  /** Turns what the customer said into what the field stores: an option key, a measurement, a number, a picture. */
+  private async coerce(
+    definition: {
+      key: string;
+      label: string;
+      type: string;
+      options: Prisma.JsonValue;
+      defaultUnit: string | null;
+    },
+    value: string,
+    conversation: Conversation | null,
+    unitSymbols: Set<string>,
+  ): Promise<unknown> {
+    const fail = (why: string): never => {
+      throw new ValidationFailedException({ [definition.key]: [why] });
+    };
+    switch (definition.type) {
+      case 'DROPDOWN': {
+        const options = Array.isArray(definition.options)
+          ? (definition.options as Array<{ key: string; label: string }>)
+          : [];
+        const wanted = value.trim().toLowerCase();
+        const hit = options.find(
+          (o) => o.key.toLowerCase() === wanted || o.label.toLowerCase() === wanted,
+        );
+        return hit
+          ? hit.key
+          : fail(`${definition.label} must be one of: ${options.map((o) => o.label).join(', ')}`);
+      }
+      case 'NUMBER': {
+        const number = toDecimalString(value);
+        return number ?? fail(`${definition.label} must be a number`);
+      }
+      case 'MEASUREMENT': {
+        const m = /^\s*(\d+(?:\.\d+)?)\s*([a-zA-Z"'²]*)\s*$/.exec(value);
+        if (!m) return fail(`${definition.label} must be a number and a unit, such as 8 ft`);
+        const unit = m[2]
+          ? (UNIT_WORDS[m[2].toLowerCase()] ?? m[2])
+          : (definition.defaultUnit ?? '');
+        if (!unit || !unitSymbols.has(unit))
+          return fail(`${definition.label}: the unit is not known`);
+        return { value: m[1], unit };
+      }
+      case 'IMAGE': {
+        // the picture is the one the customer sent in this conversation
+        if (!conversation) return undefined;
+        const withPicture = await this.prisma.scoped.message.findFirst({
+          where: { conversationId: conversation.id, direction: 'INBOUND', type: 'IMAGE' },
+          orderBy: [{ providerTimestamp: 'desc' }, { id: 'desc' }],
+        });
+        const file = ((withPicture?.attachments ?? []) as Array<{ fileId?: string }>)[0];
+        return file?.fileId;
+      }
+      default:
+        return value;
+    }
   }
 
   private async applyToLead(
@@ -875,6 +946,29 @@ export class AiService {
 }
 
 class InvalidOutput extends Error {}
+
+/** How customers write units, and the symbol the system keeps. */
+const UNIT_WORDS: Record<string, string> = {
+  ft: 'ft',
+  feet: 'ft',
+  foot: 'ft',
+  "'": 'ft',
+  in: 'in',
+  inch: 'in',
+  inches: 'in',
+  '"': 'in',
+  cm: 'cm',
+  centimeter: 'cm',
+  centimeters: 'cm',
+  centimetre: 'cm',
+  centimetres: 'cm',
+  m: 'm',
+  meter: 'm',
+  meters: 'm',
+  metre: 'm',
+  metres: 'm',
+  mm: 'mm',
+};
 
 const SCHEMA_OF = {
   SUMMARIZE: SummarySchema,

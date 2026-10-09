@@ -22,13 +22,34 @@ export type Flag = (typeof FLAGS)[number];
 
 // ── is a value really in the conversation? ───────────────────────────────────────────────
 
+const NUMBER_WORDS: Record<string, string> = {
+  zero: '0',
+  one: '1',
+  two: '2',
+  three: '3',
+  four: '4',
+  five: '5',
+  six: '6',
+  seven: '7',
+  eight: '8',
+  nine: '9',
+  ten: '10',
+  eleven: '11',
+  twelve: '12',
+};
+
+/** Lower case, no punctuation, single spaces, and small number words as digits ("one sofa" and "1 sofa" are the same). */
 const normalize = (text: string): string =>
   text
     .toLowerCase()
     .normalize('NFKD')
     .replace(/[^\p{L}\p{N}\s]/gu, ' ')
     .replace(/\s+/g, ' ')
-    .trim();
+    .trim()
+    .replace(
+      /\b(zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\b/g,
+      (w) => NUMBER_WORDS[w] as string,
+    );
 
 /**
  * Whether the value is in the conversation text, as written or in an obvious variant (different

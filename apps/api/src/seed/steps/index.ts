@@ -1,4 +1,5 @@
 import type { DemoStep } from '../demo-seed';
+import { aiStep } from './ai.step';
 import { catalogStep } from './catalog.step';
 import { commissionsStep } from './commissions.step';
 import { crmStep } from './crm.step';
@@ -20,4 +21,5 @@ export const DEMO_STEPS: readonly DemoStep[] = [
   financeStep,
   purchasingStep,
   commissionsStep,
+  aiStep,
 ];

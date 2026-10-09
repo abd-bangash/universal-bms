@@ -12,7 +12,8 @@
     "generate": "prisma generate",
     "generate:tenant-models": "node scripts/generate-tenant-models.cjs",
     "workspace:create": "node dist/cli/workspace-create.js",
-    "seed:demo": "node dist/cli/seed-demo.js"
+    "seed:demo": "node dist/cli/seed-demo.js",
+    "eval:ai": "AI_EVAL_LIVE=1 jest test/ai-eval/ai-eval.e2e-spec.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1147.0",

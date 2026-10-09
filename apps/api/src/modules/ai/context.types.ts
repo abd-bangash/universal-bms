@@ -20,6 +20,10 @@ export interface PackField {
   label: string;
   type: string;
   required: boolean;
+  /** The allowed values of a choice field (their keys). */
+  options?: string[];
+  /** The unit a measurement is given in when the customer names none. */
+  defaultUnit?: string;
 }
 
 /**

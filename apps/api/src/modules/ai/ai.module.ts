@@ -4,6 +4,7 @@ import { CrmModule } from '../crm/crm.module';
 import { IntegrationProviderRegistry } from '../integrations/integration-provider.registry';
 import { MessagingModule } from '../messaging/messaging.module';
 import { QueueRegistry } from '../queue/queue.registry';
+import { ProfileSectionRegistry } from '../tenants/registries';
 import { AiAssistListener } from './ai-assist.listener';
 import { AiController } from './ai.controller';
 import { AIRegistry } from './ai.registry';
@@ -27,9 +28,25 @@ export class AiModule implements OnModuleInit {
     private readonly queues: QueueRegistry,
     private readonly ai: AiService,
     private readonly prisma: PrismaService,
+    private readonly sections: ProfileSectionRegistry,
   ) {}
 
   onModuleInit(): void {
+    // the industry profile's questions become the workspace's default question flow (Requirement 43.3)
+    this.sections.register('questionFlow', async (tx, workspaceId, items) => {
+      const steps = (
+        (items ?? []) as Array<{ key: string; question: string; fieldKey?: string }>
+      ).map((q) => ({
+        fieldKey: q.fieldKey ?? q.key,
+        question: q.question,
+      }));
+      if (steps.length === 0) return;
+      const existing = await tx.questionFlow.findFirst({
+        where: { workspaceId, categoryId: null },
+      });
+      if (!existing)
+        await tx.questionFlow.create({ data: { workspaceId, categoryId: null, steps } });
+    });
     this.registry.register({
       provider: ANTHROPIC_PROVIDER,
       create: (secrets) => new AnthropicAdapter(secrets),

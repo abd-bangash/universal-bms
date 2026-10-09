@@ -541,10 +541,9 @@ describe('AI service', () => {
         },
         update: { required: true, active: true },
       });
-      await t.db.prisma.questionFlow.create({
+      await t.db.prisma.questionFlow.updateMany({
+        where: { workspaceId: ws.workspaceId, categoryId: null },
         data: {
-          workspaceId: ws.workspaceId,
-          categoryId: null,
           steps: [{ fieldKey: 'delivery_city', question: 'Which city should we deliver to?' }],
         },
       });
