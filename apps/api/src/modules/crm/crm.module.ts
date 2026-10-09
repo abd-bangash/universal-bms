@@ -48,6 +48,7 @@ import { TimelineService } from './timeline.service';
   exports: [
     CustomersService,
     LeadsService,
+    NotesService,
     PhoneService,
     TimelineService,
     DuplicateDetectionService,

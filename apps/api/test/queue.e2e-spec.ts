@@ -54,6 +54,10 @@ describe('Queues (real Redis)', () => {
     start = true,
   ) {
     const cls = t.app.get(ClsService);
+    // these tests use real queue names as scratch queues: take over from whatever the application registered
+    (t.app.get(QueueRegistry) as unknown as { processors: Map<string, unknown> }).processors.delete(
+      queue,
+    );
     t.app.get(QueueRegistry).register({
       queue,
       attempts,

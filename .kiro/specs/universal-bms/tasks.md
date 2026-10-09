@@ -575,7 +575,7 @@ How to read this file:
   - Provider key stored through `IntegrationService`
   - _Requirements: 18.1, 18.2, 24.2, 24.3, 48.2, 48.8_
 
-- [ ] 77. AI service
+- [x] 77. AI service
   - Gate (mode, module, conversation toggle, usage limits) making no call when not permitted
   - `ContextBuilder` producing the context pack exactly as in `design.md`; product candidate search limited to AI-visible products
   - Functions: `summarize`, `extractRequirements` (fields, missing fields, product candidates), `classifyLead`, `draftReply`, `suggestNextAction`, `generateNote`; prompts in `modules/ai/prompts` with `promptVersion`
@@ -586,9 +586,9 @@ How to read this file:
   - Knowledge items CRUD
   - Provider failure or timeout: no suggestion, conversation flagged, logged
   - _Requirements: 18.1, 18.3, 18.4, 18.5, 18.6, 18.7, 18.8, 18.9, 18.10, 43.1, 43.2, 43.4, 43.5, 43.6, 43.7, 43.8, 43.10, 43.11, 43.12, 43.13, 43.14, 43.15_
-  - [ ] 77.1 Property test — Property 19 (grounding validator) and Property 20 (gate makes no adapter call)
+  - [x] 77.1 Property test — Property 19 (grounding validator) and Property 20 (gate makes no adapter call)
     - _Requirements: 18.5, 18.6, 43.5, 43.6, 43.13_
-  - [ ] 77.2 Unit tests: nothing is written to a lead before approval; a draft containing a price absent from the context pack is flagged; low confidence sets `needsHuman`
+  - [x] 77.2 Unit tests: nothing is written to a lead before approval; a draft containing a price absent from the context pack is flagged; low confidence sets `needsHuman`
     - _Requirements: 18.4, 18.9, 18.10_
 
 - [ ] 78. AI screens
