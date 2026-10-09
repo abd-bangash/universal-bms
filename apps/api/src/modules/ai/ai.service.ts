@@ -137,6 +137,18 @@ interface Produced {
   confidence: number | null;
 }
 
+/** The assistant settings the AI screen shows and `ai:control` may change. */
+export interface AiPublicSettings {
+  provider?: string;
+  model?: string;
+  tone: 'FORMAL' | 'FRIENDLY';
+  replyLanguage: string;
+  maxReplyChars: number;
+  confidenceThreshold: number;
+  escalationKeywords: string[];
+  contextMessageCount: number;
+}
+
 interface AiSettings {
   mode: 'OFF' | 'ASSIST' | 'AUTO_REPLY';
   confidenceThreshold: number;
@@ -208,9 +220,11 @@ export class AiService {
     moduleEnabled: boolean;
     providerConfigured: boolean;
     provider: string | null;
+    providers: string[];
+    settings: AiPublicSettings;
     usage: Awaited<ReturnType<AiService['usage']>>;
   }> {
-    const ai = await this.settings.get<AiSettings & { provider?: string }>('ai');
+    const ai = await this.settings.get<AiSettings & AiPublicSettings>('ai');
     let providerConfigured = true;
     try {
       await this.registry.adapter();
@@ -223,8 +237,25 @@ export class AiService {
       moduleEnabled: await this.settings.moduleEnabled('ai'),
       providerConfigured,
       provider: ai.provider ?? null,
+      providers: this.registry.providers(),
+      settings: {
+        provider: ai.provider,
+        model: ai.model,
+        tone: ai.tone,
+        replyLanguage: ai.replyLanguage,
+        maxReplyChars: ai.maxReplyChars,
+        confidenceThreshold: ai.confidenceThreshold,
+        escalationKeywords: ai.escalationKeywords,
+        contextMessageCount: ai.contextMessageCount,
+      },
       usage: await this.usage(ai),
     };
+  }
+
+  /** Changes how the assistant behaves; the settings service validates the whole document and audits what changed. */
+  async updateSettings(changes: Record<string, unknown>) {
+    await this.settings.update({ ai: changes });
+    return this.status();
   }
 
   // ── running a function ──────────────────────────────────────────────────────────────────

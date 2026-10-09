@@ -205,7 +205,7 @@ export const NAVIGATION: readonly NavigationEntry[] = [
     area: 'automation',
     permissions: ['ai:use', 'automation:view'],
     module: 'ai',
-    available: false,
+    available: true,
   },
   {
     key: 'integrations',

@@ -882,6 +882,32 @@ describe('AI service', () => {
       expect(logs.length).toBeGreaterThan(0);
       expect(logs[0]).toHaveProperty('promptHash');
 
+      // assistant settings: ai:control only; Release 1 offers OFF and ASSIST
+      await call('patch', sales.token, '/ai/settings', { tone: 'FORMAL' }).expect(403);
+      await call('patch', ws.token, '/ai/settings', { mode: 'AUTO_REPLY' }).expect(400);
+      await call('patch', ws.token, '/ai/settings', { confidenceThreshold: 2 }).expect(400);
+      const changed = (
+        await call('patch', ws.token, '/ai/settings', {
+          tone: 'FORMAL',
+          maxReplyChars: 300,
+          escalationKeywords: ['refund', 'lawyer'],
+          provider: 'ANTHROPIC',
+        }).expect(200)
+      ).body.data as Json;
+      expect(changed.settings).toMatchObject({
+        tone: 'FORMAL',
+        maxReplyChars: 300,
+        escalationKeywords: ['refund', 'lawyer'],
+        provider: 'ANTHROPIC',
+        replyLanguage: 'MATCH_CUSTOMER',
+      });
+      expect(changed.providers).toContain('ANTHROPIC');
+      expect(
+        await t.db.prisma.auditEvent.count({
+          where: { workspaceId: ws.workspaceId, action: 'settings.update' },
+        }),
+      ).toBeGreaterThan(0);
+
       // owners manage the knowledge items
       const item = (
         await call('post', ws.token, '/ai/knowledge', {

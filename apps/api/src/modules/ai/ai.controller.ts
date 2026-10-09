@@ -11,6 +11,7 @@ import {
   ApplySuggestionDto,
   CreateKnowledgeDto,
   ListLogsQuery,
+  UpdateAiSettingsDto,
   UpdateKnowledgeDto,
 } from './dto/ai.dto';
 import { KnowledgeService } from './knowledge.service';
@@ -47,6 +48,12 @@ export class AiController {
   @RequirePermission('ai:use')
   status() {
     return this.ai.status();
+  }
+
+  @Patch('settings')
+  @RequirePermission('ai:control')
+  updateSettings(@Body() dto: UpdateAiSettingsDto) {
+    return this.ai.updateSettings({ ...dto });
   }
 
   @Get('conversations/:id/suggestions')

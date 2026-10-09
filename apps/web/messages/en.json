@@ -1812,5 +1812,244 @@
       "open": "Open",
       "viewInbox": "Open in inbox"
     }
+  },
+  "ai": {
+    "panel": {
+      "title": "AI assistant",
+      "label": "AI assistant",
+      "off": "The AI assistant is off for this workspace. Nothing is sent to an AI service.",
+      "conversationOff": "The AI assistant is switched off for this conversation. Nothing is sent to an AI service.",
+      "moduleOff": "The AI module is switched off for this workspace.",
+      "notConfigured": "No AI service is connected yet. Ask someone with access to connect one under Integrations.",
+      "dailyLimit": "The daily limit of AI requests has been reached. Try again tomorrow.",
+      "tokenBudget": "The monthly AI budget has been used. AI is paused until next month.",
+      "failed": "The AI assistant could not answer ({code}). A person needs to look at this conversation.",
+      "needsHuman": "Needs a person: {reason}",
+      "empty": "Nothing yet. Ask the assistant for help with the buttons above.",
+      "working": "Working…",
+      "approvedBy": "Done",
+      "rejected": "Dismissed",
+      "usage": "{used} of {limit} requests used today"
+    },
+    "run": {
+      "SUMMARIZE": "Summarise",
+      "EXTRACT": "Read requirements",
+      "DRAFT_REPLY": "Draft a reply",
+      "CLASSIFY": "Classify",
+      "NEXT_ACTION": "Next step",
+      "NOTE": "Write a note"
+    },
+    "kind": {
+      "SUMMARY": "Summary",
+      "EXTRACTION": "What the customer wants",
+      "DRAFT_REPLY": "Draft reply",
+      "CLASSIFICATION": "Classification",
+      "NEXT_ACTION": "Suggested next step",
+      "NOTE": "Suggested note"
+    },
+    "summary": {
+      "keyPoints": "Key points"
+    },
+    "extraction": {
+      "field": "Detail",
+      "value": "Value",
+      "confidence": "Confidence",
+      "missing": "Still missing",
+      "nextQuestion": "Next question to ask: {question}",
+      "products": "Products that may match",
+      "noProduct": "No matching product in your catalogue.",
+      "apply": "Add to lead",
+      "editLabel": "Edit {label}",
+      "unverified": "Not stated in the chat",
+      "stock": "In stock: {quantity}"
+    },
+    "level": {
+      "HIGH": "High",
+      "MEDIUM": "Medium",
+      "LOW": "Low"
+    },
+    "availability": {
+      "IN_STOCK": "In stock",
+      "OUT_OF_STOCK": "Out of stock",
+      "MADE_TO_ORDER": "Made to order",
+      "NOT_TRACKED": "Not stock-tracked"
+    },
+    "draft": {
+      "edit": "Edit the reply before sending",
+      "send": "Send reply",
+      "reject": "Dismiss",
+      "sentNote": "Sent."
+    },
+    "classification": {
+      "intent": "Intent",
+      "priority": "Priority",
+      "apply": "Set lead priority",
+      "intents": {
+        "ENQUIRY": "Enquiry",
+        "QUOTE_REQUEST": "Wants a quotation",
+        "ORDER": "Wants to order",
+        "SUPPORT": "Support",
+        "COMPLAINT": "Complaint",
+        "OTHER": "Other"
+      },
+      "priorities": {
+        "LOW": "Low",
+        "MEDIUM": "Medium",
+        "HIGH": "High"
+      }
+    },
+    "next": {
+      "apply": "Save as next step",
+      "date": "Follow up on {date}"
+    },
+    "note": {
+      "apply": "Add as note"
+    },
+    "flags": {
+      "UNVERIFIED_AMOUNT": "Amount not checked",
+      "UNVERIFIED_AVAILABILITY": "Availability not checked",
+      "FINANCIAL_COMMITMENT": "Makes a commitment",
+      "LENGTH_EXCEEDED": "Too long",
+      "LOW_CONFIDENCE": "Low confidence",
+      "UNKNOWN_PRODUCT": "Unknown product left out",
+      "ESCALATION_KEYWORD": "Escalation word",
+      "ASKED_FOR_PERSON": "Asked for a person",
+      "COMPLAINT": "Complaint"
+    },
+    "flagsTitle": "Check before using",
+    "decision": {
+      "APPROVED": "Approved",
+      "EDITED": "Approved with changes",
+      "REJECTED": "Dismissed",
+      "AUTO_SENT": "Sent automatically",
+      "PENDING": "Waiting for you",
+      "SUPERSEDED": "Replaced"
+    },
+    "settings": {
+      "title": "AI assistant",
+      "loading": "Loading…",
+      "intro": "The assistant reads customer messages and prepares suggestions. A person approves everything before it is saved or sent.",
+      "mode": "Mode",
+      "modes": {
+        "OFF": "Off",
+        "ASSIST": "Assist (suggestions for staff to review)"
+      },
+      "autoNote": "Automatic replies are not available yet.",
+      "provider": "AI service",
+      "noProvider": "None chosen",
+      "providerHelp": "Connect the service and its key under Integrations.",
+      "model": "Model (optional)",
+      "tone": "Tone",
+      "tones": {
+        "FORMAL": "Formal",
+        "FRIENDLY": "Friendly"
+      },
+      "language": "Reply language",
+      "languageHelp": "Use MATCH_CUSTOMER to reply in the customer's language, or a language name.",
+      "maxChars": "Longest reply (characters)",
+      "threshold": "Confidence threshold",
+      "thresholdHelp": "Below this, a person is asked to look. 0 to 1.",
+      "keywords": "Escalation words",
+      "keywordsHelp": "Separate with commas. A customer message containing one asks for a person.",
+      "context": "Messages sent to the AI",
+      "contextHelp": "How many recent messages of a conversation the assistant reads.",
+      "daily": "Requests per day",
+      "budget": "Tokens per month",
+      "save": "Save",
+      "saved": "Saved.",
+      "usage": "Usage",
+      "usageToday": "Requests today: {used} of {limit}",
+      "usageMonth": "Tokens this month: {used} of {limit}",
+      "notConnected": "No AI service is connected.",
+      "connected": "Connected",
+      "dataTitle": "What is sent to the AI service",
+      "data": [
+        "The last few messages of the conversation (text only; pictures and files are not sent).",
+        "Your business name, industry and the tone and length you set above.",
+        "Products the customer may mean, with their current price and stock; products you hide from the AI are never sent.",
+        "The approved answers you list below.",
+        "Your bank account details, only when the customer asks where to pay, and only accounts you show to customers.",
+        "Never sent: passwords or keys, cost prices, other customers, staff details, or files."
+      ],
+      "knowledgeTitle": "Approved answers",
+      "knowledgeHelp": "Short texts the assistant may rely on, such as delivery times and policies. Only active ones are used.",
+      "logLink": "View the AI log"
+    },
+    "knowledge": {
+      "title": "Title",
+      "body": "Text",
+      "add": "Add",
+      "active": "Active",
+      "off": "Off",
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "deleteTitle": "Delete this answer?",
+      "deleteBody": "The assistant will no longer use it.",
+      "none": "No approved answers yet.",
+      "new": "New approved answer"
+    },
+    "log": {
+      "title": "AI log",
+      "empty": "Nothing has been logged yet.",
+      "time": "When",
+      "action": "What",
+      "service": "Service",
+      "tokens": "Tokens",
+      "latency": "Time",
+      "outcome": "Result",
+      "approved": "Approved by a person",
+      "more": "Show older",
+      "outcomes": {
+        "SUCCESS": "Done",
+        "FAILED": "Failed",
+        "TIMEOUT": "Timed out",
+        "DISABLED": "Not sent (AI off)",
+        "LIMIT_REACHED": "Not sent (limit reached)"
+      }
+    }
+  },
+  "automation": {
+    "nav": "Automation",
+    "tabs": {
+      "ai": "AI assistant",
+      "templates": "Message templates",
+      "log": "AI log"
+    },
+    "templates": {
+      "title": "Message templates",
+      "intro": "Quick replies, message templates and the bank-details message. Use {{customer_name}}, {{order_number}}, {{order_total}}, {{balance_due}}, {{business_name}}, {{bank_details}} and {{follow_up_date}}.",
+      "loading": "Loading…",
+      "none": "No templates yet.",
+      "name": "Name",
+      "kind": "Kind",
+      "body": "Text",
+      "kinds": {
+        "QUICK_REPLY": "Quick reply",
+        "MESSAGE": "Message",
+        "PROVIDER": "Provider template",
+        "NOTIFICATION": "Notification",
+        "BANK_DETAILS": "Bank details"
+      },
+      "providerName": "Provider template name",
+      "language": "Language",
+      "status": {
+        "APPROVED": "Approved",
+        "PENDING": "Waiting for approval",
+        "REJECTED": "Rejected"
+      },
+      "add": "Add template",
+      "save": "Save",
+      "cancel": "Cancel",
+      "edit": "Edit {name}",
+      "active": "Active",
+      "off": "Off",
+      "sync": "Fetch approved templates",
+      "synced": "Templates updated from the provider.",
+      "new": "New template",
+      "editTitle": "Edit template",
+      "saveFailed": "Could not save."
+    }
   }
 }

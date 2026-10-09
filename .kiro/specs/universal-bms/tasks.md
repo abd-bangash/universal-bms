@@ -591,7 +591,7 @@ How to read this file:
   - [x] 77.2 Unit tests: nothing is written to a lead before approval; a draft containing a price absent from the context pack is flagged; low confidence sets `needsHuman`
     - _Requirements: 18.4, 18.9, 18.10_
 
-- [ ] 78. AI screens
+- [x] 78. AI screens
   - Conversation side panel: summary, extracted requirements with per-field confidence and missing fields, product candidates, suggested next action, draft reply with edit, send and reject; flags shown clearly
   - `/automation/ai`: mode (R1 offers `OFF` and `ASSIST`), tone, language, reply length, confidence threshold, escalation keywords, usage and limits, knowledge items, data-handling summary
   - `/automation/templates`; AI log viewer; per-conversation AI toggle and "needs human" indicator in the inbox

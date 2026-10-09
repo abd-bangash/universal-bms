@@ -23,6 +23,7 @@ import {
 import { usePermission, useWorkspaceLocale } from '@/lib/session';
 import { cn } from '@/lib/utils';
 import { Composer } from './composer';
+import { AiPanel } from './ai-panel';
 import { ContactPanel } from './contact-panel';
 
 const TICKS: Record<DeliveryStatus, string> = {
@@ -64,7 +65,7 @@ export function Thread({ id }: { id: string }) {
   return (
     <div className="flex flex-col gap-3">
       <Header conversation={c} />
-      <div className="grid gap-3 lg:grid-cols-[1fr_16rem]">
+      <div className="grid gap-3 lg:grid-cols-[1fr_18rem]">
         <div className="flex min-w-0 flex-col gap-3">
           {messages.isError ? <Alert>{message(messages.error)}</Alert> : null}
           {messages.hasNextPage ? (
@@ -90,7 +91,10 @@ export function Thread({ id }: { id: string }) {
           </ol>
           <Composer conversation={c} />
         </div>
-        <ContactPanel conversation={c} />
+        <div className="flex min-w-0 flex-col gap-3">
+          <ContactPanel conversation={c} />
+          <AiPanel conversation={c} />
+        </div>
       </div>
     </div>
   );
