@@ -40,7 +40,7 @@
   },
   "shell": {
     "skipToContent": "Skip to content",
-    "notifications": "Notifications (coming soon)",
+    "notifications": "Notifications",
     "userMenu": "Account menu",
     "signedInAs": "Signed in as {name}",
     "workspace": "Workspace",
@@ -2051,5 +2051,15 @@
       "editTitle": "Edit template",
       "saveFailed": "Could not save."
     }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "bell": "Notifications",
+    "bellUnread": "Notifications, {count} unread",
+    "readAll": "Mark all as read",
+    "loading": "Loading…",
+    "failed": "Notifications could not be loaded.",
+    "empty": "Nothing needs your attention.",
+    "unread": "Unread"
   }
 }

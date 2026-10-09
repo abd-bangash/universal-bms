@@ -611,7 +611,7 @@ How to read this file:
 
 ### Phase 13 — Release 1 Hardening and Acceptance `[R1 · Days 14–15]`
 
-- [ ] 81. In-app notifications
+- [x] 81. In-app notifications
   - `NotificationService` listening to: lead assigned, inbound message on an assigned conversation, task due, low stock, AI escalation, integration failure; recipient resolution; default preferences
   - Endpoints for list, unread count, mark read and read all; bell with polling and list in the header
   - _Requirements: 33.1, 33.2, 33.3, 33.4, 30.4_

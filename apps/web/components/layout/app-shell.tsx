@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { api, browser } from '@/lib/api-client';
+import { NotificationBell } from './notification-bell';
 import { GlobalSearch } from './global-search';
 import { NAVIGATION, visibleNavigation, type NavigationEntry } from '@/lib/navigation';
 import { SessionProvider, useMeQuery, useSession } from '@/lib/session';
@@ -77,17 +78,7 @@ function Frame({ children }: { children: ReactNode }) {
         <div className="order-last w-full sm:order-none sm:mx-auto sm:max-w-md">
           <GlobalSearch />
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled
-          aria-label={t('shell.notifications')}
-          title={t('shell.notifications')}
-          className="ml-auto sm:ml-0"
-        >
-          <span aria-hidden="true">🔔</span>
-        </Button>
+        <NotificationBell />
         <UserMenu />
       </header>
       <div className="flex">

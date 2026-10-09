@@ -17,6 +17,7 @@ import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { ChannelsModule } from './modules/channels/channels.module';
 import { AiModule } from './modules/ai/ai.module';
 import { MessagingModule } from './modules/messaging/messaging.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 import { QueueModule } from './modules/queue/queue.module';
 import { PosModule } from './modules/pos/pos.module';
 import { PurchasingModule } from './modules/purchasing/purchasing.module';
@@ -47,6 +48,7 @@ import { HealthModule } from './modules/health/health.module';
     ChannelsModule,
     MessagingModule,
     AiModule,
+    NotificationsModule,
     PrismaModule,
     AuditModule,
     AuthModule,

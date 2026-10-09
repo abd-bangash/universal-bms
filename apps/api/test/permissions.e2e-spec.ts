@@ -27,6 +27,11 @@ const PUBLIC_ROUTES = [
 /** Routes that need a session but no specific permission (self-service). Also listed deliberately. */
 const AUTHENTICATED_ONLY_ROUTES = [
   'POST /api/v1/auth/switch-workspace',
+  // a person's own notifications
+  'GET /api/v1/notifications',
+  'GET /api/v1/notifications/unread-count',
+  'POST /api/v1/notifications/read-all',
+  'POST /api/v1/notifications/:id/read',
   'POST /api/v1/auth/logout',
   'POST /api/v1/auth/password/change',
   'GET /api/v1/auth/me',

@@ -179,7 +179,7 @@ describe('AppShell', () => {
     assign.mockRestore();
   });
 
-  it('has a working search box, and the bell is still a placeholder', async () => {
+  it('has a working search box and a bell', async () => {
     mockFetch(() => meResponse());
     renderWithProviders(
       <AppShell>
@@ -188,6 +188,6 @@ describe('AppShell', () => {
       { session: null },
     );
     expect(await screen.findByLabelText('Search')).toBeEnabled();
-    expect(screen.getByRole('button', { name: 'Notifications (coming soon)' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Notifications' })).toBeEnabled();
   });
 });
