@@ -19,6 +19,8 @@ import { AiModule } from './modules/ai/ai.module';
 import { MessagingModule } from './modules/messaging/messaging.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { QueueModule } from './modules/queue/queue.module';
+import { PlatformModule } from './modules/platform/platform.module';
+import { SystemModule } from './modules/system/system.module';
 import { PosModule } from './modules/pos/pos.module';
 import { PurchasingModule } from './modules/purchasing/purchasing.module';
 import { SalesModule } from './modules/sales/sales.module';
@@ -44,6 +46,8 @@ import { HealthModule } from './modules/health/health.module';
     SchedulingModule,
     HealthModule,
     QueueModule,
+    PlatformModule,
+    SystemModule,
     IntegrationsModule,
     ChannelsModule,
     MessagingModule,

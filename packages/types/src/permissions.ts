@@ -52,6 +52,8 @@ export const PERMISSION_CATALOGUE = {
   ai: ['use', 'control', 'view_logs'],
   integration: ['view', 'manage'],
   import: ['run'],
+  /** The Owner-only system status page (integration health, queues, last backup). */
+  system: ['view'],
   platform: ['admin'],
 } as const;
 

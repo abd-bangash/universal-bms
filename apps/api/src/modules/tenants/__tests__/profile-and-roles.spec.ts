@@ -37,6 +37,7 @@ describe('DEFAULT_ROLES (Requirement 2.8)', () => {
         'field:configure',
         'integration:manage',
         'role:configure',
+        'system:view', // the system status page is the Owner's alone
         'workflow:configure',
         'workspace:configure',
       ].sort(),

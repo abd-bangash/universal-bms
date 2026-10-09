@@ -247,6 +247,7 @@ describe('Property 13 — input safety', () => {
   }, 120_000);
 
   it('products, categories and suppliers: names, descriptions and notes', async () => {
+    const usedSupplierNames = new Set<string>();
     await fc.assert(
       fc.asyncProperty(
         text(150),
@@ -281,6 +282,9 @@ describe('Property 13 — input safety', () => {
             async (res) => [res.body.data.name.startsWith(category.slice(0, 60))],
             [true],
           );
+          // supplier names are unique per business, and the generator (and its shrinking) repeats values
+          if (usedSupplierNames.has(supplier.trim().toLowerCase())) return;
+          usedSupplierNames.add(supplier.trim().toLowerCase());
           await safe(
             'supplier',
             () => call('post', '/suppliers', { name: supplier, notes }),

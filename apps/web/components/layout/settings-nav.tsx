@@ -10,6 +10,7 @@ const TABS = [
   { key: 'business', href: '/settings/business', permission: 'workspace:view' },
   { key: 'industry', href: '/settings/industry', permission: 'workspace:view' },
   { key: 'audit', href: '/settings/audit', permission: 'audit:view' },
+  { key: 'system', href: '/settings/system', permission: 'system:view' },
 ] as const;
 
 export function SettingsNav() {

@@ -24,6 +24,7 @@ const MANAGER_EXCLUDED: ReadonlySet<Permission> = new Set([
   'workflow:configure',
   'integration:manage',
   'account:configure',
+  'system:view',
 ]);
 
 /** Resources holding financial data; Viewer never gets their `view` (Requirement 2.8, design "Default Roles"). */
@@ -41,7 +42,7 @@ const FINANCIAL_RESOURCES: ReadonlySet<PermissionResource> = new Set([
  * What a read-only person is not shown: the audit trail (it records who did what, with personal data
  * in the changes) and the connections to outside services (their status and last errors).
  */
-const SENSITIVE_RESOURCES: ReadonlySet<PermissionResource> = new Set(['audit', 'integration']);
+const SENSITIVE_RESOURCES: ReadonlySet<PermissionResource> = new Set(['audit', 'integration', 'system']);
 
 export const DEFAULT_ROLES: readonly DefaultRoleDefinition[] = [
   { name: 'Owner', isOwner: true, permissions: WORKSPACE_PERMISSIONS, maxDiscountPercent: 100 },

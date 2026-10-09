@@ -222,7 +222,8 @@
       "automation": "Automation",
       "ai": "AI assistant",
       "integration": "Integrations",
-      "import": "Imports"
+      "import": "Imports",
+      "system": "System status (Owner only)"
     },
     "actions": {
       "view": "View",
@@ -286,7 +287,8 @@
     "tabs": {
       "business": "Business",
       "industry": "Industry and modules",
-      "audit": "Audit log"
+      "audit": "Audit log",
+      "system": "System status"
     },
     "saved": "Settings saved.",
     "noChanges": "There is nothing to save yet.",
@@ -394,6 +396,29 @@
       "toggleActive": "Active",
       "save": "Save",
       "none": "None yet."
+    },
+    "system": {
+      "title": "System status",
+      "intro": "Only the Owner sees this page. It shows whether the system and its connections are working.",
+      "services": "Core services",
+      "up": "Working",
+      "down": "Not responding",
+      "integrations": "Integrations",
+      "noIntegrations": "No outside services are connected.",
+      "lastSuccess": "Last success {when}",
+      "lastError": "Last error {when}: {error}",
+      "never": "never",
+      "queues": "Background jobs",
+      "queue": "Queue",
+      "waiting": "Waiting",
+      "active": "Running",
+      "delayed": "Delayed",
+      "failed": "Failed",
+      "deadLetters": "Jobs given up on: {count}",
+      "backup": "Backups",
+      "lastBackup": "Last successful backup: {when}",
+      "noBackup": "No backup has been recorded yet. See the administrator guide.",
+      "backupWarn": "The last backup is more than 24 hours old."
     },
     "audit": {
       "title": "Audit log",

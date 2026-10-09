@@ -632,7 +632,7 @@ How to read this file:
   - Automated tests for workflows A, B, C and D of the source specification (A against the fake channel and AI adapters)
   - _Requirements: 53.1, 53.2_
 
-- [ ] 85. Testing-environment operations and guides
+- [x] 85. Testing-environment operations and guides
   - Database backup and a restore rehearsal on the testing environment, with the date recorded
   - `docs/user-guide.md` (one page per area), `docs/admin-guide.md` (settings, staff, roles, integrations, AI), `docs/known-limitations.md` (everything deferred to R2–R4)
   - Owner-only `/settings/system` page: integration health, queue status, last backup time
