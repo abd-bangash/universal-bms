@@ -13,6 +13,8 @@
     "generate:tenant-models": "node scripts/generate-tenant-models.cjs",
     "workspace:create": "node dist/cli/workspace-create.js",
     "seed:demo": "node dist/cli/seed-demo.js",
+    "demo:reset": "node dist/cli/demo-reset.js",
+    "workspace:clear-demo": "node dist/cli/workspace-clear-demo.js",
     "eval:ai": "AI_EVAL_LIVE=1 jest test/ai-eval/ai-eval.e2e-spec.ts"
   },
   "dependencies": {

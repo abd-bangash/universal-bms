@@ -430,3 +430,56 @@ export const EVAL_CONVERSATIONS: readonly EvalConversation[] = [
     },
   },
 ];
+
+/** Approved answers the assistant may rely on (Requirement 50.2: five). Plain policy text, not real terms. */
+export const DEMO_KNOWLEDGE: ReadonlyArray<{ title: string; body: string }> = [
+  {
+    title: 'Delivery time',
+    body: 'Items in stock are delivered within 2 to 3 working days. Made-to-order and custom pieces take 3 to 5 weeks from the day the deposit is received.',
+  },
+  {
+    title: 'Payment terms',
+    body: 'Custom orders need a 50% deposit before production starts and the balance before delivery. Ready stock is paid in full at the time of purchase.',
+  },
+  {
+    title: 'Warranty',
+    body: 'Frames carry a 1 year warranty against manufacturing defects. Fabric, leather and foam wear are not covered.',
+  },
+  {
+    title: 'Showroom hours',
+    body: 'The showroom is open Monday to Saturday, 10 am to 8 pm. It is closed on Sundays and public holidays.',
+  },
+  {
+    title: 'Care of leather and fabric',
+    body: 'Wipe leather with a soft damp cloth and keep it away from direct sun and heaters. Vacuum fabric weekly and treat spills at once with a clean, dry cloth.',
+  },
+];
+
+/** Ready-made replies and messages (Requirement 50.2: five). */
+export const DEMO_TEMPLATES: ReadonlyArray<{ name: string; kind: string; body: string }> = [
+  {
+    name: 'Thanks for your message',
+    kind: 'QUICK_REPLY',
+    body: 'Thank you for contacting us! A member of our team will reply shortly.',
+  },
+  {
+    name: 'Share size and colour',
+    kind: 'QUICK_REPLY',
+    body: 'To prepare a quotation, could you please share the size you need and your preferred colour and material?',
+  },
+  {
+    name: 'Order ready',
+    kind: 'MESSAGE',
+    body: 'Dear {{customer_name}}, your order {{order_number}} is ready. Please let us know a convenient time for delivery.',
+  },
+  {
+    name: 'Bank details',
+    kind: 'BANK_DETAILS',
+    body: 'You can pay by bank transfer to:\n{{bank_details}}\nPlease send us a picture of the receipt.',
+  },
+  {
+    name: 'Balance reminder',
+    kind: 'MESSAGE',
+    body: 'Dear {{customer_name}}, a balance of {{balance_due}} is due on order {{order_number}}. Thank you, {{business_name}}.',
+  },
+];

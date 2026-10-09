@@ -624,7 +624,7 @@ How to read this file:
   - Confirm that every mandatory test sub-task of R1 exists and passes in CI
   - _Requirements: 20.2, 20.3, 20.4, 20.8, 20.10, 20.11, 20.12, 53.3, 53.4, 53.6, 53.7_
 
-- [ ] 83. Demo data and reset
+- [x] 83. Demo data and reset
   - Complete `seed:demo` to the full dataset of Requirement 50.2; `demo:reset` command; `workspace:clear-demo` command
   - _Requirements: 50.2, 50.3, 50.4, 50.5, 50.6_
 

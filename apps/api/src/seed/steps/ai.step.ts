@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { IntegrationsService } from '../../modules/integrations/integrations.service';
 import type { DemoContext, DemoStep, StepResult } from '../demo-seed';
-import { EVAL_CONVERSATIONS } from './ai.data';
+import { DEMO_KNOWLEDGE, DEMO_TEMPLATES, EVAL_CONVERSATIONS } from './ai.data';
 
 /** How many of the evaluation conversations the demo business gets to read. */
 export const DEMO_CONVERSATION_COUNT = 10;
@@ -26,7 +26,9 @@ export const aiStep: DemoStep = {
     });
     const have = new Set(existing.map((c) => c.externalContactId));
     const missing = wanted.filter((c) => !have.has(c.contactPhone));
-    if (missing.length === 0) return { created: 0, existing: existing.length };
+    const extras = await addKnowledgeAndTemplates(ctx);
+    if (missing.length === 0)
+      return { created: extras.created, existing: existing.length + extras.existing };
 
     let connection = await unscoped.integrationConnection.findFirst({
       where: { workspaceId: ctx.workspaceId, provider: 'WHATSAPP' },
@@ -81,6 +83,42 @@ export const aiStep: DemoStep = {
         data: messages.map((m) => ({ ...m, conversationId: conversation.id })),
       });
     }
-    return { created: missing.length, existing: existing.length };
+    return {
+      created: missing.length + extras.created,
+      existing: existing.length + extras.existing,
+    };
   },
 };
+
+/** Five approved answers and five message templates, each added only when it is not already there. */
+async function addKnowledgeAndTemplates(ctx: DemoContext): Promise<StepResult> {
+  const { unscoped } = ctx.prisma;
+  let created = 0;
+  let existing = 0;
+  for (const item of DEMO_KNOWLEDGE) {
+    const found = await unscoped.knowledgeItem.findFirst({
+      where: { workspaceId: ctx.workspaceId, title: item.title },
+    });
+    if (found) existing += 1;
+    else {
+      await unscoped.knowledgeItem.create({ data: { workspaceId: ctx.workspaceId, ...item } });
+      created += 1;
+    }
+  }
+  for (const template of DEMO_TEMPLATES) {
+    const variables = [
+      ...new Set([...template.body.matchAll(/\{\{(\w+)\}\}/g)].map((m) => m[1] as string)),
+    ];
+    const found = await unscoped.messageTemplate.findFirst({
+      where: { workspaceId: ctx.workspaceId, kind: template.kind, name: template.name },
+    });
+    if (found) existing += 1;
+    else {
+      await unscoped.messageTemplate.create({
+        data: { workspaceId: ctx.workspaceId, ...template, variables },
+      });
+      created += 1;
+    }
+  }
+  return { created, existing };
+}

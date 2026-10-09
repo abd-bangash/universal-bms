@@ -47,7 +47,7 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
       { name: 'finance', created: 21, existing: 0 },
       { name: 'purchasing', created: 10, existing: 0 },
       { name: 'commissions', created: 2, existing: 0 },
-      { name: 'ai', created: 10, existing: 0 },
+      { name: 'ai', created: 20, existing: 0 },
     ]);
     expect(logs).toHaveLength(10);
 
@@ -402,7 +402,7 @@ describe('seed:demo (Requirements 50.2, 50.3)', () => {
       { name: 'finance', created: 0, existing: 21 },
       { name: 'purchasing', created: 0, existing: 10 },
       { name: 'commissions', created: 0, existing: 1 },
-      { name: 'ai', created: 0, existing: 10 },
+      { name: 'ai', created: 0, existing: 20 },
     ]);
     expect(await t.db.prisma.customer.count({ where: { isWalkIn: false } })).toBe(22); // 20 + 2 from won leads
     expect(await t.db.prisma.lead.count()).toBe(15);
