@@ -114,12 +114,11 @@ export interface ChannelAdapter {
   extractAccountIds(payload: unknown): string[];
   parseEvents(payload: unknown): NormalizedEvent[];
   canSendFreeform(conversation: FreeformState, now?: Date): boolean;
-  sendMessage(
+  sendMessage(conn: IntegrationSecrets, to: string, content: OutboundContent): Promise<SendResult>;
+  downloadMedia(
     conn: IntegrationSecrets,
-    to: string,
-    content: OutboundContent,
-  ): Promise<SendResult>;
-  downloadMedia(conn: IntegrationSecrets, mediaRef: string): Promise<{ body: Buffer; mime: string }>;
+    mediaRef: string,
+  ): Promise<{ body: Buffer; mime: string }>;
   listTemplates?(conn: IntegrationSecrets): Promise<ProviderTemplate[]>;
   testConnection(conn: IntegrationSecrets): Promise<HealthResult>;
 }

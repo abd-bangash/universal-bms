@@ -15,6 +15,7 @@ import { CommissionsModule } from './modules/commissions/commissions.module';
 import { ReportingModule } from './modules/reporting/reporting.module';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { ChannelsModule } from './modules/channels/channels.module';
+import { AiModule } from './modules/ai/ai.module';
 import { MessagingModule } from './modules/messaging/messaging.module';
 import { QueueModule } from './modules/queue/queue.module';
 import { PosModule } from './modules/pos/pos.module';
@@ -45,6 +46,7 @@ import { HealthModule } from './modules/health/health.module';
     IntegrationsModule,
     ChannelsModule,
     MessagingModule,
+    AiModule,
     PrismaModule,
     AuditModule,
     AuthModule,

@@ -570,7 +570,7 @@ How to read this file:
 
 ### Phase 12 — AI Assistant `[R1 · Day 13]`
 
-- [ ] 76. AI adapter framework and first provider
+- [x] 76. AI adapter framework and first provider
   - `AIAdapter` interface (`generateStructured`, `generateText`) and `AIRegistry`; one provider adapter for the provider the client supplies a key for; a deterministic `FakeAIAdapter` for tests
   - Provider key stored through `IntegrationService`
   - _Requirements: 18.1, 18.2, 24.2, 24.3, 48.2, 48.8_
