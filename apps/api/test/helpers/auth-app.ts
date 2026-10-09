@@ -50,17 +50,23 @@ export interface TestApp {
 /** Boots the real AppModule against a fresh database. */
 export async function createTestApp(
   envOverrides: Partial<Env> = {},
-  extra: { controllers?: Type<unknown>[] } = {},
+  extra: {
+    controllers?: Type<unknown>[];
+    /** Replacements for providers, such as the logger, to look at what the application does with them. */
+    overrides?: Array<{ provide: unknown; useValue: unknown }>;
+  } = {},
 ): Promise<TestApp> {
   const db = await createTestDatabase();
   process.env.DATABASE_URL = db.url;
-  const moduleRef = await Test.createTestingModule({
+  let builder = Test.createTestingModule({
     imports: [AppModule],
     controllers: extra.controllers,
   })
     .overrideProvider(ENV)
-    .useValue({ ...testEnv(), ...envOverrides })
-    .compile();
+    .useValue({ ...testEnv(), ...envOverrides });
+  for (const o of extra.overrides ?? [])
+    builder = builder.overrideProvider(o.provide).useValue(o.useValue);
+  const moduleRef = await builder.compile();
   const app = moduleRef.createNestApplication({ rawBody: true });
   configureApp(app, { APP_ENV: 'development', WEB_ORIGIN: 'http://localhost:3000' });
   // Tests give every request its own client address so rate limits do not couple test cases.

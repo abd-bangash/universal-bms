@@ -65,6 +65,9 @@ const AUTHENTICATED_ONLY_ROUTES = [
 const label = (r: RouteInfo) => `${r.method} ${r.path}`;
 const concrete = (r: RouteInfo) => r.path.replace(/:\w+/g, 'x');
 
+// this test sends far more than a person's 300 requests a minute on purpose (the limit itself is tested in security-review)
+process.env['RATE_LIMIT_PER_USER'] = '1000000';
+
 describe('Route protection (real PostgreSQL)', () => {
   let t: TestApp;
   let app: INestApplication;

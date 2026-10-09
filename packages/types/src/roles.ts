@@ -37,6 +37,12 @@ const FINANCIAL_RESOURCES: ReadonlySet<PermissionResource> = new Set([
  * The nine system roles created with every workspace (Requirement 2.8, design.md "Default Roles").
  * The Owner role is created with every workspace permission; platform:admin is never included.
  */
+/**
+ * What a read-only person is not shown: the audit trail (it records who did what, with personal data
+ * in the changes) and the connections to outside services (their status and last errors).
+ */
+const SENSITIVE_RESOURCES: ReadonlySet<PermissionResource> = new Set(['audit', 'integration']);
+
 export const DEFAULT_ROLES: readonly DefaultRoleDefinition[] = [
   { name: 'Owner', isOwner: true, permissions: WORKSPACE_PERMISSIONS, maxDiscountPercent: 100 },
   {
@@ -126,7 +132,7 @@ export const DEFAULT_ROLES: readonly DefaultRoleDefinition[] = [
     name: 'Viewer',
     isOwner: false,
     permissions: (Object.keys(PERMISSION_CATALOGUE) as PermissionResource[])
-      .filter((r) => r !== 'platform' && !FINANCIAL_RESOURCES.has(r))
+      .filter((r) => r !== 'platform' && !FINANCIAL_RESOURCES.has(r) && !SENSITIVE_RESOURCES.has(r))
       .filter((r) => (PERMISSION_CATALOGUE[r] as readonly string[]).includes('view'))
       .map((r) => `${r}:view` as Permission),
     maxDiscountPercent: 0,

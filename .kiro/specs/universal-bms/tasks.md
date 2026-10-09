@@ -616,7 +616,7 @@ How to read this file:
   - Endpoints for list, unread count, mark read and read all; bell with polling and list in the header
   - _Requirements: 33.1, 33.2, 33.3, 33.4, 30.4_
 
-- [ ] 82. Security and isolation pass
+- [x] 82. Security and isolation pass
   - Permission matrix test: every route with every default Role, asserting allow or deny from a table kept beside the catalogue
   - Tenant isolation test over every tenant-scoped model and every list and detail endpoint
   - Property 13 (input safety) on representative text fields of every module

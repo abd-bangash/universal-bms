@@ -81,6 +81,21 @@ export class AllExceptionsFilter implements ExceptionFilter {
         requestId,
       };
     }
+    // errors from the body parser and the like: a client mistake with a status of its own (too large, malformed)
+    const status = (exception as { status?: unknown } | null)?.status;
+    if (
+      typeof status === 'number' &&
+      status >= 400 &&
+      status < 500 &&
+      (exception as { expose?: unknown }).expose === true
+    ) {
+      return {
+        statusCode: status,
+        code: CODE_BY_STATUS[status] ?? 'VALIDATION_FAILED',
+        message: SAFE_MESSAGE_BY_STATUS[status] ?? 'The request could not be processed',
+        requestId,
+      };
+    }
     return {
       statusCode: 500,
       code: 'INTERNAL_ERROR',

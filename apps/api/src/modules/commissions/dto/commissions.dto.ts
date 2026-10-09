@@ -37,10 +37,12 @@ export class PayCommissionDto {
   @IsOptional() @IsString() @MaxLength(1000) note?: string;
 }
 
-class RuleFields {
-  @IsOptional() @IsString() @IsNotEmpty() @MaxLength(120) name?: string;
-  @IsOptional() @IsIn(CALC_TYPES) calcType?: (typeof CALC_TYPES)[number];
-  @IsOptional() @IsDecimalString() rate?: string;
+/**
+ * The parts of a rule that are optional both when making one and when changing one. The three that
+ * are required to make one are declared on CreateRuleDto itself: a class-validator `@IsOptional`
+ * inherited from a parent would make them optional there too.
+ */
+class RuleOptionalFields {
   @IsOptional() @IsIn(BASE_TYPES) baseType?: (typeof BASE_TYPES)[number];
   @IsOptional() @IsIn(SCOPES) scope?: (typeof SCOPES)[number];
   @IsOptional() @IsString() scopeId?: string | null;
@@ -49,13 +51,17 @@ class RuleFields {
   @IsOptional() @IsBoolean() active?: boolean;
 }
 
-export class CreateRuleDto extends RuleFields {
-  @IsString() @IsNotEmpty() @MaxLength(120) declare name: string;
-  @IsIn(CALC_TYPES) declare calcType: (typeof CALC_TYPES)[number];
-  @IsDecimalString() declare rate: string;
+export class CreateRuleDto extends RuleOptionalFields {
+  @IsString() @IsNotEmpty() @MaxLength(120) name!: string;
+  @IsIn(CALC_TYPES) calcType!: (typeof CALC_TYPES)[number];
+  @IsDecimalString() rate!: string;
 }
 
-export class UpdateRuleDto extends RuleFields {}
+export class UpdateRuleDto extends RuleOptionalFields {
+  @IsOptional() @IsString() @IsNotEmpty() @MaxLength(120) name?: string;
+  @IsOptional() @IsIn(CALC_TYPES) calcType?: (typeof CALC_TYPES)[number];
+  @IsOptional() @IsDecimalString() rate?: string;
+}
 
 export class SetStaffCommissionDto {
   /** The percentage of net sales this person earns (0 to 100). 0 switches it off. */

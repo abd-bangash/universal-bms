@@ -35,7 +35,8 @@ export const throttlerOptions: ThrottlerModuleOptions = {
     {
       name: 'default',
       ttl: MINUTE,
-      limit: 300,
+      // 300 a minute per person; tests that deliberately send thousands of requests as one person raise it
+      limit: () => Number(process.env['RATE_LIMIT_PER_USER'] ?? 300),
       skipIf: (ctx) => profileOf(ctx) !== undefined,
     },
     {
@@ -65,6 +66,19 @@ export class AppThrottlerGuard extends ThrottlerGuard {
     const headers = req.headers as Record<string, string | undefined> | undefined;
     const userId = this.resolveUser?.(headers?.authorization);
     return userId ? `user:${userId}` : String(req.ip ?? 'unknown');
+  }
+
+  /**
+   * One count per throttler and tracker, shared by all routes. The library's default also keys on the
+   * route, which would give each person 300 requests a minute to every endpoint separately, and each
+   * address 10 sign-in attempts to every sign-in route separately.
+   */
+  protected override generateKey(
+    _context: ExecutionContext,
+    tracker: string,
+    name: string,
+  ): string {
+    return `${name}-${tracker}`;
   }
 
   protected override async throwThrottlingException(

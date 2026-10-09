@@ -40,6 +40,14 @@ import { TokenService } from './token.service';
     { provide: APP_GUARD, useClass: ModuleEnabledGuard },
     { provide: APP_GUARD, useClass: PermissionGuard },
   ],
-  exports: [AuthService, TokenService, PasswordService, MembershipCache, Clock],
+  exports: [
+    AuthService,
+    TokenService,
+    PasswordService,
+    MembershipCache,
+    Clock,
+    // the throttle guard (a common provider) tracks people by who they are, not only by address
+    THROTTLE_USER_RESOLVER,
+  ],
 })
 export class AuthModule {}

@@ -63,6 +63,9 @@ describe('DEFAULT_ROLES (Requirement 2.8)', () => {
     }
     expect(byName.Viewer?.permissions.every((p) => p.endsWith(':view'))).toBe(true);
     expect(byName.Viewer?.permissions).not.toContain('payment:view');
+    // nor the audit trail (personal data in its changes) or the state of the outside connections
+    expect(byName.Viewer?.permissions).not.toContain('audit:view');
+    expect(byName.Viewer?.permissions).not.toContain('integration:view');
   });
 
   it('Account Staff holds financial access; Salesperson cannot override prices or approve', () => {

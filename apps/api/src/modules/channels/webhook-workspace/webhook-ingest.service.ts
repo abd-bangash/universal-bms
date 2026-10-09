@@ -8,6 +8,7 @@ import {
   ValidationFailedException,
 } from '../../../common/errors/app.exception';
 import { LOGGER } from '../../../common/logging/app-logger';
+import { stripNul } from '../../../common/pipes/validation.pipe';
 import { PrismaService } from '../../../common/prisma/prisma.service';
 import { ENV, type Env } from '../../../config/env';
 import { AuditService } from '../../audit/audit.service';
@@ -92,7 +93,7 @@ export class WebhookIngestService {
       workspaceId: connection?.workspaceId ?? null,
       connectionId: connection?.id ?? null,
       kind: event.kind,
-      payload: JSON.parse(JSON.stringify(event)) as Prisma.InputJsonValue,
+      payload: stripNul(JSON.parse(JSON.stringify(event))) as Prisma.InputJsonValue,
       status: connection ? 'RECEIVED' : 'IGNORED',
     };
     let id: string;
