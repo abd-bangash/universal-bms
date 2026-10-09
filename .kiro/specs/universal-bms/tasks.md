@@ -638,7 +638,8 @@ How to read this file:
   - Owner-only `/settings/system` page: integration health, queue status, last backup time
   - _Requirements: 22.4, 51.6, 52.5, 52.6_
 
-- [ ] 86. Checkpoint — Release 1 sign-off
+- [x] 86. Checkpoint — Release 1 sign-off
+  - _Prepared in `docs/release-1-acceptance.md` (checklist, evidence, open issues). The client walkthrough and signature are still to be done by a person and are recorded there._
   - Walk the client through the acceptance checklist for the areas delivered in R1
   - Record sign-off, open issues and the agreed start of R2
   - Do not begin production deployment or any R2 task without the user's confirmation.
